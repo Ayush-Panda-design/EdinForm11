@@ -1,18 +1,121 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "~/trpc/client";
 import { toast } from "sonner";
 import {
   Loader2, Users, FileText, BarChart3, Globe, Trash2,
   Search, ShieldCheck, ShieldOff, ChevronLeft, ChevronRight,
-  RefreshCw
+  RefreshCw,
 } from "lucide-react";
 import { useAuth } from "~/providers/auth-provider";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 type AdminTab = "overview" | "users" | "forms";
+
+/* ── shared inline style tokens ── */
+const T = {
+  label: {
+    fontSize: "11px",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.28em",
+    color: "var(--muted-foreground)",
+    fontFamily: "'Inter', sans-serif",
+  },
+  mono: {
+    fontFamily: "monospace",
+    fontSize: "11px",
+    letterSpacing: "0.06em",
+    color: "var(--muted-foreground)",
+  },
+  cell: {
+    padding: "12px 16px",
+    fontSize: "13px",
+    color: "var(--foreground)",
+    fontFamily: "'Inter', sans-serif",
+    borderBottom: "1px solid var(--border)",
+  },
+  th: {
+    padding: "10px 16px",
+    fontSize: "10px",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.28em",
+    color: "var(--muted-foreground)",
+    fontFamily: "'Inter', sans-serif",
+    fontWeight: 500,
+    borderBottom: "1px solid var(--border)",
+    textAlign: "left" as const,
+  },
+};
+
+function VisBadge({ v }: { v: string }) {
+  const map: Record<string, { bg: string; color: string; border: string }> = {
+    public:    { bg: "rgba(88,116,92,0.15)",   color: "#7EB884", border: "rgba(88,116,92,0.3)" },
+    unlisted:  { bg: "rgba(200,155,99,0.12)",  color: "#C89B63", border: "rgba(200,155,99,0.25)" },
+    unpublished:{ bg: "rgba(255,255,255,0.04)", color: "var(--muted-foreground)", border: "rgba(255,255,255,0.07)" },
+  };
+  const s = map[v] ?? map.unpublished;
+  return (
+    <span style={{
+      display: "inline-block",
+      padding: "2px 10px",
+      borderRadius: "999px",
+      fontSize: "10px",
+      fontFamily: "'Inter', sans-serif",
+      letterSpacing: "0.12em",
+      textTransform: "uppercase",
+      background: s.bg,
+      color: s.color,
+      border: `1px solid ${s.border}`,
+    }}>
+      {v}
+    </span>
+  );
+}
+
+function RoleBadge({ role }: { role: string }) {
+  const isAdmin = role === "admin";
+  return (
+    <span style={{
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "5px",
+      padding: "2px 10px",
+      borderRadius: "999px",
+      fontSize: "10px",
+      fontFamily: "'Inter', sans-serif",
+      letterSpacing: "0.12em",
+      textTransform: "uppercase",
+      background: isAdmin ? "rgba(200,155,99,0.12)" : "rgba(255,255,255,0.04)",
+      color: isAdmin ? "#C89B63" : "var(--muted-foreground)",
+      border: isAdmin ? "1px solid rgba(200,155,99,0.25)" : "1px solid rgba(255,255,255,0.07)",
+    }}>
+      {isAdmin && <ShieldCheck style={{ width: 10, height: 10 }} />}
+      {role}
+    </span>
+  );
+}
+
+function PageBtn({
+  onClick, disabled, children,
+}: { onClick: () => void; disabled: boolean; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="ef-btn-ghost"
+      style={{
+        padding: "6px",
+        borderRadius: "8px",
+        display: "flex",
+        opacity: disabled ? 0.35 : 1,
+        cursor: disabled ? "not-allowed" : "pointer",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
 
 export default function AdminDashboardPage() {
   const { user } = useAuth();
@@ -23,22 +126,22 @@ export default function AdminDashboardPage() {
   const [formSearch, setFormSearch] = useState("");
   const [formPage, setFormPage] = useState(1);
 
-  // Redirect non-admins
   useEffect(() => {
-    if (user && user.role !== "admin") {
-      router.push("/dashboard");
-    }
+    if (user && user.role !== "admin") router.push("/dashboard");
   }, [user, router]);
 
-  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = trpc.admin.getStats.useQuery();
-  const { data: usersData, isLoading: usersLoading, refetch: refetchUsers } = trpc.admin.listUsers.useQuery(
-    { page: userPage, limit: 20, search: userSearch || undefined },
-    { enabled: tab === "users" }
-  );
-  const { data: formsData, isLoading: formsLoading, refetch: refetchForms } = trpc.admin.listForms.useQuery(
-    { page: formPage, limit: 20, search: formSearch || undefined },
-    { enabled: tab === "forms" }
-  );
+  const { data: stats, isLoading: statsLoading, refetch: refetchStats } =
+    trpc.admin.getStats.useQuery();
+  const { data: usersData, isLoading: usersLoading, refetch: refetchUsers } =
+    trpc.admin.listUsers.useQuery(
+      { page: userPage, limit: 20, search: userSearch || undefined },
+      { enabled: tab === "users" }
+    );
+  const { data: formsData, isLoading: formsLoading, refetch: refetchForms } =
+    trpc.admin.listForms.useQuery(
+      { page: formPage, limit: 20, search: formSearch || undefined },
+      { enabled: tab === "forms" }
+    );
 
   const setRoleMutation = trpc.admin.setUserRole.useMutation({
     onSuccess: () => { toast.success("Role updated"); refetchUsers(); },
@@ -49,154 +152,218 @@ export default function AdminDashboardPage() {
     onError: (e) => toast.error(e.message),
   });
 
+  /* access denied */
   if (!user || user.role !== "admin") {
     return (
-      <div className="flex items-center justify-center p-16">
-        <div className="text-center">
-          <ShieldOff className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">Admin access required</p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6rem 2rem" }}>
+        <div style={{ textAlign: "center" }}>
+          <ShieldOff style={{ width: 40, height: 40, color: "var(--muted-foreground)", margin: "0 auto 1rem" }} />
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.3rem", color: "var(--foreground)" }}>
+            Admin access required.
+          </p>
         </div>
       </div>
     );
   }
 
+  const tabs = [
+    { id: "overview" as AdminTab, label: "Overview", icon: BarChart3 },
+    { id: "users"    as AdminTab, label: "Users",    icon: Users },
+    { id: "forms"    as AdminTab, label: "All Forms", icon: FileText },
+  ];
+
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div style={{ maxWidth: "900px", margin: "0 auto", fontFamily: "'Inter', sans-serif" }}>
+
+      {/* ── Header ── */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "2.5rem" }}>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ShieldCheck className="w-6 h-6 text-stone-900" /> Admin Dashboard
+          <p style={T.label}>Administration</p>
+          <h1 style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: "clamp(1.8rem, 3vw, 2.4rem)",
+            fontWeight: 400,
+            color: "var(--foreground)",
+            lineHeight: 1.1,
+            marginTop: "6px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}>
+            <ShieldCheck style={{ width: 22, height: 22, color: "#C89B63" }} />
+            Admin <em style={{ color: "#C89B63" }}>Dashboard</em>
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Manage all users and forms platform-wide</p>
+          <p style={{ marginTop: "6px", fontSize: "13px", color: "var(--muted-foreground)" }}>
+            Manage all users and forms platform-wide.
+          </p>
         </div>
-        <button onClick={() => { refetchStats(); refetchUsers(); refetchForms(); }}
-          className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-          <RefreshCw className="w-4 h-4" />
+        <button
+          onClick={() => { refetchStats(); refetchUsers(); refetchForms(); }}
+          className="ef-btn-ghost"
+          style={{ padding: "8px", borderRadius: "10px", display: "flex", marginTop: "4px" }}
+          title="Refresh"
+        >
+          <RefreshCw style={{ width: 15, height: 15 }} />
         </button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
-        {([
-          { id: "overview", label: "Overview", icon: BarChart3 },
-          { id: "users", label: "Users", icon: Users },
-          { id: "forms", label: "All Forms", icon: FileText },
-        ] as const).map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              tab === t.id
-                ? "bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm"
-                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-            }`}>
-            <t.icon className="w-4 h-4" /> {t.label}
-          </button>
-        ))}
+      {/* ── Tabs ── */}
+      <div style={{
+        display: "flex",
+        gap: "4px",
+        background: "rgba(255,255,255,0.03)",
+        border: "1px solid var(--border)",
+        borderRadius: "12px",
+        padding: "4px",
+        marginBottom: "2rem",
+      }}>
+        {tabs.map(({ id, label, icon: Icon }) => {
+          const active = tab === id;
+          return (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                padding: "8px 16px",
+                borderRadius: "9px",
+                fontSize: "13px",
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 500,
+                border: "none",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                background: active ? "rgba(200,155,99,0.12)" : "transparent",
+                color: active ? "#C89B63" : "var(--muted-foreground)",
+                boxShadow: active ? "inset 0 0 0 1px rgba(200,155,99,0.2)" : "none",
+              }}
+            >
+              <Icon style={{ width: 14, height: 14 }} />
+              {label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* ===== OVERVIEW ===== */}
+      {/* ══════ OVERVIEW ══════ */}
       {tab === "overview" && (
-        <div className="space-y-4">
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           {statsLoading ? (
-            <div className="flex justify-center p-12"><Loader2 className="w-6 h-6 animate-spin text-stone-900" /></div>
+            <Spinner />
           ) : stats ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem" }}>
               {[
-                { label: "Total Users", value: stats.totalUsers, icon: Users, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
-                { label: "Total Forms", value: stats.totalForms, icon: FileText, color: "text-stone-900", bg: "bg-stone-50 dark:bg-stone-900/20" },
-                { label: "Published Forms", value: stats.publishedForms, icon: Globe, color: "text-green-600", bg: "bg-green-50 dark:bg-green-900/20" },
-                { label: "Total Responses", value: stats.totalResponses, icon: BarChart3, color: "text-orange-600", bg: "bg-orange-50 dark:bg-orange-900/20" },
-              ].map((s) => (
-                <div key={s.label} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-5">
-                  <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center mb-3`}>
-                    <s.icon className={`w-5 h-5 ${s.color}`} />
+                { label: "Total Users",      value: stats.totalUsers,      icon: Users },
+                { label: "Total Forms",      value: stats.totalForms,      icon: FileText },
+                { label: "Published Forms",  value: stats.publishedForms,  icon: Globe },
+                { label: "Total Responses",  value: stats.totalResponses,  icon: BarChart3 },
+              ].map(({ label, value, icon: Icon }, i) => (
+                <div
+                  key={label}
+                  className="ef-card"
+                  style={{ padding: "1.25rem", animation: `ef-fade-up .6s ease ${i * 60}ms both` }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+                    <span style={T.label}>{label}</span>
+                    <Icon style={{ width: 13, height: 13, color: "#C89B63", opacity: 0.7 }} />
                   </div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{s.value.toLocaleString()}</p>
-                  <p className="text-sm text-gray-500 mt-0.5">{s.label}</p>
+                  <p style={{
+                    fontFamily: "'Cormorant Garamond', serif",
+                    fontSize: "2rem",
+                    fontWeight: 400,
+                    color: "var(--foreground)",
+                    lineHeight: 1,
+                  }}>
+                    {value.toLocaleString()}
+                  </p>
                 </div>
               ))}
             </div>
           ) : null}
 
-          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-sm text-amber-700 dark:text-amber-400">
-            <strong>Admin tip:</strong> Use the Users tab to promote/demote admins, or the Forms tab to view and delete any form on the platform.
+          {/* tip */}
+          <div style={{
+            padding: "1rem 1.25rem",
+            borderRadius: "12px",
+            background: "rgba(200,155,99,0.07)",
+            border: "1px solid rgba(200,155,99,0.15)",
+            fontSize: "13px",
+            color: "var(--muted-foreground)",
+            lineHeight: 1.6,
+          }}>
+            <span style={{ color: "#C89B63", fontWeight: 600 }}>Tip — </span>
+            Use the Users tab to promote or demote admins, and the Forms tab to view or delete any form on the platform.
           </div>
         </div>
       )}
 
-      {/* ===== USERS ===== */}
+      {/* ══════ USERS ══════ */}
       {tab === "users" && (
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            <div className="flex-1 relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                value={userSearch}
-                onChange={e => { setUserSearch(e.target.value); setUserPage(1); }}
-                placeholder="Search by name or email..."
-                className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-stone-500 text-sm"
-              />
-            </div>
-          </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          <SearchInput
+            value={userSearch}
+            onChange={(v) => { setUserSearch(v); setUserPage(1); }}
+            placeholder="Search by name or email…"
+          />
 
-          {usersLoading ? (
-            <div className="flex justify-center p-12"><Loader2 className="w-6 h-6 animate-spin text-stone-900" /></div>
-          ) : usersData ? (
+          {usersLoading ? <Spinner /> : usersData ? (
             <>
-              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
+              <div className="ef-card" style={{ overflow: "hidden", borderRadius: "1rem" }}>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
-                      <tr className="border-b border-gray-100 dark:border-gray-800">
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">User</th>
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Role</th>
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Forms</th>
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Joined</th>
-                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Actions</th>
+                      <tr>
+                        {["User", "Role", "Forms", "Joined", ""].map((h, i) => (
+                          <th key={i} style={{ ...T.th, textAlign: i === 4 ? "right" : "left" }}>{h}</th>
+                        ))}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                    <tbody>
                       {usersData.data.map((u) => (
-                        <tr key={u.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-stone-500 to-stone-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        <tr key={u.id}
+                          style={{ transition: "background 0.15s" }}
+                          onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.025)"}
+                          onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                        >
+                          <td style={T.cell}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                              <div style={{
+                                width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
+                                background: "linear-gradient(140deg, #C89B63 0%, #8B7355 100%)",
+                                color: "#14110C", display: "flex", alignItems: "center",
+                                justifyContent: "center", fontSize: "12px", fontWeight: 600,
+                              }}>
                                 {u.fullName[0]?.toUpperCase()}
                               </div>
                               <div>
-                                <p className="text-sm font-medium text-gray-900 dark:text-white">{u.fullName}</p>
-                                <p className="text-xs text-gray-400">{u.email}</p>
+                                <p style={{ fontSize: "13px", color: "var(--foreground)", marginBottom: "1px" }}>{u.fullName}</p>
+                                <p style={T.mono}>{u.email}</p>
                               </div>
                             </div>
                           </td>
-                          <td className="px-4 py-3">
-                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
-                              u.role === "admin"
-                                ? "bg-stone-100 dark:bg-stone-900/30 text-stone-900 dark:text-stone-300"
-                                : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-                            }`}>
-                              {u.role === "admin" ? <ShieldCheck className="w-3 h-3" /> : null}
-                              {u.role}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{u.formCount}</td>
-                          <td className="px-4 py-3 text-xs text-gray-400">
+                          <td style={T.cell}><RoleBadge role={u.role} /></td>
+                          <td style={{ ...T.cell, ...T.mono }}>{u.formCount}</td>
+                          <td style={{ ...T.cell, ...T.mono }}>
                             {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—"}
                           </td>
-                          <td className="px-4 py-3 text-right">
+                          <td style={{ ...T.cell, textAlign: "right" }}>
                             {u.id !== user.id && (
                               <button
                                 onClick={() => {
                                   const newRole = u.role === "admin" ? "creator" : "admin";
-                                  if (confirm(`${newRole === "admin" ? "Promote" : "Demote"} ${u.fullName} to ${newRole}?`)) {
+                                  if (confirm(`${newRole === "admin" ? "Promote" : "Demote"} ${u.fullName} to ${newRole}?`))
                                     setRoleMutation.mutate({ id: u.id, role: newRole });
-                                  }
                                 }}
-                                className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-colors ${
-                                  u.role === "admin"
-                                    ? "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-red-50 hover:text-red-600"
-                                    : "bg-stone-50 dark:bg-stone-900/20 text-stone-900 dark:text-stone-300 hover:bg-stone-100"
-                                }`}
+                                className="ef-btn-ghost"
+                                style={{
+                                  padding: "4px 12px", borderRadius: "8px",
+                                  fontSize: "12px", cursor: "pointer",
+                                  color: u.role === "admin" ? "#C05050" : "#C89B63",
+                                }}
                               >
                                 {u.role === "admin" ? "Demote" : "Make Admin"}
                               </button>
@@ -208,95 +375,81 @@ export default function AdminDashboardPage() {
                   </table>
                 </div>
               </div>
-
-              {/* Pagination */}
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>{usersData.total} users total</span>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => setUserPage(p => Math.max(1, p - 1))} disabled={userPage === 1}
-                    className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <span>Page {userPage} of {usersData.totalPages}</span>
-                  <button onClick={() => setUserPage(p => Math.min(usersData.totalPages, p + 1))} disabled={userPage >= usersData.totalPages}
-                    className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+              <Pagination
+                total={usersData.total}
+                label="users"
+                page={userPage}
+                totalPages={usersData.totalPages}
+                onPrev={() => setUserPage(p => Math.max(1, p - 1))}
+                onNext={() => setUserPage(p => Math.min(usersData.totalPages, p + 1))}
+              />
             </>
           ) : null}
         </div>
       )}
 
-      {/* ===== FORMS ===== */}
+      {/* ══════ FORMS ══════ */}
       {tab === "forms" && (
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            <div className="flex-1 relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                value={formSearch}
-                onChange={e => { setFormSearch(e.target.value); setFormPage(1); }}
-                placeholder="Search forms by title..."
-                className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-stone-500 text-sm"
-              />
-            </div>
-          </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          <SearchInput
+            value={formSearch}
+            onChange={(v) => { setFormSearch(v); setFormPage(1); }}
+            placeholder="Search forms by title…"
+          />
 
-          {formsLoading ? (
-            <div className="flex justify-center p-12"><Loader2 className="w-6 h-6 animate-spin text-stone-900" /></div>
-          ) : formsData ? (
+          {formsLoading ? <Spinner /> : formsData ? (
             <>
-              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
+              <div className="ef-card" style={{ overflow: "hidden", borderRadius: "1rem" }}>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
-                      <tr className="border-b border-gray-100 dark:border-gray-800">
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Form</th>
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</th>
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Created</th>
-                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Actions</th>
+                      <tr>
+                        {["Form", "Status", "Owner", "Created", ""].map((h, i) => (
+                          <th key={i} style={{ ...T.th, textAlign: i === 4 ? "right" : "left" }}>{h}</th>
+                        ))}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                    <tbody>
                       {formsData.data.map((f) => (
-                        <tr key={f.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
-                          <td className="px-4 py-3">
-                            <div>
-                              <p className="text-sm font-medium text-gray-900 dark:text-white">{f.title}</p>
-                              <p className="text-xs text-gray-400 font-mono">/{f.slug}</p>
-                            </div>
+                        <tr key={f.id}
+                          style={{ transition: "background 0.15s" }}
+                          onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.025)"}
+                          onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                        >
+                          <td style={T.cell}>
+                            <p style={{ marginBottom: "2px" }}>{f.title}</p>
+                            <p style={T.mono}>/{f.slug}</p>
                           </td>
-                          <td className="px-4 py-3">
-                            <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                              f.visibility === "public"
-                                ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                                : f.visibility === "unlisted"
-                                ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
-                                : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-                            }`}>
-                              {f.visibility}
-                            </span>
+                          <td style={T.cell}><VisBadge v={f.visibility} /></td>
+                          <td style={{ ...T.cell, ...T.mono }}>
+                            {"ownerName" in f ? String((f as Record<string, unknown>).ownerName ?? "—") : "—"}
                           </td>
-                          <td className="px-4 py-3 text-xs text-gray-400">
+                          <td style={{ ...T.cell, ...T.mono }}>
                             {f.createdAt ? new Date(f.createdAt).toLocaleDateString() : "—"}
                           </td>
-                          <td className="px-4 py-3 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <a href={`/forms/${f.slug}`} target="_blank"
-                                className="text-xs px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                          <td style={{ ...T.cell, textAlign: "right" }}>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "6px" }}>
+                              <a
+                                href={`/forms/${f.slug}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="ef-btn-ghost"
+                                style={{ padding: "4px 12px", borderRadius: "8px", fontSize: "12px", textDecoration: "none" }}
+                              >
                                 View
                               </a>
                               <button
                                 onClick={() => {
-                                  if (confirm(`Permanently delete "${f.title}"? This cannot be undone.`)) {
+                                  if (confirm(`Permanently delete "${f.title}"? This cannot be undone.`))
                                     deleteFormMutation.mutate({ id: f.id });
-                                  }
                                 }}
-                                className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                className="ef-btn-ghost"
+                                style={{
+                                  padding: "6px", borderRadius: "8px", display: "flex",
+                                  color: "#C05050", cursor: "pointer",
+                                }}
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash2 style={{ width: 14, height: 14 }} />
                               </button>
                             </div>
                           </td>
@@ -306,26 +459,85 @@ export default function AdminDashboardPage() {
                   </table>
                 </div>
               </div>
-
-              {/* Pagination */}
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>{formsData.total} forms total</span>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => setFormPage(p => Math.max(1, p - 1))} disabled={formPage === 1}
-                    className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <span>Page {formPage} of {formsData.totalPages}</span>
-                  <button onClick={() => setFormPage(p => Math.min(formsData.totalPages, p + 1))} disabled={formPage >= formsData.totalPages}
-                    className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+              <Pagination
+                total={formsData.total}
+                label="forms"
+                page={formPage}
+                totalPages={formsData.totalPages}
+                onPrev={() => setFormPage(p => Math.max(1, p - 1))}
+                onNext={() => setFormPage(p => Math.min(formsData.totalPages, p + 1))}
+              />
             </>
           ) : null}
         </div>
       )}
+    </div>
+  );
+}
+
+/* ── sub-components ── */
+
+function Spinner() {
+  return (
+    <div style={{ display: "flex", justifyContent: "center", padding: "4rem" }}>
+      <Loader2 className="animate-spin" style={{ width: 20, height: 20, color: "#C89B63" }} />
+    </div>
+  );
+}
+
+function SearchInput({ value, onChange, placeholder }: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <div style={{ position: "relative" }}>
+      <Search style={{
+        width: 14, height: 14, position: "absolute",
+        left: 12, top: "50%", transform: "translateY(-50%)",
+        color: "var(--muted-foreground)",
+      }} />
+      <input
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="ef-input"
+        style={{
+          width: "100%",
+          paddingLeft: "36px",
+          paddingRight: "16px",
+          paddingTop: "10px",
+          paddingBottom: "10px",
+          borderRadius: "10px",
+          fontSize: "13px",
+          fontFamily: "'Inter', sans-serif",
+          boxSizing: "border-box",
+        }}
+      />
+    </div>
+  );
+}
+
+function Pagination({ total, label, page, totalPages, onPrev, onNext }: {
+  total: number; label: string; page: number;
+  totalPages: number; onPrev: () => void; onNext: () => void;
+}) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      fontSize: "12px", color: "var(--muted-foreground)",
+      fontFamily: "'Inter', sans-serif",
+    }}>
+      <span style={{ fontFamily: "monospace" }}>{total.toLocaleString()} {label} total</span>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <PageBtn onClick={onPrev} disabled={page === 1}>
+          <ChevronLeft style={{ width: 14, height: 14 }} />
+        </PageBtn>
+        <span>Page <strong style={{ color: "var(--foreground)" }}>{page}</strong> of {totalPages}</span>
+        <PageBtn onClick={onNext} disabled={page >= totalPages}>
+          <ChevronRight style={{ width: 14, height: 14 }} />
+        </PageBtn>
+      </div>
     </div>
   );
 }
