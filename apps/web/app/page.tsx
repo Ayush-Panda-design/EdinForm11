@@ -385,22 +385,17 @@ export default function LandingPage() {
 
             <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {features.map(({ icon: Icon, n, t, d }, i) => (
-                <Reveal key={n} delay={i * 60}
-                  className="ef-card p-6 rounded-xl"
-                  style={{
-                    cursor: "default",
-                    transition: "transform 0.25s, box-shadow 0.25s",
-                  }}>
+                <Reveal key={n} delay={i * 60}>
                   <div
+                    className="ef-card p-6 rounded-xl"
+                    style={{ cursor: "default", transition: "transform 0.25s, box-shadow 0.25s" }}
                     onMouseEnter={e => {
-                      const el = e.currentTarget.parentElement as HTMLElement;
-                      el.style.transform = "translateY(-4px)";
-                      el.style.boxShadow = "0 12px 40px rgba(200,155,99,0.12)";
+                      (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)";
+                      (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(200,155,99,0.12)";
                     }}
                     onMouseLeave={e => {
-                      const el = e.currentTarget.parentElement as HTMLElement;
-                      el.style.transform = "translateY(0)";
-                      el.style.boxShadow = "";
+                      (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                      (e.currentTarget as HTMLElement).style.boxShadow = "";
                     }}>
                     <div className="flex items-center justify-between">
                       <span style={{ fontFamily: "monospace", fontSize: "11px", letterSpacing: "0.22em", color: "var(--muted-foreground)" }}>{n}</span>
