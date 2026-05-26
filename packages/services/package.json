@@ -1,0 +1,31 @@
+{
+  "name": "@repo/services",
+  "version": "1.0.0",
+  "private": true,
+  "exports": {
+    ".": "./index.ts",
+    "./auth": "./auth/index.ts",
+    "./forms": "./forms/index.ts",
+    "./responses": "./responses/index.ts",
+    "./analytics": "./analytics/index.ts",
+    "./email": "./email/index.ts",
+    "./templates": "./templates/index.ts",
+    "./themes": "./themes/index.ts",
+    "./user": "./user/index.ts",
+    "./user/model": "./user/model.ts"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "dotenv-cli": "^11.0.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@repo/database": "workspace:*",
+    "@repo/logger": "workspace:*",
+    "@repo/validators": "workspace:*",
+    "@repo/types": "workspace:*",
+    "google-auth-library": "^10.5.0",
+    "zod": "^4.3.5"
+  }
+}

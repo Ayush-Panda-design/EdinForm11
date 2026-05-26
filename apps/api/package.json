@@ -1,0 +1,48 @@
+{
+  "name": "@repo/api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "dotenv -e .env -- tsx watch src/index.ts",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --external:sharp --external:pg-native",
+    "start": "pnpm db:migrate && node dist/index.js",
+    "db:generate": "drizzle-kit generate --config ../../packages/database/drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config ../../packages/database/drizzle.config.ts",
+    "db:studio": "drizzle-kit studio --config ../../packages/database/drizzle.config.ts",
+    "db:push": "drizzle-kit push --config ../../packages/database/drizzle.config.ts",
+    "seed": "dotenv -e .env -- tsx src/seed/index.ts",
+    "db:setup": "pnpm db:migrate && pnpm seed"
+  },
+  "dependencies": {
+    "@repo/database": "workspace:*",
+    "@repo/logger": "workspace:*",
+    "@repo/services": "workspace:*",
+    "@repo/trpc": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/validators": "workspace:*",
+    "@scalar/express-api-reference": "^0.9.19",
+    "@trpc/server": "^11.8.1",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.15.29",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "drizzle-kit": "^0.31.1",
+    "esbuild": "^0.20.0",
+    "express": "^5.1.0",
+    "helmet": "^8.0.0",
+    "trpc-to-openapi": "^3.1.0",
+    "zod": "^4.3.5",
+    "zod-openapi": "^5.4.6"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/helmet": "^4.0.0",
+    "dotenv-cli": "^11.0.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.9.3"
+  }
+}

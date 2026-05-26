@@ -1,0 +1,55 @@
+{
+  "name": "formcraft-monorepo",
+  "private": true,
+  "scripts": {
+    "build": "dotenv -- turbo build",
+    "build:ci": "turbo build",
+    "dev": "dotenv -- turbo dev",
+    "db:generate": "dotenv -- turbo db:generate",
+    "db:migrate": "dotenv -- turbo db:migrate",
+    "db:push": "dotenv -- turbo db:push",
+    "db:studio": "dotenv -- turbo db:studio",
+    "seed": "dotenv -- turbo seed",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "check-types": "turbo run check-types",
+    "prepare": "husky || true",
+    "test": "turbo run test",
+    "test:ci": "turbo run test -- --reporter=verbose"
+  },
+
+  "devDependencies": {
+    "drizzle-kit": "^0.31.1",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.7.4",
+    "turbo": "^2.7.2",
+    "typescript": "5.9.2"
+  },
+
+  "dependencies": {
+    "dotenv-cli": "^11.0.0"
+  },
+
+  "packageManager": "pnpm@9.0.0",
+
+  "engines": {
+    "node": ">=18"
+  },
+
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yaml,yml}": [
+      "prettier --write"
+    ]
+  },
+
+  "pnpm": {
+    "overrides": {
+      "drizzle-orm": "0.43.1"
+    }
+  }
+}
