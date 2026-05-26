@@ -5,8 +5,9 @@ import Link from "next/link";
 import { trpc } from "~/trpc/client";
 import { useAuth } from "~/providers/auth-provider";
 import {
-  Plus, FileText, Eye, BarChart3, Globe, Lock, MoreHorizontal,
-  Trash2, Copy, ExternalLink, Loader2, QrCode, Layers
+  Plus, FileText, Eye, BarChart3, Globe, Lock,
+  MoreHorizontal, Trash2, Copy, ExternalLink,
+  Loader2, QrCode, Layers, TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -39,170 +40,545 @@ export default function DashboardPage() {
   });
 
   const stats = [
-    { label: "Total Forms", value: dashboard?.totalForms ?? 0, icon: FileText, bg: "bg-stone-50 dark:bg-stone-900/20", color: "text-stone-900 dark:text-stone-400" },
-    { label: "Total Views", value: dashboard?.totalViews ?? 0, icon: Eye, bg: "bg-blue-50 dark:bg-blue-900/20", color: "text-blue-600 dark:text-blue-400" },
-    { label: "Responses", value: dashboard?.totalResponses ?? 0, icon: BarChart3, bg: "bg-green-50 dark:bg-green-900/20", color: "text-green-600 dark:text-green-400" },
-    { label: "Avg Conversion", value: dashboard ? `${dashboard.avgConversionRate.toFixed(1)}%` : "0%", icon: BarChart3, bg: "bg-orange-50 dark:bg-orange-900/20", color: "text-orange-600 dark:text-orange-400" },
+    {
+      label: "Total Forms",
+      value: dashboard?.totalForms ?? 0,
+      icon: FileText,
+      suffix: "",
+    },
+    {
+      label: "Total Views",
+      value: dashboard?.totalViews ?? 0,
+      icon: Eye,
+      suffix: "",
+    },
+    {
+      label: "Responses",
+      value: dashboard?.totalResponses ?? 0,
+      icon: BarChart3,
+      suffix: "",
+    },
+    {
+      label: "Avg Conversion",
+      value: dashboard ? dashboard.avgConversionRate.toFixed(1) : "0",
+      icon: TrendingUp,
+      suffix: "%",
+    },
   ];
 
+  const visibilityBadge = (v: string) => {
+    if (v === "public")
+      return (
+        <span
+          className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium tracking-wide uppercase"
+          style={{
+            background: "rgba(88, 116, 92, 0.18)",
+            color: "#7EB884",
+            border: "1px solid rgba(88,116,92,0.3)",
+            fontFamily: "'Inter', sans-serif",
+            letterSpacing: "0.1em",
+          }}
+        >
+          <Globe className="w-2.5 h-2.5" /> Public
+        </span>
+      );
+    if (v === "unlisted")
+      return (
+        <span
+          className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium tracking-wide uppercase"
+          style={{
+            background: "rgba(200, 155, 99, 0.12)",
+            color: "#C89B63",
+            border: "1px solid rgba(200,155,99,0.25)",
+            fontFamily: "'Inter', sans-serif",
+            letterSpacing: "0.1em",
+          }}
+        >
+          <Lock className="w-2.5 h-2.5" /> Unlisted
+        </span>
+      );
+    return (
+      <span
+        className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium tracking-wide uppercase"
+        style={{
+          background: "rgba(255,255,255,0.04)",
+          color: "var(--muted-foreground)",
+          border: "1px solid rgba(255,255,255,0.07)",
+          fontFamily: "'Inter', sans-serif",
+          letterSpacing: "0.1em",
+        }}
+      >
+        Draft
+      </span>
+    );
+  };
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
+    <div style={{ fontFamily: "'Inter', sans-serif" }}>
+
+      {/* ── Page header ── */}
+      <div className="flex items-start justify-between mb-10">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Welcome back, {user?.fullName?.split(" ")[0]}!
+          <p
+            style={{
+              fontSize: "11px",
+              textTransform: "uppercase",
+              letterSpacing: "0.28em",
+              color: "var(--muted-foreground)",
+              marginBottom: "6px",
+            }}
+          >
+            Studio
+          </p>
+          <h1
+            style={{
+              fontFamily: "'Cormorant Garamond', Georgia, serif",
+              fontSize: "clamp(1.8rem, 3vw, 2.5rem)",
+              fontWeight: 400,
+              color: "var(--foreground)",
+              lineHeight: 1.1,
+            }}
+          >
+            Welcome back,{" "}
+            <em style={{ color: "#C89B63" }}>
+              {user?.fullName?.split(" ")[0]}
+            </em>
+            .
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Here's an overview of your forms</p>
+          <p
+            style={{
+              marginTop: "6px",
+              fontSize: "14px",
+              color: "var(--muted-foreground)",
+            }}
+          >
+            Here's an overview of your forms.
+          </p>
         </div>
-        <Link href="/dashboard/forms/new"
-          className="flex items-center gap-2 bg-gradient-to-r from-stone-900 to-stone-900 text-white px-5 py-2.5 rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg shadow-stone-200 dark:shadow-stone-900/20">
-          <Plus className="w-4 h-4" /> New Form
+
+        <Link
+          href="/dashboard/forms/new"
+          className="ef-btn-primary inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm"
+          style={{ flexShrink: 0, marginTop: "4px" }}
+        >
+          <Plus className="w-4 h-4" />
+          New Form
         </Link>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {stats.map((s) => (
-          <div key={s.label} className="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-100 dark:border-gray-800">
-            <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center mb-3`}>
-              <s.icon className={`w-5 h-5 ${s.color}`} />
+      {/* ── Stats ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        {stats.map((s, i) => (
+          <div
+            key={s.label}
+            className="ef-card p-5"
+            style={{
+              animationDelay: `${i * 60}ms`,
+              animation: "ef-fade-up .6s cubic-bezier(.2,.7,.2,1) both",
+            }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span
+                style={{
+                  fontSize: "10px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.28em",
+                  color: "var(--muted-foreground)",
+                }}
+              >
+                {s.label}
+              </span>
+              <s.icon
+                style={{ width: 14, height: 14, color: "#C89B63", opacity: 0.7 }}
+              />
             </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{s.value}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{s.label}</p>
+            <p
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: "2rem",
+                fontWeight: 400,
+                color: "var(--foreground)",
+                lineHeight: 1,
+              }}
+            >
+              {s.value}
+              <span style={{ fontSize: "1rem", color: "#C89B63" }}>{s.suffix}</span>
+            </p>
           </div>
         ))}
       </div>
 
-      {/* Forms list */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800">
-        <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-          <h2 className="font-semibold text-gray-900 dark:text-white">Your Forms</h2>
-          <Link href="/dashboard/forms/new" className="text-sm text-stone-900 dark:text-stone-400 hover:underline font-medium">
-            + Create new
+      {/* ── Divider ── */}
+      <div className="ef-divider mb-8" />
+
+      {/* ── Forms list ── */}
+      <div className="ef-card overflow-hidden" style={{ borderRadius: "1rem" }}>
+        {/* List header */}
+        <div
+          style={{
+            padding: "1rem 1.5rem",
+            borderBottom: "1px solid var(--border)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "11px",
+              textTransform: "uppercase",
+              letterSpacing: "0.28em",
+              color: "var(--muted-foreground)",
+            }}
+          >
+            Your Forms
+          </span>
+          <Link
+            href="/dashboard/forms/new"
+            className="ef-btn-ghost inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs"
+          >
+            <Plus className="w-3 h-3" /> New
           </Link>
         </div>
 
-        {isLoading ? (
-          <div className="p-12 flex justify-center">
-            <Loader2 className="w-6 h-6 animate-spin text-stone-900" />
+        {/* Loading */}
+        {isLoading && (
+          <div
+            style={{
+              padding: "4rem",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <Loader2
+              className="animate-spin"
+              style={{ width: 20, height: 20, color: "#C89B63" }}
+            />
           </div>
-        ) : forms?.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-stone-50 to-stone-50 dark:from-stone-900/20 dark:to-stone-900/20 flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-8 h-8 text-stone-400 dark:text-stone-500" />
+        )}
+
+        {/* Empty state */}
+        {!isLoading && forms?.length === 0 && (
+          <div style={{ padding: "4rem 2rem", textAlign: "center" }}>
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: "50%",
+                background: "rgba(200,155,99,0.08)",
+                border: "1px solid rgba(200,155,99,0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 1.25rem",
+              }}
+            >
+              <FileText style={{ width: 22, height: 22, color: "#C89B63" }} />
             </div>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">No forms yet. Create your first one!</p>
-            <Link href="/dashboard/forms/new"
-              className="inline-flex items-center gap-2 bg-stone-900 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-stone-900 transition-colors">
-              <Plus className="w-4 h-4" /> Create Form
+            <p
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: "1.4rem",
+                color: "var(--foreground)",
+                marginBottom: "0.5rem",
+              }}
+            >
+              No forms yet.
+            </p>
+            <p
+              style={{
+                fontSize: "13px",
+                color: "var(--muted-foreground)",
+                marginBottom: "1.5rem",
+              }}
+            >
+              Draft your first question. It only takes a minute.
+            </p>
+            <Link
+              href="/dashboard/forms/new"
+              className="ef-btn-primary inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm"
+            >
+              <Plus className="w-4 h-4" /> Begin a form
             </Link>
           </div>
-        ) : (
-          <div className="divide-y divide-gray-100 dark:divide-gray-800">
-            {forms?.map((form) => (
-              <div key={form.id} className="p-4 flex items-center gap-4 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-stone-100 to-stone-100 dark:from-stone-900/30 dark:to-stone-900/30 flex items-center justify-center flex-shrink-0">
-                  <FileText className="w-5 h-5 text-stone-900 dark:text-stone-400" />
+        )}
+
+        {/* Form rows */}
+        {!isLoading && forms && forms.length > 0 && (
+          <div>
+            {forms.map((form, idx) => (
+              <div
+                key={form.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "1rem",
+                  padding: "1rem 1.5rem",
+                  borderBottom:
+                    idx < forms.length - 1
+                      ? "1px solid var(--border)"
+                      : "none",
+                  transition: "background 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background =
+                    "rgba(255,255,255,0.025)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background =
+                    "transparent";
+                }}
+              >
+                {/* Icon */}
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "10px",
+                    background: "rgba(200,155,99,0.08)",
+                    border: "1px solid rgba(200,155,99,0.12)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <FileText style={{ width: 15, height: 15, color: "#C89B63" }} />
                 </div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Link href={"/dashboard/forms/" + form.id + "/edit"}
-                      className="font-medium text-gray-900 dark:text-white hover:text-stone-900 dark:hover:text-stone-400 truncate transition-colors">
+                {/* Info */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      flexWrap: "wrap",
+                      marginBottom: "3px",
+                    }}
+                  >
+                    <Link
+                      href={`/dashboard/forms/${form.id}/edit`}
+                      style={{
+                        fontFamily: "'Cormorant Garamond', serif",
+                        fontSize: "1.05rem",
+                        color: "var(--foreground)",
+                        textDecoration: "none",
+                        transition: "color 0.2s",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        maxWidth: "260px",
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.color = "#C89B63";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.color =
+                          "var(--foreground)";
+                      }}
+                    >
                       {form.title}
                     </Link>
-                    <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium ${
-                      form.visibility === "public"
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                        : form.visibility === "unlisted"
-                        ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                        : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-                    }`}>
-                      {form.visibility === "public" && <Globe className="w-3 h-3" />}
-                      {form.visibility === "unlisted" && <Lock className="w-3 h-3" />}
-                      {form.visibility}
-                    </span>
+                    {visibilityBadge(form.visibility)}
                   </div>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 dark:text-gray-500">
-                    <span>{form.responseCount} responses</span>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "1rem",
+                      fontSize: "11px",
+                      color: "var(--muted-foreground)",
+                      fontFamily: "monospace",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    <span>{form.responseCount} replies</span>
                     <span>{form.viewCount} views</span>
-                    {form.conversionRate > 0 && <span>{form.conversionRate.toFixed(0)}% conversion</span>}
-                    {form.createdAt && <span>{formatDistanceToNow(new Date(form.createdAt))} ago</span>}
+                    {form.conversionRate > 0 && (
+                      <span>{form.conversionRate.toFixed(0)}% conv.</span>
+                    )}
+                    {form.createdAt && (
+                      <span>
+                        {formatDistanceToNow(new Date(form.createdAt))} ago
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  {/* QR button */}
+                {/* Actions */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "2px",
+                    flexShrink: 0,
+                  }}
+                >
                   {form.visibility !== "unpublished" && (
                     <button
-                      onClick={() => setQrForm({ title: form.title, slug: form.slug })}
-                      className="p-2 text-gray-400 hover:text-stone-900 dark:hover:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900/20 rounded-lg transition-colors"
-                      title="Share QR">
-                      <QrCode className="w-4 h-4" />
+                      onClick={() =>
+                        setQrForm({ title: form.title, slug: form.slug })
+                      }
+                      title="Share QR"
+                      className="ef-btn-ghost"
+                      style={{
+                        padding: "7px",
+                        borderRadius: "8px",
+                        display: "flex",
+                        transition: "background 0.15s, color 0.15s",
+                      }}
+                    >
+                      <QrCode style={{ width: 15, height: 15 }} />
                     </button>
                   )}
-                  {/* Analytics */}
-                  <Link href={"/dashboard/forms/" + form.id + "/responses"}
-                    className="p-2 text-gray-400 hover:text-stone-900 dark:hover:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900/20 rounded-lg transition-colors"
-                    title="View responses">
-                    <BarChart3 className="w-4 h-4" />
+
+                  <Link
+                    href={`/dashboard/forms/${form.id}/responses`}
+                    title="Responses"
+                    className="ef-btn-ghost"
+                    style={{
+                      padding: "7px",
+                      borderRadius: "8px",
+                      display: "flex",
+                    }}
+                  >
+                    <BarChart3 style={{ width: 15, height: 15 }} />
                   </Link>
 
-                  {/* More menu */}
-                  <div className="relative">
+                  {/* Dropdown */}
+                  <div style={{ position: "relative" }}>
                     <button
-                      onClick={() => setOpenMenu(openMenu === form.id ? null : form.id)}
-                      className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                      <MoreHorizontal className="w-4 h-4" />
+                      onClick={() =>
+                        setOpenMenu(openMenu === form.id ? null : form.id)
+                      }
+                      className="ef-btn-ghost"
+                      style={{
+                        padding: "7px",
+                        borderRadius: "8px",
+                        display: "flex",
+                      }}
+                    >
+                      <MoreHorizontal style={{ width: 15, height: 15 }} />
                     </button>
+
                     {openMenu === form.id && (
                       <div
-                        className="absolute right-0 top-9 w-48 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 py-1 z-20"
-                        onClick={() => setOpenMenu(null)}>
-                        <Link href={"/dashboard/forms/" + form.id + "/edit"}
-                          className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
-                          <Layers className="w-4 h-4" /> Edit & Preview
-                        </Link>
+                        className="ef-glass"
+                        style={{
+                          position: "absolute",
+                          right: 0,
+                          top: "calc(100% + 6px)",
+                          width: 200,
+                          borderRadius: "12px",
+                          padding: "4px",
+                          zIndex: 30,
+                        }}
+                        onClick={() => setOpenMenu(null)}
+                      >
+                        {[
+                          {
+                            icon: Layers,
+                            label: "Edit & Preview",
+                            href: `/dashboard/forms/${form.id}/edit`,
+                          },
+                        ].map(({ icon: Icon, label, href }) => (
+                          <Link
+                            key={label}
+                            href={href}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "10px",
+                              padding: "8px 12px",
+                              borderRadius: "8px",
+                              fontSize: "13px",
+                              color: "var(--foreground)",
+                              textDecoration: "none",
+                              transition: "background 0.15s",
+                            }}
+                            onMouseEnter={(e) => {
+                              (e.currentTarget as HTMLElement).style.background =
+                                "rgba(255,255,255,0.05)";
+                            }}
+                            onMouseLeave={(e) => {
+                              (e.currentTarget as HTMLElement).style.background =
+                                "transparent";
+                            }}
+                          >
+                            <Icon style={{ width: 14, height: 14, color: "#C89B63" }} />
+                            {label}
+                          </Link>
+                        ))}
+
                         {form.visibility !== "unpublished" ? (
-                          <button
-                            onClick={() => unpublishMutation.mutate({ id: form.id })}
-                            className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
-                            <Lock className="w-4 h-4" /> Unpublish
-                          </button>
+                          <MenuBtn
+                            icon={Lock}
+                            label="Unpublish"
+                            onClick={() =>
+                              unpublishMutation.mutate({ id: form.id })
+                            }
+                          />
                         ) : (
-                          <button
-                            onClick={() => publishMutation.mutate({ id: form.id, visibility: "public" })}
-                            className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
-                            <Globe className="w-4 h-4" /> Publish
-                          </button>
+                          <MenuBtn
+                            icon={Globe}
+                            label="Publish"
+                            onClick={() =>
+                              publishMutation.mutate({
+                                id: form.id,
+                                visibility: "public",
+                              })
+                            }
+                          />
                         )}
-                        <button
-                          onClick={() => duplicateMutation.mutate({ id: form.id })}
-                          className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
-                          <Copy className="w-4 h-4" /> Duplicate
-                        </button>
+
+                        <MenuBtn
+                          icon={Copy}
+                          label="Duplicate"
+                          onClick={() =>
+                            duplicateMutation.mutate({ id: form.id })
+                          }
+                        />
+
                         {form.visibility !== "unpublished" && (
                           <>
-                            <button
+                            <MenuBtn
+                              icon={Copy}
+                              label="Copy Link"
                               onClick={() => {
-                                navigator.clipboard.writeText(window.location.origin + "/forms/" + form.slug);
+                                navigator.clipboard.writeText(
+                                  window.location.origin + "/forms/" + form.slug
+                                );
                                 toast.success("Link copied!");
                               }}
-                              className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
-                              <Copy className="w-4 h-4" /> Copy Link
-                            </button>
-                            <a href={"/forms/" + form.slug} target="_blank" rel="noreferrer"
-                              className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
-                              <ExternalLink className="w-4 h-4" /> Open Form
-                            </a>
+                            />
+                            <MenuAnchor
+                              icon={ExternalLink}
+                              label="Open Form"
+                              href={`/forms/${form.slug}`}
+                            />
                           </>
                         )}
-                        <hr className="my-1 border-gray-100 dark:border-gray-800" />
-                        <button
-                          onClick={() => { if (confirm("Delete this form and all its responses?")) deleteMutation.mutate({ id: form.id }); }}
-                          className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10">
-                          <Trash2 className="w-4 h-4" /> Delete
-                        </button>
+
+                        <div
+                          style={{
+                            margin: "4px 0",
+                            borderTop: "1px solid var(--border)",
+                          }}
+                        />
+                        <MenuBtn
+                          icon={Trash2}
+                          label="Delete"
+                          danger
+                          onClick={() => {
+                            if (
+                              confirm(
+                                "Delete this form and all its responses?"
+                              )
+                            )
+                              deleteMutation.mutate({ id: form.id });
+                          }}
+                        />
                       </div>
                     )}
                   </div>
@@ -223,5 +599,97 @@ export default function DashboardPage() {
         />
       )}
     </div>
+  );
+}
+
+/* ── tiny menu helpers ── */
+function MenuBtn({
+  icon: Icon,
+  label,
+  onClick,
+  danger = false,
+}: {
+  icon: React.ElementType;
+  label: string;
+  onClick: () => void;
+  danger?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        padding: "8px 12px",
+        borderRadius: "8px",
+        fontSize: "13px",
+        color: danger ? "#C05050" : "var(--foreground)",
+        background: "transparent",
+        border: "none",
+        cursor: "pointer",
+        textAlign: "left",
+        transition: "background 0.15s",
+        fontFamily: "'Inter', sans-serif",
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.background = danger
+          ? "rgba(192,80,80,0.08)"
+          : "rgba(255,255,255,0.05)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.background = "transparent";
+      }}
+    >
+      <Icon
+        style={{
+          width: 14,
+          height: 14,
+          color: danger ? "#C05050" : "#C89B63",
+        }}
+      />
+      {label}
+    </button>
+  );
+}
+
+function MenuAnchor({
+  icon: Icon,
+  label,
+  href,
+}: {
+  icon: React.ElementType;
+  label: string;
+  href: string;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        padding: "8px 12px",
+        borderRadius: "8px",
+        fontSize: "13px",
+        color: "var(--foreground)",
+        textDecoration: "none",
+        transition: "background 0.15s",
+        fontFamily: "'Inter', sans-serif",
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.background =
+          "rgba(255,255,255,0.05)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.background = "transparent";
+      }}
+    >
+      <Icon style={{ width: 14, height: 14, color: "#C89B63" }} />
+      {label}
+    </a>
   );
 }
