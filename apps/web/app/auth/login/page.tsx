@@ -16,6 +16,7 @@ const schema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
 });
+
 type FormData = z.infer<typeof schema>;
 
 const GOOGLE_AUTH_URL =
@@ -25,8 +26,10 @@ const GOOGLE_AUTH_URL =
 
 function LoginForm() {
   const [showPass, setShowPass] = useState(false);
+
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const {
     register,
     handleSubmit,
@@ -39,8 +42,12 @@ function LoginForm() {
     if (isAuthenticated()) {
       router.replace("/dashboard");
     }
+
     const oauthError = searchParams.get("oauth_error");
-    if (oauthError) toast.error(decodeURIComponent(oauthError));
+
+    if (oauthError) {
+      toast.error(decodeURIComponent(oauthError));
+    }
   }, [router, searchParams]);
 
   const signIn = trpc.auth.signIn.useMutation({
@@ -53,103 +60,180 @@ function LoginForm() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-50 to-stone-50 dark:from-gray-950 dark:to-gray-900 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-stone-900 to-stone-900 flex items-center justify-center">
-              <span className="text-white font-bold">F</span>
-            </div>
-            <span className="font-bold text-xl text-gray-900 dark:text-white">EdinForm</span>
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome back</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Sign in to your account</p>
-        </div>
+    <div className="relative min-h-screen overflow-hidden bg-background px-4">
+      {/* Atmospheric overlays */}
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <div className="absolute left-[-10%] top-[-10%] h-[520px] w-[520px] rounded-full bg-[rgba(200,155,99,0.10)] blur-3xl" />
+        <div className="absolute bottom-[-15%] right-[-10%] h-[600px] w-[600px] rounded-full bg-[rgba(139,115,85,0.08)] blur-3xl" />
+      </div>
 
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-800 space-y-5">
-          <a
-            href={GOOGLE_AUTH_URL}
-            className="flex items-center justify-center gap-3 w-full border border-gray-200 dark:border-gray-700 rounded-lg py-3 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            <GoogleIcon />
-            Continue with Google
-          </a>
+      <div className="relative z-10 flex min-h-screen items-center justify-center">
+        <div className="w-full max-w-md">
+          {/* Brand */}
+          <div className="mb-10 text-center">
+            <Link
+              href="/"
+              className="group inline-flex items-center gap-3"
+            >
+              <div className="ef-btn-primary flex h-11 w-11 items-center justify-center rounded-2xl">
+                <span className="font-display text-lg font-semibold">
+                  E
+                </span>
+              </div>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200 dark:border-gray-700" />
+              <div className="text-left">
+                <p className="font-display text-2xl tracking-tight text-foreground">
+                  EdinForm
+                </p>
+                <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                  Cinematic Forms
+                </p>
+              </div>
+            </Link>
+
+            <div className="mx-auto mt-8 mb-6 h-px w-24 ef-divider" />
+
+            <h1 className="font-display text-5xl leading-none tracking-[-0.04em] text-foreground">
+              Welcome back
+            </h1>
+
+            <p className="mt-3 text-sm text-muted-foreground">
+              Return to your workspace and continue building elegant forms.
+            </p>
+          </div>
+
+          {/* Card */}
+          <div className="ef-card relative overflow-hidden rounded-[28px] p-8 md:p-10">
+            {/* cinematic glow */}
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 rounded-full bg-[rgba(200,155,99,0.08)] blur-3xl" />
             </div>
-            <div className="relative flex justify-center">
-              <span className="bg-white dark:bg-gray-900 px-3 text-xs text-gray-400">or</span>
+
+            <div className="relative z-10 space-y-6">
+              {/* Google */}
+              <a
+                href={GOOGLE_AUTH_URL}
+                className="ef-btn-ghost flex w-full items-center justify-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium"
+              >
+                <GoogleIcon />
+                Continue with Google
+              </a>
+
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full ef-divider" />
+                </div>
+
+                <div className="relative flex justify-center">
+                  <span className="bg-card px-4 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+                    or continue
+                  </span>
+                </div>
+              </div>
+
+              {/* Form */}
+              <form
+                onSubmit={handleSubmit((d) => signIn.mutate(d))}
+                className="space-y-5"
+              >
+                {/* Email */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                    Email Address
+                  </label>
+
+                  <input
+                    {...register("email")}
+                    type="email"
+                    placeholder="you@example.com"
+                    className="ef-input w-full rounded-2xl px-4 py-3.5 text-sm"
+                  />
+
+                  {errors.email && (
+                    <p className="text-xs text-[#C97B7B]">
+                      Valid email required
+                    </p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                    Password
+                  </label>
+
+                  <div className="relative">
+                    <input
+                      {...register("password")}
+                      type={showPass ? "text" : "password"}
+                      placeholder="••••••••"
+                      className="ef-input w-full rounded-2xl px-4 py-3.5 pr-12 text-sm"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowPass(!showPass)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {showPass ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+
+                  {errors.password && (
+                    <p className="text-xs text-[#C97B7B]">
+                      Password required
+                    </p>
+                  )}
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={signIn.isPending}
+                  className="ef-btn-primary flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-medium disabled:opacity-50"
+                >
+                  {signIn.isPending && (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  )}
+
+                  Sign in
+                </button>
+
+                {/* Forgot */}
+                <div className="pt-1 text-center">
+                  <Link
+                    href="/auth/forgot-password"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    Forgot your password?
+                  </Link>
+                </div>
+              </form>
+
+              {/* Footer */}
+              <div className="pt-2 text-center text-sm text-muted-foreground">
+                No account yet?{" "}
+                <Link
+                  href="/auth/register"
+                  className="font-medium text-[var(--accent-amber)] transition-colors hover:opacity-80"
+                >
+                  Create one
+                </Link>
+              </div>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit((d) => signIn.mutate(d))} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Email
-              </label>
-              <input
-                {...register("email")}
-                type="email"
-                placeholder="you@example.com"
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-stone-500 transition-shadow"
-              />
-              {errors.email && (
-                <p className="text-red-500 text-xs mt-1">Valid email required</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  {...register("password")}
-                  type={showPass ? "text" : "password"}
-                  placeholder="••••••••"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-stone-500 pr-10 transition-shadow"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
-                >
-                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="text-red-500 text-xs mt-1">Password required</p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={signIn.isPending}
-              className="w-full bg-gradient-to-r from-stone-900 to-stone-900 text-white py-3 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2 transition-opacity"
-            >
-              {signIn.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              Sign in
-            </button>
-            <div className="text-center">
-              <Link
-                href="/auth/forgot-password"
-                className="text-sm text-stone-900 dark:text-stone-400 hover:underline"
-              >
-                Forgot your password?
-              </Link>
-            </div>
-          </form>
-
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-            No account?{" "}
-            <Link
-              href="/auth/register"
-              className="text-stone-900 dark:text-stone-400 font-medium hover:underline"
-            >
-              Sign up free
-            </Link>
-          </p>
+          {/* Bottom atmosphere */}
+          <div className="mt-8 flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <span>Secure authentication</span>
+            <span className="h-1 w-1 rounded-full bg-[var(--accent-amber)]" />
+            <span>Encrypted session</span>
+          </div>
         </div>
       </div>
     </div>
@@ -172,6 +256,7 @@ function GoogleIcon() {
       viewBox="0 0 18 18"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      className="opacity-90"
     >
       <path
         d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"
