@@ -27,6 +27,10 @@ import {
   MousePointer2,
   FileText,
   CheckCircle2,
+  MapPin,
+  Castle,
+  Mountain,
+  Landmark,
 } from "lucide-react";
 import { isAuthenticated } from "~/lib/auth";
 import { EdinFormLogo, EdinFormMark } from "~/components/brand/logo";
@@ -104,7 +108,6 @@ function FlowDiagram() {
 
   return (
     <div style={{ padding: "2rem 0", position: "relative" }}>
-      {/* connecting line */}
       <div style={{
         position: "absolute", top: "50%", left: "10%", right: "10%", height: "2px",
         background: "linear-gradient(90deg, rgba(200,155,99,0.3), rgba(124,158,232,0.3), rgba(111,207,151,0.3), rgba(187,135,232,0.3))",
@@ -129,12 +132,12 @@ function FlowDiagram() {
             </div>
             <div style={{ textAlign: "center" }}>
               <div style={{
-                fontSize: "13px", fontWeight: 600, fontFamily: "'DM Sans', sans-serif",
+                fontSize: "13px", fontWeight: 600,
                 color: activeStep === i ? color : "var(--foreground)",
                 transition: "color 0.3s",
               }}>{label}</div>
               <div style={{
-                fontSize: "11px", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif",
+                fontSize: "11px", color: "var(--muted-foreground)",
                 marginTop: "2px", maxWidth: "90px", lineHeight: 1.4,
                 opacity: activeStep === i ? 1 : 0.5, transition: "opacity 0.3s",
               }}>{desc}</div>
@@ -162,22 +165,21 @@ function AnalyticsDashboard() {
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
         <div>
-          <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.24em", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif", marginBottom: "6px" }}>Responses over time</div>
-          <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: "2.2rem", color: "var(--foreground)", lineHeight: 1 }}>
+          <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.24em", color: "var(--muted-foreground)", marginBottom: "6px" }}>Responses over time</div>
+          <div style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "2.2rem", color: "var(--foreground)", lineHeight: 1 }}>
             {inView ? <Counter to={1284} /> : "0"}
           </div>
-          <div style={{ fontSize: "12px", color: "#6FCF97", fontFamily: "'DM Sans', sans-serif", marginTop: "4px", display: "flex", alignItems: "center", gap: "4px" }}>
+          <div style={{ fontSize: "12px", color: "#6FCF97", marginTop: "4px", display: "flex", alignItems: "center", gap: "4px" }}>
             <TrendingUp style={{ width: 12, height: 12 }} /> +24% this week
           </div>
         </div>
         <div style={{
           background: "rgba(111,207,151,0.12)", border: "1px solid rgba(111,207,151,0.2)",
           borderRadius: "10px", padding: "6px 10px",
-          fontSize: "12px", color: "#6FCF97", fontFamily: "'DM Sans', sans-serif",
+          fontSize: "12px", color: "#6FCF97",
         }}>Live</div>
       </div>
 
-      {/* bars */}
       <div style={{ display: "flex", alignItems: "flex-end", gap: "6px", height: "80px" }}>
         {bars.map((h, i) => (
           <div key={i} style={{ flex: 1, position: "relative" }}
@@ -197,7 +199,7 @@ function AnalyticsDashboard() {
             {hovered === i && (
               <div style={{
                 position: "absolute", bottom: "110%", left: "50%", transform: "translateX(-50%)",
-                background: "#C89B63", color: "#0B0B0C", fontSize: "11px", fontFamily: "'DM Sans', sans-serif",
+                background: "#C89B63", color: "#0B0B0C", fontSize: "11px",
                 borderRadius: "6px", padding: "3px 7px", whiteSpace: "nowrap", fontWeight: 600,
               }}>{h}</div>
             )}
@@ -208,8 +210,8 @@ function AnalyticsDashboard() {
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1.25rem", paddingTop: "1.25rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
         {[["Completion", "92%"], ["Avg. time", "1m 47s"], ["Drop-off", "8%"]].map(([k, v]) => (
           <div key={k} style={{ textAlign: "center" }}>
-            <div style={{ fontFamily: "'Fraunces', serif", fontSize: "1.3rem", color: "var(--foreground)" }}>{v}</div>
-            <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif", marginTop: "2px" }}>{k}</div>
+            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.3rem", color: "var(--foreground)" }}>{v}</div>
+            <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--muted-foreground)", marginTop: "2px" }}>{k}</div>
           </div>
         ))}
       </div>
@@ -230,7 +232,6 @@ function FormBuilderPreview() {
       overflow: "hidden",
       backdropFilter: "blur(20px)",
     }}>
-      {/* chrome bar */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "12px 16px",
@@ -248,15 +249,14 @@ function FormBuilderPreview() {
       </div>
 
       <div style={{ display: "flex" }}>
-        {/* field palette */}
         <div style={{ width: 140, borderRight: "1px solid rgba(255,255,255,0.06)", padding: "16px 12px", flexShrink: 0 }}>
-          <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.22em", color: "var(--muted-foreground)", marginBottom: "10px", fontFamily: "'DM Sans', sans-serif" }}>Field types</div>
+          <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.22em", color: "var(--muted-foreground)", marginBottom: "10px", fontWeight: 600 }}>Field types</div>
           {fields.map((f, i) => (
             <div key={f}
               onClick={() => setActiveField(i)}
               style={{
                 padding: "7px 10px", borderRadius: "8px",
-                fontSize: "12px", fontFamily: "'DM Sans', sans-serif",
+                fontSize: "12px",
                 color: activeField === i ? "#C89B63" : "rgba(255,255,255,0.7)",
                 background: activeField === i ? "rgba(200,155,99,0.12)" : "transparent",
                 cursor: "pointer", transition: "all 0.15s",
@@ -269,18 +269,16 @@ function FormBuilderPreview() {
           ))}
         </div>
 
-        {/* canvas */}
         <div style={{ flex: 1, padding: "clamp(1rem, 3vw, 2rem)" }}>
-          <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.22em", color: "var(--muted-foreground)", marginBottom: "14px", fontFamily: "'DM Sans', sans-serif" }}>Live canvas</div>
-          <h3 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: "1.5rem", marginBottom: "4px", color: "var(--foreground)", fontWeight: 400 }}>Customer feedback</h3>
-          <p style={{ fontSize: "12px", color: "var(--muted-foreground)", marginBottom: "1.5rem", fontFamily: "'DM Sans', sans-serif" }}>Two minutes of your time means a lot to us.</p>
+          <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.22em", color: "var(--muted-foreground)", marginBottom: "14px", fontWeight: 600 }}>Live canvas</div>
+          <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "1.5rem", marginBottom: "4px", color: "var(--foreground)", fontWeight: 400 }}>Customer feedback</h3>
+          <p style={{ fontSize: "12px", color: "var(--muted-foreground)", marginBottom: "1.5rem" }}>Two minutes of your time means a lot to us.</p>
 
-          {/* active field demo */}
           <div style={{
             background: "rgba(200,155,99,0.06)", border: "1px solid rgba(200,155,99,0.25)",
             borderRadius: "12px", padding: "14px 16px", marginBottom: "12px",
           }}>
-            <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.2em", color: "#C89B63", marginBottom: "8px", fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>
+            <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.2em", color: "#C89B63", marginBottom: "8px", fontWeight: 600 }}>
               {fields[activeField]}
             </div>
             {activeField === 3 ? (
@@ -292,7 +290,7 @@ function FormBuilderPreview() {
                     background: n <= 3 ? "rgba(200,155,99,0.25)" : "rgba(255,255,255,0.04)",
                     fontSize: "13px", color: n <= 3 ? "#C89B63" : "var(--muted-foreground)",
                     border: "1px solid " + (n <= 3 ? "rgba(200,155,99,0.4)" : "rgba(255,255,255,0.06)"),
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 600, cursor: "pointer",
+                    fontWeight: 600, cursor: "pointer",
                   }}>{n}</div>
                 ))}
               </div>
@@ -301,7 +299,7 @@ function FormBuilderPreview() {
                 {["Option A", "Option B", "Option C"].map((o, i) => (
                   <span key={o} style={{
                     borderRadius: "999px", padding: "5px 12px",
-                    fontSize: "12px", fontFamily: "'DM Sans', sans-serif",
+                    fontSize: "12px",
                     background: i === 0 ? "rgba(200,155,99,0.2)" : "rgba(255,255,255,0.04)",
                     border: "1px solid " + (i === 0 ? "rgba(200,155,99,0.5)" : "rgba(255,255,255,0.08)"),
                     color: i === 0 ? "#C89B63" : "var(--muted-foreground)",
@@ -315,7 +313,6 @@ function FormBuilderPreview() {
                 border: "1px solid rgba(255,255,255,0.1)",
                 background: "rgba(255,255,255,0.03)",
                 fontSize: "13px", color: "var(--muted-foreground)",
-                fontFamily: "'DM Sans', sans-serif",
               }}>Type your answer…</div>
             )}
           </div>
@@ -325,7 +322,7 @@ function FormBuilderPreview() {
             <button style={{
               background: "linear-gradient(135deg, #C89B63 0%, #8B6540 100%)",
               border: "none", borderRadius: "999px", padding: "7px 18px",
-              fontSize: "12px", fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+              fontSize: "12px", fontWeight: 600,
               color: "#0B0B0C", cursor: "pointer",
             }}>Continue →</button>
           </div>
@@ -396,7 +393,7 @@ function BranchingDiagram() {
           />
           <text x={60} y={18} textAnchor="middle"
             style={{
-              fontSize: "9px", fontFamily: "'DM Sans', sans-serif",
+              fontSize: "9px", fontFamily: "'Inter', sans-serif",
               fill: type === "branch" ? (color || "#C89B63") : "rgba(255,255,255,0.8)",
               fontWeight: type === "branch" ? "700" : "400",
             }}>
@@ -496,8 +493,6 @@ function LiveDemoForm() {
 
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", alignItems: "flex-start" }}>
-
-      {/* ── left: question panel ── */}
       <div style={{ flex: "1 1 420px", minWidth: 0 }}>
         <div style={{
           background: "rgba(255,255,255,0.025)",
@@ -505,7 +500,6 @@ function LiveDemoForm() {
           borderRadius: "24px", overflow: "hidden",
           boxShadow: "0 20px 60px rgba(0,0,0,0.35)",
         }}>
-          {/* chrome */}
           <div style={{
             padding: "12px 20px",
             borderBottom: "1px solid rgba(255,255,255,0.06)",
@@ -520,12 +514,11 @@ function LiveDemoForm() {
             <span style={{ fontFamily: "monospace", fontSize: "11px", color: "var(--muted-foreground)" }}>
               edinform.io/demo/product-feedback
             </span>
-            <span style={{ fontSize: "11px", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif" }}>
+            <span style={{ fontSize: "11px", color: "var(--muted-foreground)" }}>
               {step + 1} / {questions.length}
             </span>
           </div>
 
-          {/* progress */}
           <div style={{ height: 3, background: "rgba(255,255,255,0.05)" }}>
             <div style={{
               height: "100%",
@@ -543,7 +536,6 @@ function LiveDemoForm() {
             transition: "opacity 0.22s ease, transform 0.22s ease",
           }}>
             {submitted ? (
-              /* ── success state ── */
               <div style={{ textAlign: "center", padding: "1.5rem 0 2rem" }}>
                 <div style={{
                   width: 64, height: 64, borderRadius: "50%",
@@ -555,7 +547,7 @@ function LiveDemoForm() {
                 }}>
                   <CheckCircle2 style={{ width: 28, height: 28, color: "#C89B63" }} />
                 </div>
-                <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: "1.6rem", fontWeight: 700, marginBottom: "10px", color: "var(--foreground)" }}>
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", fontWeight: 700, marginBottom: "10px", color: "var(--foreground)" }}>
                   You're all set.
                 </h3>
                 <p style={{ fontSize: "14px", color: "var(--muted-foreground)", lineHeight: 1.75, marginBottom: "1.75rem", maxWidth: "36ch", margin: "0 auto 1.75rem" }}>
@@ -574,7 +566,7 @@ function LiveDemoForm() {
                     style={{
                       borderRadius: "999px", padding: "10px 18px", fontSize: "13px",
                       background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                      color: "var(--muted-foreground)", cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+                      color: "var(--muted-foreground)", cursor: "pointer",
                     }}>
                     ↩ Start over
                   </button>
@@ -586,20 +578,19 @@ function LiveDemoForm() {
                   <div style={{
                     display: "inline-block", fontSize: "10px", textTransform: "uppercase",
                     letterSpacing: "0.22em", color: "#C89B63", fontWeight: 700,
-                    fontFamily: "'DM Sans', sans-serif", marginBottom: "12px",
+                    marginBottom: "12px",
                     background: "rgba(200,155,99,0.10)", padding: "3px 10px", borderRadius: "999px",
                   }}>
                     {current.tag}
                   </div>
-                  <h3 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: "clamp(1.2rem, 2.5vw, 1.5rem)", fontWeight: 600, lineHeight: 1.3, color: "var(--foreground)", marginBottom: "6px" }}>
+                  <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(1.2rem, 2.5vw, 1.5rem)", fontWeight: 600, lineHeight: 1.3, color: "var(--foreground)", marginBottom: "6px" }}>
                     {current.question}
                   </h3>
-                  <p style={{ fontSize: "13px", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif", lineHeight: 1.6 }}>
+                  <p style={{ fontSize: "13px", color: "var(--muted-foreground)", lineHeight: 1.6 }}>
                     {current.sub}
                   </p>
                 </div>
 
-                {/* choice */}
                 {current.type === "choice" && (
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "2rem" }}>
                     {current.options!.map(opt => {
@@ -612,7 +603,7 @@ function LiveDemoForm() {
                             border: "1px solid " + (active ? "rgba(200,155,99,0.55)" : "rgba(255,255,255,0.07)"),
                             background: active ? "rgba(200,155,99,0.10)" : "rgba(255,255,255,0.02)",
                             color: active ? "#C89B63" : "rgba(255,255,255,0.75)",
-                            fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: active ? 600 : 400,
+                            fontSize: "13px", fontWeight: active ? 600 : 400,
                             cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between",
                             transition: "all 0.15s",
                           }}
@@ -626,7 +617,6 @@ function LiveDemoForm() {
                   </div>
                 )}
 
-                {/* scale */}
                 {current.type === "scale" && (
                   <div style={{ marginBottom: "2rem" }}>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
@@ -640,7 +630,7 @@ function LiveDemoForm() {
                               border: "1px solid " + (active ? "rgba(200,155,99,0.55)" : "rgba(255,255,255,0.07)"),
                               background: active ? "rgba(200,155,99,0.10)" : "rgba(255,255,255,0.02)",
                               color: active ? "#C89B63" : "rgba(255,255,255,0.65)",
-                              fontSize: "12px", fontFamily: "'DM Sans', sans-serif", fontWeight: active ? 700 : 400,
+                              fontSize: "12px", fontWeight: active ? 700 : 400,
                               cursor: "pointer", transition: "all 0.15s",
                             }}>
                             {opt}
@@ -651,7 +641,6 @@ function LiveDemoForm() {
                   </div>
                 )}
 
-                {/* multiline */}
                 {current.type === "multiline" && (
                   <textarea
                     value={typeof answer === "string" ? answer : ""}
@@ -663,7 +652,7 @@ function LiveDemoForm() {
                       width: "100%", borderRadius: "14px", padding: "14px 16px",
                       border: "1px solid " + (answer ? "rgba(200,155,99,0.35)" : "rgba(255,255,255,0.08)"),
                       background: "rgba(255,255,255,0.03)",
-                      color: "var(--foreground)", fontSize: "14px", fontFamily: "'DM Sans', sans-serif",
+                      color: "var(--foreground)", fontSize: "14px",
                       resize: "none", lineHeight: 1.65, outline: "none",
                       transition: "border-color 0.2s, box-shadow 0.2s",
                       marginBottom: "2rem", boxSizing: "border-box",
@@ -674,7 +663,6 @@ function LiveDemoForm() {
                   />
                 )}
 
-                {/* email */}
                 {current.type === "email" && (
                   <div style={{ marginBottom: "2rem" }}>
                     <input
@@ -688,20 +676,19 @@ function LiveDemoForm() {
                         width: "100%", borderRadius: "14px", padding: "14px 16px",
                         border: "1px solid rgba(255,255,255,0.08)",
                         background: "rgba(255,255,255,0.03)",
-                        color: "var(--foreground)", fontSize: "15px", fontFamily: "'DM Sans', sans-serif",
+                        color: "var(--foreground)", fontSize: "15px",
                         outline: "none", transition: "border-color 0.2s, box-shadow 0.2s",
                         boxSizing: "border-box",
                       }}
                       onFocus={e => { e.currentTarget.style.borderColor = "rgba(200,155,99,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(200,155,99,0.10)"; }}
                       onBlur={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
                     />
-                    <p style={{ fontSize: "11px", color: "var(--muted-foreground)", marginTop: "8px", fontFamily: "'DM Sans', sans-serif" }}>
+                    <p style={{ fontSize: "11px", color: "var(--muted-foreground)", marginTop: "8px" }}>
                       We respect your inbox. One email, no drip sequences.
                     </p>
                   </div>
                 )}
 
-                {/* nav buttons */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px" }}>
                   <button
                     onClick={goPrev}
@@ -711,7 +698,7 @@ function LiveDemoForm() {
                       background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
                       color: step === 0 ? "rgba(255,255,255,0.2)" : "var(--muted-foreground)",
                       cursor: step === 0 ? "default" : "pointer",
-                      fontFamily: "'DM Sans', sans-serif", transition: "all 0.15s",
+                      transition: "all 0.15s",
                     }}>
                     ← Back
                   </button>
@@ -736,7 +723,7 @@ function LiveDemoForm() {
                       border: "none",
                       color: canAdvance ? "#0B0B0C" : "rgba(255,255,255,0.2)",
                       cursor: canAdvance ? "pointer" : "default",
-                      fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                      fontWeight: 700,
                       transition: "all 0.2s",
                       boxShadow: canAdvance ? "0 4px 16px rgba(200,155,99,0.3)" : "none",
                     }}>
@@ -750,7 +737,6 @@ function LiveDemoForm() {
         </div>
       </div>
 
-      {/* ── right: response summary sidebar ── */}
       <div style={{ flex: "0 1 280px", minWidth: 220 }}>
         <div style={{
           background: "rgba(255,255,255,0.02)",
@@ -758,7 +744,7 @@ function LiveDemoForm() {
           borderRadius: "20px", padding: "1.5rem",
           position: "sticky", top: "80px",
         }}>
-          <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.24em", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif", marginBottom: "1.25rem", fontWeight: 600 }}>
+          <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.24em", color: "var(--muted-foreground)", marginBottom: "1.25rem", fontWeight: 600 }}>
             Your answers so far
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -788,15 +774,15 @@ function LiveDemoForm() {
                     }
                   </div>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: "11px", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif", marginBottom: "2px" }}>
+                    <div style={{ fontSize: "11px", color: "var(--muted-foreground)", marginBottom: "2px" }}>
                       {q.tag}
                     </div>
                     {ans ? (
-                      <div style={{ fontSize: "12px", color: "var(--foreground)", fontFamily: "'DM Sans', sans-serif", fontWeight: 500, wordBreak: "break-word", lineHeight: 1.4 }}>
+                      <div style={{ fontSize: "12px", color: "var(--foreground)", fontWeight: 500, wordBreak: "break-word", lineHeight: 1.4 }}>
                         {q.type === "email" ? "✉ " : ""}{String(ans).length > 40 ? String(ans).slice(0, 40) + "…" : String(ans)}
                       </div>
                     ) : (
-                      <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.25)", fontFamily: "'DM Sans', sans-serif", fontStyle: "italic" }}>
+                      <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.25)", fontStyle: "italic" }}>
                         {isCurrent ? "answering now…" : "not yet answered"}
                       </div>
                     )}
@@ -808,7 +794,7 @@ function LiveDemoForm() {
 
           {Object.keys(answers).length > 0 && !submitted && (
             <div style={{ marginTop: "1.25rem", paddingTop: "1.25rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-              <div style={{ fontSize: "11px", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif", marginBottom: "6px" }}>Progress</div>
+              <div style={{ fontSize: "11px", color: "var(--muted-foreground)", marginBottom: "6px" }}>Progress</div>
               <div style={{ height: 4, borderRadius: "999px", background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
                 <div style={{
                   height: "100%", borderRadius: "999px",
@@ -817,7 +803,7 @@ function LiveDemoForm() {
                   transition: "width 0.4s ease",
                 }} />
               </div>
-              <div style={{ fontSize: "11px", color: "#C89B63", marginTop: "5px", fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>
+              <div style={{ fontSize: "11px", color: "#C89B63", marginTop: "5px", fontWeight: 600 }}>
                 {Object.keys(answers).length} of {questions.length} answered
               </div>
             </div>
@@ -882,7 +868,6 @@ function HeroFormCard() {
       backdropFilter: "blur(24px)",
       boxShadow: "0 24px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(200,155,99,0.08)",
     }}>
-      {/* top chrome */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "12px 16px",
@@ -908,7 +893,6 @@ function HeroFormCard() {
         </div>
       </div>
 
-      {/* progress bar */}
       <div style={{ height: 2, background: "rgba(255,255,255,0.06)" }}>
         <div style={{
           height: "100%",
@@ -918,7 +902,6 @@ function HeroFormCard() {
         }} />
       </div>
 
-      {/* card body */}
       <div style={{ padding: "2rem 2rem 1.75rem" }}>
         {submitted ? (
           <div style={{ textAlign: "center", padding: "2rem 0" }}>
@@ -930,7 +913,7 @@ function HeroFormCard() {
             }}>
               <CheckCircle2 style={{ width: 26, height: 26, color: "#6FCF97" }} />
             </div>
-            <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: "1.5rem", fontWeight: 600, marginBottom: "8px", color: "var(--foreground)" }}>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.5rem", fontWeight: 600, marginBottom: "8px", color: "var(--foreground)" }}>
               Thanks for trying it out!
             </h3>
             <p style={{ fontSize: "13px", color: "var(--muted-foreground)", lineHeight: 1.7, marginBottom: "1.5rem" }}>
@@ -940,7 +923,7 @@ function HeroFormCard() {
               style={{
                 borderRadius: "999px", padding: "9px 20px", fontSize: "13px",
                 background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
-                color: "var(--foreground)", cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+                color: "var(--foreground)", cursor: "pointer",
                 transition: "background 0.2s",
               }}>
               Try again ↩
@@ -949,18 +932,17 @@ function HeroFormCard() {
         ) : (
           <>
             <div style={{ marginBottom: "1.5rem" }}>
-              <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.24em", color: "#C89B63", fontWeight: 700, marginBottom: "10px", fontFamily: "'DM Sans', sans-serif" }}>
+              <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.24em", color: "#C89B63", fontWeight: 700, marginBottom: "10px" }}>
                 Question {step + 1} of {steps.length}
               </div>
-              <h3 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: "1.25rem", fontWeight: 600, lineHeight: 1.35, color: "var(--foreground)", marginBottom: "5px" }}>
+              <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "1.25rem", fontWeight: 600, lineHeight: 1.35, color: "var(--foreground)", marginBottom: "5px" }}>
                 {current.question}
               </h3>
-              <p style={{ fontSize: "12px", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif" }}>
+              <p style={{ fontSize: "12px", color: "var(--muted-foreground)" }}>
                 {current.sub}
               </p>
             </div>
 
-            {/* choice */}
             {current.type === "choice" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "1.5rem" }}>
                 {current.options!.map(opt => (
@@ -970,7 +952,7 @@ function HeroFormCard() {
                       border: "1px solid " + (selected === opt ? "rgba(200,155,99,0.5)" : "rgba(255,255,255,0.08)"),
                       background: selected === opt ? "rgba(200,155,99,0.10)" : "rgba(255,255,255,0.02)",
                       color: selected === opt ? "#C89B63" : "rgba(255,255,255,0.8)",
-                      fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: selected === opt ? 600 : 400,
+                      fontSize: "13px", fontWeight: selected === opt ? 600 : 400,
                       cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between",
                       transition: "all 0.18s",
                     }}>
@@ -981,7 +963,6 @@ function HeroFormCard() {
               </div>
             )}
 
-            {/* rating */}
             {current.type === "rating" && (
               <div style={{ marginBottom: "1.75rem" }}>
                 <div style={{ display: "flex", gap: "8px", justifyContent: "center", marginBottom: "8px" }}>
@@ -992,7 +973,7 @@ function HeroFormCard() {
                         border: "1px solid " + (rating !== null && n <= rating ? "rgba(200,155,99,0.5)" : "rgba(255,255,255,0.08)"),
                         background: rating !== null && n <= rating ? "rgba(200,155,99,0.15)" : "rgba(255,255,255,0.03)",
                         color: rating !== null && n <= rating ? "#C89B63" : "rgba(255,255,255,0.5)",
-                        fontSize: "16px", fontFamily: "'Fraunces', serif", fontWeight: 700,
+                        fontSize: "16px", fontFamily: "'Playfair Display', serif", fontWeight: 700,
                         cursor: "pointer", transition: "all 0.15s",
                         transform: rating === n ? "scale(1.12)" : "scale(1)",
                       }}>
@@ -1000,13 +981,12 @@ function HeroFormCard() {
                     </button>
                   ))}
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif", padding: "0 4px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", color: "var(--muted-foreground)", padding: "0 4px" }}>
                   <span>Very unhappy</span><span>Completely satisfied</span>
                 </div>
               </div>
             )}
 
-            {/* text */}
             {current.type === "text" && (
               <textarea
                 value={typed}
@@ -1017,7 +997,7 @@ function HeroFormCard() {
                   width: "100%", borderRadius: "12px", padding: "12px 14px",
                   border: "1px solid " + (typed ? "rgba(200,155,99,0.3)" : "rgba(255,255,255,0.08)"),
                   background: "rgba(255,255,255,0.03)",
-                  color: "var(--foreground)", fontSize: "13px", fontFamily: "'DM Sans', sans-serif",
+                  color: "var(--foreground)", fontSize: "13px",
                   resize: "none", lineHeight: 1.6, outline: "none",
                   transition: "border-color 0.2s",
                   marginBottom: "1.5rem", boxSizing: "border-box",
@@ -1025,7 +1005,6 @@ function HeroFormCard() {
               />
             )}
 
-            {/* footer row */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <span style={{ fontFamily: "monospace", fontSize: "11px", color: "var(--muted-foreground)" }}>
                 {step + 1} / {steps.length}
@@ -1041,7 +1020,7 @@ function HeroFormCard() {
                     : "rgba(255,255,255,0.06)",
                   color: canContinue ? "#0B0B0C" : "rgba(255,255,255,0.25)",
                   border: "none", cursor: canContinue ? "pointer" : "default",
-                  fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                  fontWeight: 700,
                   transition: "all 0.2s",
                   transform: canContinue ? "scale(1)" : "scale(0.97)",
                 }}>
@@ -1053,17 +1032,180 @@ function HeroFormCard() {
         )}
       </div>
 
-      {/* footer badge */}
       <div style={{
         padding: "10px 16px",
         borderTop: "1px solid rgba(255,255,255,0.05)",
         display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
-        fontSize: "11px", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif",
+        fontSize: "11px", color: "var(--muted-foreground)",
       }}>
         <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#6FCF97", boxShadow: "0 0 6px #6FCF9788" }} />
         Powered by EdinForm · Free to build
       </div>
     </div>
+  );
+}
+
+/* ─── Scotland & Europe Templates Section ─── */
+function TemplatesSection() {
+  const templates = [
+    {
+      id: "scotland-visitor",
+      icon: Castle,
+      accent: "#4A7C9E",
+      accentBg: "rgba(74,124,158,0.10)",
+      accentBorder: "rgba(74,124,158,0.25)",
+      tag: "Tourism · Scotland",
+      title: "Scotland Visitor Experience Survey",
+      desc: "Collect feedback from tourists visiting Scotland — covering highlights, accommodation, transport, and what would bring them back. Includes branching logic for first-time vs. returning visitors.",
+      questions: 8,
+      est: "3 min",
+      fields: ["Choice", "Rating", "Long text", "Scale"],
+    },
+    {
+      id: "highland-event",
+      icon: Mountain,
+      accent: "#5C8A5A",
+      accentBg: "rgba(92,138,90,0.10)",
+      accentBorder: "rgba(92,138,90,0.25)",
+      tag: "Events · Scotland",
+      title: "Highland Games Registration Form",
+      desc: "Full event sign-up form for Highland Games competitors and spectators. Captures participant category, age group, dietary requirements, and emergency contacts. Ready to embed on any event website.",
+      questions: 10,
+      est: "4 min",
+      fields: ["Short text", "Choice", "Date", "Email"],
+    },
+    {
+      id: "europe-travel",
+      icon: Landmark,
+      accent: "#8B6AC4",
+      accentBg: "rgba(139,106,196,0.10)",
+      accentBorder: "rgba(139,106,196,0.25)",
+      tag: "Travel · Europe",
+      title: "European City Break Preferences",
+      desc: "A travel planning survey for teams, agencies, or individuals mapping out ideal European city breaks. Covers destination shortlists, travel style, budget range, and must-have experiences across the continent.",
+      questions: 7,
+      est: "3 min",
+      fields: ["Choice", "Rating", "Scale", "Short text"],
+    },
+  ];
+
+  return (
+    <section style={{ padding: "7rem 1.5rem", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        <Reveal>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: "1.5rem", marginBottom: "3.5rem" }}>
+            <div>
+              <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "#C89B63", fontWeight: 600, marginBottom: "12px" }}>Featured templates</div>
+              <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 700, lineHeight: 1.15, marginBottom: "0.75rem" }}>
+                Ready to use. Built for<br />Scotland & Europe.
+              </h2>
+              <p style={{ maxWidth: "48ch", fontSize: "15px", lineHeight: 1.75, color: "var(--muted-foreground)" }}>
+                Start with a polished template and customise it in minutes. Every field, question, and logic path is fully editable.
+              </p>
+            </div>
+            <Link href="/explore" style={{
+              display: "inline-flex", alignItems: "center", gap: "6px",
+              borderRadius: "999px", padding: "10px 22px", fontSize: "13px",
+              background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)",
+              color: "var(--foreground)", textDecoration: "none", fontWeight: 500,
+              transition: "background 0.2s", flexShrink: 0,
+            }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.09)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; }}>
+              Browse all templates <ArrowRight style={{ width: 13, height: 13 }} />
+            </Link>
+          </div>
+        </Reveal>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
+          {templates.map(({ id, icon: Icon, accent, accentBg, accentBorder, tag, title, desc, questions, est, fields }, i) => (
+            <Reveal key={id} delay={i * 80} style={{ flex: "1 1 300px" }}>
+              <div style={{
+                background: "rgba(255,255,255,0.025)",
+                border: "1px solid rgba(255,255,255,0.07)",
+                borderRadius: "20px", overflow: "hidden",
+                height: "100%", boxSizing: "border-box",
+                display: "flex", flexDirection: "column",
+                transition: "transform 0.3s, box-shadow 0.3s, border-color 0.3s",
+              }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(-6px)";
+                  (e.currentTarget as HTMLElement).style.boxShadow = `0 20px 48px ${accent}22`;
+                  (e.currentTarget as HTMLElement).style.borderColor = `${accent}44`;
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.transform = "";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "";
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)";
+                }}>
+
+                {/* header stripe */}
+                <div style={{
+                  padding: "1.5rem 1.5rem 1.25rem",
+                  background: accentBg,
+                  borderBottom: `1px solid ${accentBorder}`,
+                  display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem",
+                }}>
+                  <div style={{
+                    width: 44, height: 44, borderRadius: "14px",
+                    background: accentBg, border: `1px solid ${accentBorder}`,
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  }}>
+                    <Icon style={{ width: 20, height: 20, color: accent }} />
+                  </div>
+                  <span style={{
+                    fontSize: "10px", fontWeight: 700, letterSpacing: "0.18em",
+                    textTransform: "uppercase", color: accent,
+                    background: accentBg, border: `1px solid ${accentBorder}`,
+                    borderRadius: "999px", padding: "4px 10px", whiteSpace: "nowrap",
+                  }}>{tag}</span>
+                </div>
+
+                {/* body */}
+                <div style={{ padding: "1.5rem", flex: 1, display: "flex", flexDirection: "column" }}>
+                  <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, lineHeight: 1.3, color: "var(--foreground)", marginBottom: "10px" }}>{title}</h3>
+                  <p style={{ fontSize: "13px", lineHeight: 1.65, color: "var(--muted-foreground)", marginBottom: "1.25rem", flex: 1 }}>{desc}</p>
+
+                  {/* meta row */}
+                  <div style={{ display: "flex", gap: "12px", marginBottom: "1.25rem" }}>
+                    <span style={{ fontSize: "12px", color: "var(--muted-foreground)", display: "flex", alignItems: "center", gap: "4px" }}>
+                      <FileText style={{ width: 12, height: 12 }} /> {questions} questions
+                    </span>
+                    <span style={{ fontSize: "12px", color: "var(--muted-foreground)", display: "flex", alignItems: "center", gap: "4px" }}>
+                      <Clock style={{ width: 12, height: 12 }} /> ~{est}
+                    </span>
+                  </div>
+
+                  {/* field type chips */}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", marginBottom: "1.5rem" }}>
+                    {fields.map(f => (
+                      <span key={f} style={{
+                        fontSize: "11px", borderRadius: "6px", padding: "3px 9px",
+                        background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+                        color: "var(--muted-foreground)",
+                      }}>{f}</span>
+                    ))}
+                  </div>
+
+                  {/* cta */}
+                  <Link href={`/explore/template/${id}`} style={{
+                    display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px",
+                    borderRadius: "12px", padding: "10px 0", fontSize: "13px",
+                    background: accentBg, border: `1px solid ${accentBorder}`,
+                    color: accent, textDecoration: "none", fontWeight: 600,
+                    transition: "all 0.2s",
+                  }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${accent}22`; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = accentBg; }}>
+                    Use this template <ArrowRight style={{ width: 13, height: 13 }} />
+                  </Link>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -1093,7 +1235,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen" style={{
-      fontFamily: "'DM Sans', 'Inter', sans-serif",
+      fontFamily: "'Inter', 'system-ui', sans-serif",
       background: "var(--background)",
       color: "var(--foreground)",
     }}>
@@ -1174,7 +1316,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* mobile menu */}
           <div style={{
             maxHeight: navOpen ? "360px" : "0", overflow: "hidden",
             transition: "max-height 0.4s cubic-bezier(0.4,0,0.2,1)",
@@ -1197,19 +1338,15 @@ export default function LandingPage() {
 
       {/* ══ HERO ══ */}
       <section style={{ position: "relative", overflow: "hidden", padding: "5rem 1.5rem 5rem" }}>
-        {/* ambient glow */}
         <div style={{
           position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
           background: "radial-gradient(ellipse 60% 55% at 30% 40%, rgba(200,155,99,0.13) 0%, transparent 65%), radial-gradient(ellipse 50% 50% at 80% 50%, rgba(124,158,232,0.07) 0%, transparent 60%)",
         }} />
 
         <div style={{ maxWidth: "1200px", margin: "0 auto", position: "relative", zIndex: 1 }}>
-          {/* two-column layout */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: "3.5rem", alignItems: "center" }}>
 
-            {/* ── LEFT COLUMN ── */}
             <div style={{ flex: "1 1 420px", minWidth: 0 }}>
-              {/* eyebrow pill */}
               <div style={{
                 display: "inline-flex", alignItems: "center", gap: "8px",
                 background: "rgba(200,155,99,0.10)", border: "1px solid rgba(200,155,99,0.25)",
@@ -1222,12 +1359,11 @@ export default function LandingPage() {
                 <ArrowRight style={{ width: 12, height: 12 }} />
               </div>
 
-              {/* headline — tighter, more readable size */}
               <h1 style={{
-                fontFamily: "'Fraunces', Georgia, serif",
+                fontFamily: "'Playfair Display', Georgia, serif",
                 fontSize: "clamp(2.6rem, 5vw, 4.8rem)",
                 lineHeight: 1.08,
-                letterSpacing: "-0.025em",
+                letterSpacing: "-0.02em",
                 marginBottom: "1.5rem",
                 animation: "fadeUp 0.7s ease 0.1s both",
                 fontWeight: 700,
@@ -1245,6 +1381,8 @@ export default function LandingPage() {
                 color: "var(--muted-foreground)",
                 marginBottom: "2rem",
                 animation: "fadeUp 0.7s ease 0.2s both",
+                fontWeight: 400,
+                letterSpacing: "0.01em",
               }}>
                 EdinForm is the form builder for teams who care about experience. Build branching surveys, collect structured data, and analyze responses — all from one clean, fast interface. No code. No friction. Just better conversations with your audience.
               </p>
@@ -1279,7 +1417,6 @@ export default function LandingPage() {
                 </Link>
               </div>
 
-              {/* trust row */}
               <div style={{
                 marginTop: "2.25rem", display: "flex", flexWrap: "wrap", alignItems: "center", gap: "18px",
                 animation: "fadeUp 0.7s ease 0.4s both",
@@ -1314,7 +1451,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* ── RIGHT COLUMN — interactive hero card ── */}
             <div style={{ flex: "1 1 380px", minWidth: 0, animation: "fadeUp 0.8s ease 0.25s both" }}>
               <HeroFormCard />
             </div>
@@ -1329,7 +1465,7 @@ export default function LandingPage() {
           <Reveal>
             <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
               <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "#C89B63", fontWeight: 600, marginBottom: "12px" }}>How it works</div>
-              <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 700, marginBottom: "1rem" }}>
+              <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 700, marginBottom: "1rem" }}>
                 From idea to insights in four steps.
               </h2>
               <p style={{ maxWidth: "48ch", margin: "0 auto", fontSize: "15px", lineHeight: 1.7, color: "var(--muted-foreground)" }}>
@@ -1349,7 +1485,6 @@ export default function LandingPage() {
             </div>
           </Reveal>
 
-          {/* step detail cards */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: "1.25rem", marginTop: "1.5rem" }}>
             {[
               { n: "01", title: "Draft your form", body: "Choose from 9 field types — short text, long text, multiple choice, rating, date picker, file upload, email, number, and scale. Reorder with drag-and-drop.", color: "#C89B63" },
@@ -1372,7 +1507,7 @@ export default function LandingPage() {
                     (e.currentTarget as HTMLElement).style.boxShadow = "";
                   }}>
                   <div style={{ fontFamily: "monospace", fontSize: "11px", color, marginBottom: "12px", letterSpacing: "0.2em" }}>{n}</div>
-                  <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: "1.15rem", fontWeight: 600, marginBottom: "8px", color: "var(--foreground)" }}>{title}</h3>
+                  <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.15rem", fontWeight: 600, marginBottom: "8px", color: "var(--foreground)" }}>{title}</h3>
                   <p style={{ fontSize: "13px", lineHeight: 1.65, color: "var(--muted-foreground)" }}>{body}</p>
                 </div>
               </Reveal>
@@ -1387,7 +1522,7 @@ export default function LandingPage() {
           <Reveal>
             <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
               <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "#C89B63", fontWeight: 600, marginBottom: "12px" }}>Try it now</div>
-              <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 700, marginBottom: "1rem" }}>
+              <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 700, marginBottom: "1rem" }}>
                 A real EdinForm form, live right here.
               </h2>
               <p style={{ maxWidth: "50ch", margin: "0 auto", fontSize: "15px", lineHeight: 1.75, color: "var(--muted-foreground)" }}>
@@ -1442,7 +1577,7 @@ export default function LandingPage() {
             { raw: 4.9, suffix: "/5", label: "Average rating", fixed: 1 },
           ].map(({ raw, suffix, label, fixed }, i) => (
             <Reveal key={label} delay={i * 80} style={{ flex: "1 1 180px", textAlign: "center", padding: "1.5rem", borderRight: i < 3 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
-              <div style={{ fontFamily: "'Fraunces', serif", fontSize: "clamp(2rem, 4vw, 3rem)", color: "#C89B63", fontWeight: 700, lineHeight: 1 }}>
+              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(2rem, 4vw, 3rem)", color: "#C89B63", fontWeight: 700, lineHeight: 1 }}>
                 {fixed !== undefined ? raw.toFixed(fixed) : <Counter to={raw} />}{suffix}
               </div>
               <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.24em", color: "var(--muted-foreground)", marginTop: "8px" }}>{label}</div>
@@ -1457,7 +1592,7 @@ export default function LandingPage() {
           <Reveal>
             <div style={{ marginBottom: "4rem" }}>
               <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "#C89B63", fontWeight: 600, marginBottom: "12px" }}>Everything you need</div>
-              <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 700, maxWidth: "18ch", lineHeight: 1.15 }}>
+              <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 700, maxWidth: "18ch", lineHeight: 1.15 }}>
                 Built for the whole form lifecycle.
               </h2>
               <p style={{ maxWidth: "52ch", fontSize: "15px", lineHeight: 1.75, color: "var(--muted-foreground)", marginTop: "1rem" }}>
@@ -1505,7 +1640,7 @@ export default function LandingPage() {
                     <Icon style={{ width: 18, height: 18, color }} />
                   </div>
                   <div style={{ fontFamily: "monospace", fontSize: "10px", color: "var(--muted-foreground)", letterSpacing: "0.2em", marginBottom: "8px" }}>{n}</div>
-                  <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: "1.1rem", fontWeight: 600, marginBottom: "10px", color: "var(--foreground)" }}>{title}</h3>
+                  <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", fontWeight: 600, marginBottom: "10px", color: "var(--foreground)" }}>{title}</h3>
                   <p style={{ fontSize: "13px", lineHeight: 1.65, color: "var(--muted-foreground)" }}>{body}</p>
                 </div>
               </Reveal>
@@ -1521,7 +1656,7 @@ export default function LandingPage() {
             <div style={{ flex: "1 1 340px" }}>
               <Reveal>
                 <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "#C89B63", fontWeight: 600, marginBottom: "12px" }}>The form editor</div>
-                <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, lineHeight: 1.15, marginBottom: "1.25rem" }}>
+                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, lineHeight: 1.15, marginBottom: "1.25rem" }}>
                   An editor built around focus, not features.
                 </h2>
                 <p style={{ fontSize: "15px", lineHeight: 1.75, color: "var(--muted-foreground)", marginBottom: "1.5rem" }}>
@@ -1551,11 +1686,10 @@ export default function LandingPage() {
       <section style={{ padding: "7rem 1.5rem", borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.01)" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "3rem", alignItems: "flex-start" }}>
-            {/* branching */}
             <div style={{ flex: "1 1 300px" }}>
               <Reveal>
                 <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "#7C9EE8", fontWeight: 600, marginBottom: "12px" }}>Branching logic</div>
-                <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, lineHeight: 1.15, marginBottom: "1.25rem" }}>
+                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, lineHeight: 1.15, marginBottom: "1.25rem" }}>
                   Forms that listen and adapt.
                 </h2>
                 <p style={{ fontSize: "15px", lineHeight: 1.75, color: "var(--muted-foreground)", marginBottom: "1.5rem" }}>
@@ -1576,11 +1710,10 @@ export default function LandingPage() {
               </Reveal>
             </div>
 
-            {/* analytics */}
             <div style={{ flex: "1 1 300px" }}>
               <Reveal delay={100}>
                 <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "#BB87E8", fontWeight: 600, marginBottom: "12px" }}>Analytics</div>
-                <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, lineHeight: 1.15, marginBottom: "1.25rem" }}>
+                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, lineHeight: 1.15, marginBottom: "1.25rem" }}>
                   Numbers that actually mean something.
                 </h2>
                 <p style={{ fontSize: "15px", lineHeight: 1.75, color: "var(--muted-foreground)", marginBottom: "1.5rem" }}>
@@ -1598,13 +1731,16 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ══ SCOTLAND & EUROPE TEMPLATES ══ */}
+      <TemplatesSection />
+
       {/* ══ TESTIMONIALS ══ */}
       <section style={{ padding: "7rem 1.5rem", borderBottom: "1px solid var(--border)" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
           <Reveal>
             <div style={{ textAlign: "center", marginBottom: "4rem" }}>
               <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "#C89B63", fontWeight: 600, marginBottom: "12px" }}>What people say</div>
-              <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 700 }}>
+              <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 700 }}>
                 Teams who switched, didn't look back.
               </h2>
             </div>
@@ -1638,7 +1774,7 @@ export default function LandingPage() {
                       <Star key={i} style={{ width: 13, height: 13, fill: "#C89B63", color: "#C89B63" }} />
                     ))}
                   </div>
-                  <blockquote style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: "1.05rem", lineHeight: 1.55, color: "var(--foreground)", marginBottom: "1.5rem", fontStyle: "italic" }}>
+                  <blockquote style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "1.05rem", lineHeight: 1.55, color: "var(--foreground)", marginBottom: "1.5rem", fontStyle: "italic" }}>
                     "{q}"
                   </blockquote>
                   <div style={{ fontSize: "13px", color: "var(--muted-foreground)" }}>
@@ -1659,7 +1795,7 @@ export default function LandingPage() {
           <Reveal>
             <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
               <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "#C89B63", fontWeight: 600, marginBottom: "12px" }}>FAQ</div>
-              <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700 }}>
+              <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700 }}>
                 Common questions, answered plainly.
               </h2>
             </div>
@@ -1682,7 +1818,7 @@ export default function LandingPage() {
                       padding: "1.25rem 1.5rem", background: "none", border: "none",
                       cursor: "pointer", gap: "1rem", textAlign: "left",
                     }}>
-                    <span style={{ fontFamily: "'Fraunces', serif", fontSize: "1.05rem", fontWeight: 500, color: "var(--foreground)" }}>{q}</span>
+                    <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.05rem", fontWeight: 500, color: "var(--foreground)" }}>{q}</span>
                     <ChevronDown style={{
                       width: 18, height: 18, flexShrink: 0, color: "var(--muted-foreground)",
                       transform: activeFaq === i ? "rotate(180deg)" : "rotate(0)",
@@ -1713,7 +1849,7 @@ export default function LandingPage() {
           <Reveal>
             <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "#C89B63", fontWeight: 600, marginBottom: "1.5rem" }}>Get started</div>
             <h2 style={{
-              fontFamily: "'Fraunces', Georgia, serif",
+              fontFamily: "'Playfair Display', Georgia, serif",
               fontSize: "clamp(2.5rem, 6vw, 5rem)",
               fontWeight: 700, lineHeight: 1.05, letterSpacing: "-0.02em",
               marginBottom: "1.5rem",
@@ -1817,7 +1953,7 @@ export default function LandingPage() {
       </footer>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&family=DM+Sans:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap');
 
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(28px); }
