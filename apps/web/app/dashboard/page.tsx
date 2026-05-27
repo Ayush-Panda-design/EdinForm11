@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { trpc } from "~/trpc/client";
 import { useAuth } from "~/providers/auth-provider";
@@ -21,7 +22,6 @@ export default function DashboardPage() {
   const utils = trpc.useUtils();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [menuPos, setMenuPos] = useState<{ top?: number; bottom?: number; right: number } | null>(null);
-  const MENU_HEIGHT = 260;
   const [qrForm, setQrForm] = useState<{ title: string; slug: string } | null>(null);
 
   const { data: forms, isLoading } = trpc.forms.list.useQuery({ includeArchived: false });
@@ -326,20 +326,20 @@ export default function DashboardPage() {
                         <BarChart3 style={{ width: 15, height: 15 }} />
                       </Link>
 
-                      {/* Dropdown */}
-                      <div style={{ position: "relative" }}>
+                      {/* Dropdown — portal rendered to escape all overflow/transform parents */}
+                      <div>
                         <button
                           onClick={(e) => {
                             if (openMenu === form.id) { setOpenMenu(null); setMenuPos(null); return; }
                             const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                            const spaceBelow = window.innerHeight - rect.bottom;
+                            const MENU_H = 260;
                             const right = window.innerWidth - rect.right;
-                            if (spaceBelow < MENU_HEIGHT) {
-                              // not enough space below — open upward
-                              setMenuPos({ bottom: window.innerHeight - rect.top + 6, right });
-                            } else {
-                              setMenuPos({ top: rect.bottom + 6, right });
-                            }
+                            const spaceBelow = window.innerHeight - rect.bottom;
+                            setMenuPos(
+                              spaceBelow < MENU_H
+                                ? { bottom: window.innerHeight - rect.top + 6, right }
+                                : { top: rect.bottom + 6, right }
+                            );
                             setOpenMenu(form.id);
                           }}
                           className="ef-btn-ghost"
@@ -347,41 +347,52 @@ export default function DashboardPage() {
                           <MoreHorizontal style={{ width: 15, height: 15 }} />
                         </button>
 
-                        {openMenu === form.id && (
-                          <div className="ef-glass"
-                            style={{
-                              position: "fixed",
-                              ...(menuPos?.top !== undefined ? { top: menuPos.top } : {}),
-                              ...(menuPos?.bottom !== undefined ? { bottom: menuPos.bottom } : {}),
-                              right: menuPos?.right ?? 0,
-                              width: 200, borderRadius: "12px", padding: "4px", zIndex: 9999,
-                            }}
-                            onClick={() => { setOpenMenu(null); setMenuPos(null); }}>
-                            {[{ icon: Layers, label: "Edit & Preview", href: `/dashboard/forms/${form.id}/edit` }].map(({ icon: Icon, label, href }) => (
-                              <Link key={label} href={href}
+                        {openMenu === form.id && menuPos && typeof document !== "undefined" && createPortal(
+                          <>
+                            {/* Backdrop */}
+                            <div
+                              style={{ position: "fixed", inset: 0, zIndex: 9998 }}
+                              onClick={() => { setOpenMenu(null); setMenuPos(null); }}
+                            />
+                            {/* Menu */}
+                            <div className="ef-glass"
+                              style={{
+                                position: "fixed",
+                                ...(menuPos.top !== undefined ? { top: menuPos.top } : {}),
+                                ...(menuPos.bottom !== undefined ? { bottom: menuPos.bottom } : {}),
+                                right: menuPos.right,
+                                width: 210,
+                                borderRadius: "12px",
+                                padding: "4px",
+                                zIndex: 9999,
+                                boxShadow: "0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3)",
+                              }}
+                              onClick={() => { setOpenMenu(null); setMenuPos(null); }}>
+                              <Link href={`/dashboard/forms/${form.id}/edit`}
                                 style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 12px", borderRadius: "8px", fontSize: "13px", color: "var(--foreground)", textDecoration: "none", transition: "background 0.15s" }}
-                                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; }}
+                                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.07)"; }}
                                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                                <Icon style={{ width: 14, height: 14, color: "#C89B63" }} /> {label}
+                                <Layers style={{ width: 14, height: 14, color: "#C89B63" }} /> Edit &amp; Preview
                               </Link>
-                            ))}
 
-                            {form.visibility !== "unpublished" ? (
-                              <MenuBtn icon={Lock} label="Unpublish" onClick={() => unpublishMutation.mutate({ id: form.id })} />
-                            ) : (
-                              <MenuBtn icon={Globe} label="Publish" onClick={() => publishMutation.mutate({ id: form.id, visibility: "public" })} />
-                            )}
-                            <MenuBtn icon={Copy} label="Duplicate" onClick={() => duplicateMutation.mutate({ id: form.id })} />
-                            {form.visibility !== "unpublished" && (
-                              <>
-                                <MenuBtn icon={Copy} label="Copy Link" onClick={() => { navigator.clipboard.writeText(window.location.origin + "/forms/" + form.slug); toast.success("Link copied!"); }} />
-                                <MenuAnchor icon={ExternalLink} label="Open Form" href={`/forms/${form.slug}`} />
-                              </>
-                            )}
-                            <div style={{ margin: "4px 0", borderTop: "1px solid var(--border)" }} />
-                            <MenuBtn icon={Trash2} label="Delete" danger
-                              onClick={() => { if (confirm("Delete this form and all its responses?")) deleteMutation.mutate({ id: form.id }); }} />
-                          </div>
+                              {form.visibility !== "unpublished" ? (
+                                <MenuBtn icon={Lock} label="Unpublish" onClick={() => unpublishMutation.mutate({ id: form.id })} />
+                              ) : (
+                                <MenuBtn icon={Globe} label="Publish" onClick={() => publishMutation.mutate({ id: form.id, visibility: "public" })} />
+                              )}
+                              <MenuBtn icon={Copy} label="Duplicate" onClick={() => duplicateMutation.mutate({ id: form.id })} />
+                              {form.visibility !== "unpublished" && (
+                                <>
+                                  <MenuBtn icon={Copy} label="Copy Link" onClick={() => { navigator.clipboard.writeText(window.location.origin + "/forms/" + form.slug); toast.success("Link copied!"); }} />
+                                  <MenuAnchor icon={ExternalLink} label="Open Form" href={`/forms/${form.slug}`} />
+                                </>
+                              )}
+                              <div style={{ margin: "4px 0", borderTop: "1px solid var(--border)" }} />
+                              <MenuBtn icon={Trash2} label="Delete" danger
+                                onClick={() => { if (confirm("Delete this form and all its responses?")) deleteMutation.mutate({ id: form.id }); }} />
+                            </div>
+                          </>,
+                          document.body
                         )}
                       </div>
                     </div>
@@ -526,12 +537,6 @@ export default function DashboardPage() {
           <span style={{ fontSize: "12px", color: "var(--muted-foreground)" }}>All systems operational</span>
         </div>
       </div>
-
-      {/* Backdrop for dropdown */}
-      {openMenu && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 9998 }}
-          onClick={() => { setOpenMenu(null); setMenuPos(null); }} />
-      )}
 
       {/* QR Modal */}
       {qrForm && (
