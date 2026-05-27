@@ -26,19 +26,30 @@ export const app = express();
 // ---------------------------------------------------------------------------
 app.use(
   helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"], // Scalar UI needs inline scripts
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'"],
-        fontSrc: ["'self'", "https:", "data:"],
-        objectSrc: ["'none'"],
-        mediaSrc: ["'self'"],
-        frameSrc: ["'none'"],
-      },
-    },
+contentSecurityPolicy: {
+  directives: {
+    defaultSrc: ["'self'"],
+
+    scriptSrc: [
+      "'self'",
+      "'unsafe-inline'",
+      "https://cdn.jsdelivr.net",
+    ],
+
+    styleSrc: [
+      "'self'",
+      "'unsafe-inline'",
+      "https://cdn.jsdelivr.net",
+    ],
+
+    imgSrc: ["'self'", "data:", "https:"],
+    connectSrc: ["'self'"],
+    fontSrc: ["'self'", "https:", "data:"],
+    objectSrc: ["'none'"],
+    mediaSrc: ["'self'"],
+    frameSrc: ["'none'"],
+  },
+},
     crossOriginEmbedderPolicy: false, // needed for Scalar API docs
   })
 );
