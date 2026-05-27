@@ -3,116 +3,268 @@
 import { use, useState } from "react";
 import Link from "next/link";
 import { trpc } from "~/trpc/client";
-import { ArrowLeft, Download, Loader2, User, Clock } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  Loader2,
+  User,
+  Clock,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
-export default function ResponsesPage({ params }: { params: Promise<{ id: string }> }) {
+export default function ResponsesPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const [page, setPage] = useState(1);
 
   const { data: form } = trpc.forms.getById.useQuery({ id });
-  const { data: responsesData, isLoading } = trpc.responses.list.useQuery({
-    formId: id,
-    page,
-    limit: 20,
-  });
+
+  const { data: responsesData, isLoading } =
+    trpc.responses.list.useQuery({
+      formId: id,
+      page,
+      limit: 20,
+    });
 
   const exportCsv = () => {
     if (!responsesData?.data || !form?.fields) return;
-    const headers = ["Submitted At", "Respondent", ...form.fields.map(f => f.label)];
-    const rows = responsesData.data.map(r => [
-      r.submittedAt ? new Date(r.submittedAt).toLocaleString() : "",
-      r.respondentName || r.respondentEmail || "Anonymous",
-      ...form.fields.map(f => {
-        const ans = r.answers.find(a => a.fieldId === f.id);
-        return ans?.valueArray?.join(", ") || ans?.value || "";
+
+    const headers = [
+      "Submitted At",
+      "Respondent",
+      ...form.fields.map((f) => f.label),
+    ];
+
+    const rows = responsesData.data.map((r) => [
+      r.submittedAt
+        ? new Date(r.submittedAt).toLocaleString()
+        : "",
+      r.respondentName ||
+        r.respondentEmail ||
+        "Anonymous",
+      ...form.fields.map((f) => {
+        const ans = r.answers.find(
+          (a) => a.fieldId === f.id
+        );
+
+        return (
+          ans?.valueArray?.join(", ") ||
+          ans?.value ||
+          ""
+        );
       }),
     ]);
-    const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+
+    const csv = [headers, ...rows]
+      .map((r) =>
+        r
+          .map((c) =>
+            `"${String(c).replace(/"/g, '""')}"`
+          )
+          .join(",")
+      )
+      .join("\n");
+
+    const blob = new Blob([csv], {
+      type: "text/csv",
+    });
+
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = (form.title || "responses") + ".csv"; a.click();
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download =
+      (form.title || "responses") + ".csv";
+
+    a.click();
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="relative max-w-5xl mx-auto">
+      {/* Ambient cinematic glow */}
+      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-violet-500/10 blur-3xl" />
+      </div>
+
+      {/* Header */}
       <div className="flex items-center gap-3 mb-8">
-        <Link href={"/dashboard/forms/" + id + "/edit"} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+        <Link
+          href={`/dashboard/forms/${id}/edit`}
+          className="p-2 rounded-xl bg-secondary/40 hover:bg-secondary transition-colors text-muted-foreground"
+        >
           <ArrowLeft className="w-4 h-4" />
         </Link>
-        <div className="flex-1">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Responses — {form?.title}</h1>
-          <p className="text-gray-500 text-sm mt-0.5">{responsesData?.total ?? 0} total responses</p>
+
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl font-semibold text-foreground truncate">
+            Responses — {form?.title}
+          </h1>
+
+          <p className="text-sm text-muted-foreground mt-1">
+            {responsesData?.total ?? 0} total responses
+          </p>
         </div>
-        <button onClick={exportCsv} className="flex items-center gap-2 text-sm px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
-          <Download className="w-4 h-4" /> Export CSV
+
+        <button
+          onClick={exportCsv}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-border/60 bg-secondary/60 hover:bg-secondary text-sm font-medium text-foreground backdrop-blur-xl transition-all"
+        >
+          <Download className="w-4 h-4" />
+          Export CSV
         </button>
       </div>
 
+      {/* Loading */}
       {isLoading ? (
-        <div className="flex justify-center p-12"><Loader2 className="w-6 h-6 animate-spin text-stone-900" /></div>
+        <div className="flex justify-center py-20">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
       ) : responsesData?.data.length === 0 ? (
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-12 text-center">
-          <p className="text-gray-600 dark:text-gray-400">No responses yet. Share your form to start collecting data!</p>
+        /* Empty state */
+        <div className="rounded-2xl border border-border/50 bg-background/70 backdrop-blur-xl shadow-sm p-14 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-secondary/60 flex items-center justify-center mx-auto mb-5">
+            <User className="w-7 h-7 text-muted-foreground" />
+          </div>
+
+          <h2 className="text-lg font-semibold text-foreground mb-2">
+            No responses yet
+          </h2>
+
+          <p className="text-muted-foreground max-w-md mx-auto">
+            Share your form to start collecting responses
+            from users.
+          </p>
+
           {form?.visibility !== "unpublished" && (
-            <p className="text-sm text-gray-500 mt-2">Share link: {typeof window !== "undefined" ? window.location.origin : ""}/forms/{form?.slug}</p>
+            <div className="mt-5 inline-flex items-center rounded-xl border border-border/60 bg-background/60 backdrop-blur-md px-4 py-2 text-sm text-muted-foreground">
+              {typeof window !== "undefined"
+                ? window.location.origin
+                : ""}
+              /forms/{form?.slug}
+            </div>
           )}
         </div>
       ) : (
-        <div className="space-y-4">
-          {responsesData?.data.map((response, idx) => (
-            <div key={response.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-5 hover:border-stone-200 dark:hover:border-stone-900 transition-colors">
-              <div className="flex items-center justify-between mb-4">
-                <Link href={`/dashboard/forms/${id}/responses/${response.id}`} className="flex items-center gap-3 flex-1 hover:opacity-80">
-                  <div className="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-900/30 flex items-center justify-center">
-                    <User className="w-4 h-4 text-stone-900 dark:text-stone-400" />
+        <div className="space-y-5">
+          {responsesData?.data.map((response) => (
+            <div
+              key={response.id}
+              className="rounded-2xl border border-border/50 bg-background/70 backdrop-blur-xl shadow-sm p-6 transition-all hover:border-primary/20 hover:bg-background/80"
+            >
+              {/* Top */}
+              <div className="flex items-start justify-between gap-4 mb-5">
+                <Link
+                  href={`/dashboard/forms/${id}/responses/${response.id}`}
+                  className="flex items-center gap-4 flex-1 hover:opacity-90 transition-opacity"
+                >
+                  <div className="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <User className="w-5 h-5 text-primary" />
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">
-                      {response.respondentName || response.respondentEmail || "Anonymous"}
+
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground truncate">
+                      {response.respondentName ||
+                        response.respondentEmail ||
+                        "Anonymous"}
                     </p>
+
                     {response.submittedAt && (
-                      <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                        <Clock className="w-3 h-3" />
-                        {formatDistanceToNow(new Date(response.submittedAt))} ago
+                      <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-1">
+                        <Clock className="w-3.5 h-3.5" />
+                        {formatDistanceToNow(
+                          new Date(response.submittedAt)
+                        )}{" "}
+                        ago
                       </p>
                     )}
                   </div>
                 </Link>
-                <span className="text-xs bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-2 py-1 rounded-full font-medium">
+
+                <span className="px-3 py-1 rounded-full text-xs font-medium border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
                   {response.status}
                 </span>
               </div>
-              <div className="space-y-3">
+
+              {/* Answers */}
+              <div className="space-y-4">
                 {response.answers.map((ans) => {
-                  const field = form?.fields.find(f => f.id === ans.fieldId);
+                  const field = form?.fields.find(
+                    (f) => f.id === ans.fieldId
+                  );
+
                   if (!field) return null;
-                  const value = ans.valueArray?.join(", ") || ans.value || "";
+
+                  const value =
+                    ans.valueArray?.join(", ") ||
+                    ans.value ||
+                    "";
+
                   return (
-                    <div key={ans.id} className="pl-3 border-l-2 border-gray-100 dark:border-gray-700">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">{field.label}</p>
-                      <p className="text-sm text-gray-900 dark:text-white">{value || <span className="text-gray-400 italic">—</span>}</p>
+                    <div
+                      key={ans.id}
+                      className="pl-4 border-l-2 border-border/60"
+                    >
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
+                        {field.label}
+                      </p>
+
+                      <p className="text-sm leading-relaxed text-foreground">
+                        {value || (
+                          <span className="italic text-muted-foreground">
+                            —
+                          </span>
+                        )}
+                      </p>
                     </div>
                   );
                 })}
               </div>
             </div>
           ))}
-          {responsesData && responsesData.totalPages > 1 && (
-            <div className="flex justify-center gap-2 pt-4">
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800">
-                Previous
-              </button>
-              <span className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">
-                {page} / {responsesData.totalPages}
-              </span>
-              <button onClick={() => setPage(p => Math.min(responsesData.totalPages, p + 1))} disabled={page === responsesData.totalPages}
-                className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800">
-                Next
-              </button>
-            </div>
-          )}
+
+          {/* Pagination */}
+          {responsesData &&
+            responsesData.totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 pt-6">
+                <button
+                  onClick={() =>
+                    setPage((p) =>
+                      Math.max(1, p - 1)
+                    )
+                  }
+                  disabled={page === 1}
+                  className="px-4 py-2 rounded-xl border border-border/60 bg-secondary/50 hover:bg-secondary text-sm text-foreground disabled:opacity-40 transition-colors"
+                >
+                  Previous
+                </button>
+
+                <div className="px-4 py-2 rounded-xl bg-background/60 border border-border/50 backdrop-blur-md text-sm text-muted-foreground">
+                  Page {page} of{" "}
+                  {responsesData.totalPages}
+                </div>
+
+                <button
+                  onClick={() =>
+                    setPage((p) =>
+                      Math.min(
+                        responsesData.totalPages,
+                        p + 1
+                      )
+                    )
+                  }
+                  disabled={
+                    page === responsesData.totalPages
+                  }
+                  className="px-4 py-2 rounded-xl border border-border/60 bg-secondary/50 hover:bg-secondary text-sm text-foreground disabled:opacity-40 transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            )}
         </div>
       )}
     </div>
