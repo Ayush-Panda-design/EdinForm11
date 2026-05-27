@@ -1,94 +1,69 @@
-# FormCraft — Production-Style Form Builder SaaS
+# EdinForm — Production-Style Form Builder SaaS
 
-A full-featured Typeform-style form builder built on a **Turborepo monorepo** with tRPC, Zod, Drizzle ORM, and Scalar API docs.
+> A full-featured Typeform-style form builder built on a **Turborepo monorepo** with tRPC, Zod, Drizzle ORM, and Scalar API docs.
 
 ---
 
-## 🚀 Demo
+## 🚀 Live Demo
 
 | | |
 |---|---|
-| **Live Demo** | https://formcraft-demo.up.railway.app *(see deploy section)* |
-| **Demo Creator** | `creator@example.com` / `password123` |
-| **Demo Admin** | `admin@example.com` / `password123` |
-| **API Docs** | `http://localhost:8000/docs` (Scalar) |
-| **OpenAPI JSON** | `http://localhost:8000/openapi.json` |
+| **🌐 Domain** | [https://edinform.in](https://edinform.in) |
+| **Frontend (Vercel)** | [https://edin-form11-web-ashen.vercel.app](https://edin-form11-web-ashen.vercel.app) |
+| **Backend (Render)** | [https://edinform11-2.onrender.com](https://edinform11-2.onrender.com) |
+| **GitHub Repository** | [Ayush-Panda-design/EdinForm11](https://github.com/Ayush-Panda-design/EdinForm11) |
+| **API Docs (Scalar)** | [https://edinform11-2.onrender.com/docs](https://edinform11-2.onrender.com/docs) |
+| **OpenAPI JSON** | [https://edinform11-2.onrender.com/openapi.json](https://edinform11-2.onrender.com/openapi.json) |
 
-### Seeded Demo Forms
-| Form | Responses | Visibility |
-|------|-----------|------------|
-| Anime Fan Survey 2024 | 45 | Public |
-| Product Feedback — FormCraft Beta | 30 | Public |
-| GameFest 2024 Tournament Registration | 60 | Public |
+### Demo Credentials
+
+| Role | Email | Password |
+|------|-------|----------|
+| **Creator** | `creator@example.com` | `password123` |
+| **Admin** | `admin@example.com` | `password123` |
+
+> The live demo forms were created directly through the EdinForm product itself — not injected via a seed script — demonstrating that the full form creation flow works end-to-end. The forms and their responses are visible immediately at [edinform.in/explore](https://edinform.in/explore) without any setup.
 
 ---
 
 ## ✨ Features
 
-### 5 New Features Added (v2)
+### Core Features
 
-#### 1. 🔍 Form Preview Mode
-Preview your form before publishing without saving any data. Available in two modes:
-- **Multi-step (Typeform style)** — one field at a time with animated transitions
-- **All fields** — traditional scrollable preview
+- User authentication (JWT-based sign up / sign in / sign out)
+- Creator dashboard with full form management
+- Create, edit, publish, unpublish, duplicate, and archive forms
+- 9 field types with Zod validation
+- Required / optional field settings per field
+- Public form submission without login
+- Public forms listed on `/explore`
+- Unlisted forms accessible via direct link only
+- Response management and analytics per form
+- Email notifications (Resend integration with console fallback)
+- Landing page and pricing page
+- Scalar API documentation
+- Rate limiting and basic spam protection
+- Demo credentials with demo data
 
-Access via the **Preview** button in the form editor (dropdown selector for mode).
+### Bonus Features (All Implemented ✅)
 
-#### 2. 🌿 Conditional Logic Between Fields
-Show or hide fields based on answers to previous questions.
-
-Each field supports a **Show if** rule:
-- Source field: any earlier field
-- Operators: `equals`, `does not equal`, `contains`, `is empty`, `is not empty`
-- For select fields: pick the option value from a dropdown
-- Live preview in the editor shows human-readable summary
-
-Conditional logic is evaluated in real time on the public form so hidden fields are skipped cleanly.
-
-#### 3. 📱 QR Code Share
-Every published form gets a **QR code** accessible from:
-- Form editor header (QR icon)
-- Dashboard form card (QR icon)
-
-Features:
-- Full-colour QR rendered with `qrcode.react`
-- **Copy link** button with confirmation
-- **Download QR as PNG** for print/social use
-- Opens form URL directly
-
-#### 4. 🪄 Multi-Step Form UI (Typeform-style)
-The public form at `/forms/:slug` is now a **full Typeform experience**:
-- Dark gradient design (slate + violet)
-- Cover screen with form title, description, and "Start" CTA
-- One question per screen with smooth transitions
-- Progress bar at top
-- Keyboard navigation: `Enter` to advance
-- Back button to revise answers
-- Per-step validation with inline error messages
-- Email format validation
-- Required-field enforcement before moving forward
-- Completion time tracking sent with submission
-- Beautiful success screen
-
-Toggle between multi-step and classic (all fields) in form settings.
-
-#### 5. ⏰ Response Limits & Expiry
-Configure form closing conditions from the **Limits & Expiry** tab in the editor:
-
-**Response Limit:**
-- Set a maximum number of accepted responses
-- Live counter shows `X / Y responses received`
-- Enforced at both the tRPC `submit` route and the public form fetch
-- Shows "Limit reached!" badge when hit
-
-**Form Expiry:**
-- Set a close date/time with a `datetime-local` picker
-- Shows green "closes on DATE" confirmation when future
-- Shows red "in the past — form is currently closed" warning
-- Remove expiry with one click
-- Enforced at form fetch: expired forms return `FORBIDDEN`
-
-Both limits are shown in the status banner in the form editor and visible to the creator at a glance.
+| Feature | Description |
+|---|---|
+| **Form Preview** | Preview before publishing in multi-step or classic mode |
+| **Conditional Logic** | Show/hide fields based on answers to earlier questions |
+| **QR Code Sharing** | QR modal with copy link + download PNG for every published form |
+| **Multi-step Typeform UI** | Full Typeform-style experience: dark theme, cover screen, keyboard nav, per-step validation |
+| **Response Limits** | Set max responses — enforced server-side at both fetch and submit |
+| **Form Expiry** | Set close date/time — enforced server-side, returns 403 after expiry |
+| **CSV Export** | Download all responses for any form as CSV |
+| **Recharts Analytics** | Charts and analytics dashboards per form and creator-wide |
+| **Custom Slugs** | Auto-generated, human-readable slugs for each form |
+| **QR PNG Download** | Download QR code as PNG for print/social |
+| **Explore Page** | Browse all public forms with search and pagination |
+| **Form Duplication** | Clone any form instantly |
+| **Form Archiving** | Archive forms you no longer need |
+| **Progress Bar** | Progress indicator in multi-step public form |
+| **Completion Time Tracking** | Time-to-submit sent with every response |
 
 ---
 
@@ -107,19 +82,22 @@ Both limits are shown in the status banner in the form editor and visible to the
 | Email | Resend (falls back to console.log) |
 | Charts | Recharts |
 | QR Codes | qrcode.react |
+| Frontend Hosting | Vercel |
+| Backend Hosting | Render |
+| Domain | edinform.in |
 
 ---
 
 ## 🗂️ Monorepo Structure
 
 ```
-formcraft/
+edinform/
 ├── apps/
 │   ├── api/                  # Express + tRPC backend (port 8000)
 │   │   └── src/
 │   │       ├── index.ts
 │   │       ├── server.ts
-│   │       └── seed/         # Demo data seeder
+│   │       └── seed/         # API-level demo data for local development
 │   │
 │   └── web/                  # Next.js 16 frontend (port 3000)
 │       ├── app/
@@ -134,15 +112,15 @@ formcraft/
 │       │       └── forms/
 │       │           ├── new/
 │       │           └── [id]/
-│       │               ├── edit/     # Editor with Preview + QR + Conditional Logic + Limits
+│       │               ├── edit/     # Editor: Preview + QR + Conditional Logic + Limits
 │       │               ├── responses/
 │       │               └── analytics/
 │       ├── components/
 │       │   └── forms/
-│       │       ├── field-renderer.tsx          # Shared field input + conditional logic evaluator
-│       │       ├── form-preview-modal.tsx       # Preview modal (multi-step + classic)
-│       │       ├── qr-share-modal.tsx           # QR code share modal
-│       │       └── conditional-logic-editor.tsx # Conditional rule builder UI
+│       │       ├── field-renderer.tsx           # Shared field input + conditional logic evaluator
+│       │       ├── form-preview-modal.tsx        # Preview modal (multi-step + classic)
+│       │       ├── qr-share-modal.tsx            # QR code share modal
+│       │       └── conditional-logic-editor.tsx  # Conditional rule builder UI
 │       ├── providers/
 │       │   ├── global.tsx
 │       │   └── auth-provider.tsx
@@ -154,7 +132,7 @@ formcraft/
     ├── trpc/server/routes/   # forms, responses, analytics, public, auth
     ├── services/             # Business logic
     ├── validators/           # Zod schemas
-    └── types/                # Shared TypeScript types (includes maxResponses, closeAfterDate)
+    └── types/                # Shared TypeScript types (maxResponses, closeAfterDate, etc.)
 ```
 
 ---
@@ -162,15 +140,16 @@ formcraft/
 ## ⚡ Quick Start (Local Dev)
 
 ### Prerequisites
+
 - **Node.js** ≥ 18
-- **pnpm** ≥ 9 (`npm install -g pnpm`)
+- **pnpm** ≥ 9  →  `npm install -g pnpm`
 - **Docker** (for PostgreSQL)
 
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/Ayush-Panda-design/FormBuilder.git
-cd FormBuilder
+git clone https://github.com/Ayush-Panda-design/EdinForm11.git
+cd EdinForm11
 pnpm install
 ```
 
@@ -183,7 +162,7 @@ cp .env.example .env
 Edit `.env`:
 
 ```env
-DATABASE_URL=postgresql://postgres:password@localhost:5432/formcraft
+DATABASE_URL=postgresql://postgres:password@localhost:5432/edinform
 PORT=8000
 NODE_ENV=development
 BASE_URL=http://localhost:8000
@@ -196,7 +175,7 @@ Create `apps/web/.env.local`:
 NEXT_PUBLIC_API_URL=http://localhost:8000/trpc
 ```
 
-Optional:
+Optional integrations:
 
 ```env
 # Upstash Redis — distributed rate limiting
@@ -205,7 +184,7 @@ UPSTASH_REDIS_REST_TOKEN=xxx
 
 # Resend — email notifications
 RESEND_API_KEY=re_xxx
-EMAIL_FROM=FormCraft <noreply@formcraft.io>
+EMAIL_FROM=EdinForm <noreply@edinform.in>
 ```
 
 ### 3. Start Database
@@ -218,8 +197,10 @@ docker compose up -d
 
 ```bash
 pnpm db:migrate   # push Drizzle schema
-pnpm seed      # seed demo users, forms, responses
+pnpm seed         # seed API-level demo data (users, sample forms, responses)
 ```
+
+> **Note:** The seed script (`apps/api/src/seed/`) loads demo data for local development and API testing. The three themed forms visible on the live demo at [edinform.in/explore](https://edinform.in/explore) were created directly through the EdinForm UI, showcasing the real creator experience.
 
 ### 5. Run Dev Servers
 
@@ -229,17 +210,31 @@ pnpm dev
 
 - **Web**: http://localhost:3000
 - **API**: http://localhost:8000
-- **Docs**: http://localhost:8000/docs
+- **API Docs**: http://localhost:8000/docs
+
+---
+
+## 🎨 Demo Forms
+
+Three themed sample forms were built live through the EdinForm creator dashboard — not injected via a seed script — proving that the full form-building flow works end-to-end. They are publicly visible at [edinform.in/explore](https://edinform.in/explore).
+
+| # | Form | Theme |
+|---|------|-------|
+| 1 | **NPS — Europe Trip Overall** | Overall travel satisfaction and NPS rating |
+| 2 | **FR France** | Country-specific travel experience and highlights |
+| 3 | **GB Scotland** | Destination feedback — nature, landmarks, and culture |
+
+All three forms are live, accepting responses, and have analytics populated from real submissions.
 
 ---
 
 ## 🔐 Authentication
 
-JWT stored in `localStorage` as `formcraft_token`, sent as `Authorization: Bearer <token>` on every tRPC call.
+JWT stored in `localStorage` as `edinform_token`, sent as `Authorization: Bearer <token>` on every tRPC call.
 
 ```bash
 # Sign in
-curl -X POST http://localhost:8000/api/auth/sign-in \
+curl -X POST https://edinform11-2.onrender.com/api/auth/sign-in \
   -H "Content-Type: application/json" \
   -d '{"email":"creator@example.com","password":"password123"}'
 ```
@@ -248,9 +243,10 @@ curl -X POST http://localhost:8000/api/auth/sign-in \
 
 ## 📡 API Overview
 
-Full docs at **http://localhost:8000/docs**
+Full interactive docs at **[https://edinform11-2.onrender.com/docs](https://edinform11-2.onrender.com/docs)**
 
 ### Auth
+
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | POST | `/api/auth/sign-up` | ❌ | Register |
@@ -259,6 +255,7 @@ Full docs at **http://localhost:8000/docs**
 | GET  | `/api/auth/me` | ✅ | Current user |
 
 ### Forms
+
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | POST | `/api/forms` | ✅ | Create form |
@@ -266,19 +263,21 @@ Full docs at **http://localhost:8000/docs**
 | GET  | `/api/forms/:id` | ✅ | Get form + fields |
 | PATCH | `/api/forms/:id` | ✅ | Update (title, settings, **maxResponses**, **closeAfterDate**) |
 | DELETE | `/api/forms/:id` | ✅ | Delete |
-| POST | `/api/forms/:id/publish` | ✅ | Publish (public/unlisted) |
+| POST | `/api/forms/:id/publish` | ✅ | Publish (public / unlisted) |
 | POST | `/api/forms/:id/unpublish` | ✅ | Unpublish |
 | POST | `/api/forms/:id/duplicate` | ✅ | Duplicate |
 
 ### Fields
+
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | POST | `/api/forms/:formId/fields` | ✅ | Add field (with **conditionalLogic**) |
 | PATCH | `/api/forms/:formId/fields/:fieldId` | ✅ | Update field |
 | DELETE | `/api/forms/:formId/fields/:fieldId` | ✅ | Delete field |
-| POST | `/api/forms/:formId/fields/reorder` | ✅ | Reorder |
+| POST | `/api/forms/:formId/fields/reorder` | ✅ | Reorder fields |
 
 ### Responses (Public)
+
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | POST | `/api/responses/submit` | ❌ | Submit response (enforces limits/expiry) |
@@ -286,12 +285,14 @@ Full docs at **http://localhost:8000/docs**
 | GET  | `/api/responses/export/csv` | ✅ | Export CSV |
 
 ### Public
+
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/public/forms/:slug` | ❌ | Get form (checks expiry + limit) |
-| GET | `/api/public/explore` | ❌ | Browse public forms |
+| GET | `/api/public/forms/:slug` | ❌ | Get published form (checks expiry + limit) |
+| GET | `/api/public/explore` | ❌ | Browse public forms with search + pagination |
 
 ### Analytics
+
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/api/analytics/form?formId=...` | ✅ | Per-form analytics |
@@ -315,7 +316,7 @@ Full docs at **http://localhost:8000/docs**
 
 ---
 
-## 🌿 Conditional Logic Reference
+## 🌿 Conditional Logic
 
 Each field can have one `showIf` rule:
 
@@ -331,14 +332,15 @@ Each field can have one `showIf` rule:
 }
 ```
 
-**Operators:**
 | Operator | Description |
 |----------|-------------|
-| `equals` | Answer equals value |
-| `not_equals` | Answer doesn't equal value |
-| `contains` | Answer contains value (text) |
+| `equals` | Answer exactly matches value |
+| `not_equals` | Answer does not match value |
+| `contains` | Answer contains value (text fields) |
 | `is_empty` | No answer given |
 | `is_not_empty` | Any answer given |
+
+Conditional logic is evaluated in real time during form filling. Hidden fields are skipped cleanly on submission.
 
 ---
 
@@ -346,22 +348,18 @@ Each field can have one `showIf` rule:
 
 | Mode | Behaviour |
 |------|-----------|
-| `unpublished` | Draft, not accepting responses |
-| `public` | Listed on `/explore`, anyone can fill |
-| `unlisted` | Only via direct link `/forms/:slug` |
+| `unpublished` | Draft — not accepting responses |
+| `public` | Listed on `/explore` — anyone can fill |
+| `unlisted` | Only accessible via direct link `/forms/:slug` |
 
 ---
 
-## ⏰ Limits & Expiry
+## ⏰ Response Limits & Expiry
 
-| Setting | Field | Behaviour |
-|---------|-------|-----------|
-| Response limit | `maxResponses` (int) | Stops accepting after N submissions |
-| Close date | `closeAfterDate` (datetime) | Returns 403 after this date/time |
-
-Both are enforced at:
-1. `GET /public/forms/:slug` — form fetch returns 403 to prevent even loading
-2. `POST /responses/submit` — responses service rejects submissions
+| Setting | Field | Enforcement |
+|---------|-------|-------------|
+| Response limit | `maxResponses` (int) | Blocks after N submissions at both fetch and submit |
+| Close date | `closeAfterDate` (datetime) | Returns 403 after this date/time at both fetch and submit |
 
 ---
 
@@ -374,26 +372,45 @@ Both are enforced at:
 | `POST /auth/sign-up` | 5 / 15 min per IP |
 | `/public/*` | 60 / min per IP |
 
-Uses Upstash Redis when configured, falls back to in-memory Map.
+Uses Upstash Redis when configured; falls back to in-memory Map automatically.
 
 ---
 
 ## 🚀 Deployment
 
-### Railway (recommended)
+### Current Deployment Stack
+
+| Service | Platform | URL |
+|---------|----------|-----|
+| Frontend | Vercel | [edin-form11-web-ashen.vercel.app](https://edin-form11-web-ashen.vercel.app) |
+| Backend | Render | [edinform11-2.onrender.com](https://edinform11-2.onrender.com) |
+| Domain | edinform.in | [https://edinform.in](https://edinform.in) |
+
+### Deploy Your Own
+
+#### Vercel (Frontend)
+
 1. Push to GitHub
-2. New Project → Deploy from GitHub
-3. Add PostgreSQL service
-4. Set env vars (`DATABASE_URL`, `PORT=8000`, `BASE_URL`, `APP_URL`)
-5. Deploy `apps/api` and `apps/web` as separate services
-6. Run `pnpm --filter api seed`
+2. Import `apps/web` into Vercel, set root directory to `apps/web`
+3. Add env var: `NEXT_PUBLIC_API_URL=https://your-api-url/trpc`
 
-### Vercel (web) + Railway (api)
-1. Deploy `apps/web` to Vercel, set root dir = `apps/web`
-2. Add `NEXT_PUBLIC_API_URL=https://your-api.railway.app/trpc`
-3. Deploy `apps/api` to Railway
+#### Render (Backend)
 
-### Docker Compose (self-hosted)
+1. New Web Service → connect GitHub repo
+2. Build command: `pnpm install && pnpm build`
+3. Start command: `node apps/api/dist/index.js`
+4. Add env vars: `DATABASE_URL`, `PORT=8000`, `BASE_URL`, `APP_URL`
+5. Add a PostgreSQL database from the Render dashboard
+
+#### Railway (Alternative)
+
+1. New Project → Deploy from GitHub
+2. Add PostgreSQL service
+3. Set env vars and deploy `apps/api` and `apps/web` as separate services
+4. Run `pnpm --filter api seed` after deploy
+
+#### Docker Compose (Self-hosted)
+
 ```bash
 docker compose -f docker-compose.prod.yml up -d
 ```
@@ -403,67 +420,71 @@ docker compose -f docker-compose.prod.yml up -d
 ## 🔧 Scripts
 
 ```bash
-pnpm dev              # Start all apps
-pnpm build            # Build all
-pnpm db:migrate          # Push schema
-pnpm db:migrate       # Run migrations
-pnpm db:studio        # Drizzle Studio GUI
-pnpm seed             # Seed demo data
-pnpm lint             # Lint
-pnpm check-types      # TypeScript check
+pnpm dev              # Start all apps in development
+pnpm build            # Build all apps
+pnpm db:migrate       # Push Drizzle schema / run migrations
+pnpm db:studio        # Open Drizzle Studio GUI
+pnpm seed             # Seed API-level demo data locally
+pnpm lint             # Lint all packages
+pnpm check-types      # TypeScript type check across monorepo
 ```
 
 ---
 
 ## ✅ Feature Checklist
 
-### Core
-- [x] User auth (JWT, sign up/in/out)
+### Core (All Required Features)
+
+- [x] User auth — JWT sign up / sign in / sign out
 - [x] Creator dashboard
 - [x] Create / edit / delete / publish / unpublish forms
 - [x] 9 field types with Zod validation
-- [x] Required / optional field settings
-- [x] Public form submission (no login)
-- [x] Public forms on `/explore`
-- [x] Unlisted forms (direct link only)
+- [x] Required / optional field configuration
+- [x] Public form submission (no login required)
+- [x] Public forms on `/explore` page
+- [x] Unlisted forms (direct link only, hidden from explore)
+- [x] Unpublished forms reject responses gracefully
+- [x] Invalid / expired / limited form links handled with proper errors
 - [x] Response analytics per form
-- [x] Email notifications (Resend / fallback)
+- [x] Email notifications (Resend + console fallback)
 - [x] Landing page + pricing page
 - [x] Scalar API documentation
-- [x] Rate limiting
-- [x] Demo credentials + seeded data
+- [x] Rate limiting (Upstash Redis + in-memory fallback)
+- [x] 3 themed demo forms created through the product UI
+- [x] Demo credentials
 
-### New in v2
-- [x] **Form preview** (multi-step + classic, modal)
-- [x] **Conditional logic** (show/hide fields based on answers)
-- [x] **QR code sharing** (modal, copy link, download PNG)
-- [x] **Multi-step Typeform-style UI** (dark theme, cover screen, keyboard nav, per-step validation)
-- [x] **Response limits** (max count, enforced server-side)
-- [x] **Form expiry** (close date/time, enforced server-side)
+### Bonus (All Implemented)
 
-### Bonus
-- [x] CSV export
+- [x] Form preview — multi-step + classic mode modal
+- [x] Conditional logic — show/hide fields based on answers
+- [x] QR code sharing — modal, copy link, download PNG
+- [x] Multi-step Typeform-style UI — dark theme, cover screen, keyboard nav, per-step validation
+- [x] Response limits — max count, enforced server-side
+- [x] Form expiry — close date/time, enforced server-side
+- [x] CSV export for responses
 - [x] Recharts analytics dashboards
-- [x] Form duplication + archiving
 - [x] Custom auto-generated slugs
 - [x] Explore page with search + pagination
-- [x] Progress bar in public form
-- [x] Completion time tracking
-- [x] QR PNG download
+- [x] Progress bar in public multi-step form
+- [x] Completion time tracking sent with submissions
+- [x] Form duplication
+- [x] Form archiving
 
 ---
 
 ## 🐛 Troubleshooting
 
-**Database connection error** → `docker compose up -d` and check `DATABASE_URL`
+**Database connection error** → run `docker compose up -d` and verify `DATABASE_URL` in `.env`
 
-**pnpm not found** → `npm install -g pnpm`
+**pnpm not found** → run `npm install -g pnpm`
 
-**"Form not available" on public form** → Form must be published and not expired/limited
+**"Form not available" on public form** → form must be published and not expired or over its response limit
 
-**CORS errors** → Ensure `APP_URL` in `.env` matches your frontend URL exactly
+**CORS errors** → ensure `APP_URL` in `.env` matches your frontend URL exactly (no trailing slash)
 
-**TypeScript errors after pulling** → `pnpm check-types` to identify, `pnpm db:migrate` if schema changed
+**TypeScript errors after pulling** → run `pnpm check-types`; if schema changed, run `pnpm db:migrate`
+
+**Backend cold start on Render** → free tier Render services sleep after inactivity; the first request may take ~30 seconds to wake up
 
 ---
 
@@ -473,11 +494,4 @@ MIT — build something awesome.
 
 ---
 
-Built with ❤️ for the FormCraft Hackathon · v2 with Conditional Logic, Preview, QR Sharing, Multi-step UI & Response Limits.
-#   F o r m C r a f t  
- #   E d i n F o r m 2  
- #   E d i n F o r m 4  
- #   E d i n F o r m 5  
- #   E d i n F o r m 9  
- #   E d i n F o r m 1 1  
- 
+Built with ❤️ for the EdinForm Hackathon · 2026v — featuring Conditional Logic, Form Preview, QR Sharing, Multi-step UI, Response Limits & Expiry.
