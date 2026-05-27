@@ -20,7 +20,8 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const utils = trpc.useUtils();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
+  const [menuPos, setMenuPos] = useState<{ top?: number; bottom?: number; right: number } | null>(null);
+  const MENU_HEIGHT = 260;
   const [qrForm, setQrForm] = useState<{ title: string; slug: string } | null>(null);
 
   const { data: forms, isLoading } = trpc.forms.list.useQuery({ includeArchived: false });
@@ -331,7 +332,14 @@ export default function DashboardPage() {
                           onClick={(e) => {
                             if (openMenu === form.id) { setOpenMenu(null); setMenuPos(null); return; }
                             const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                            setMenuPos({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
+                            const spaceBelow = window.innerHeight - rect.bottom;
+                            const right = window.innerWidth - rect.right;
+                            if (spaceBelow < MENU_HEIGHT) {
+                              // not enough space below — open upward
+                              setMenuPos({ bottom: window.innerHeight - rect.top + 6, right });
+                            } else {
+                              setMenuPos({ top: rect.bottom + 6, right });
+                            }
                             setOpenMenu(form.id);
                           }}
                           className="ef-btn-ghost"
@@ -341,7 +349,13 @@ export default function DashboardPage() {
 
                         {openMenu === form.id && (
                           <div className="ef-glass"
-                            style={{ position: "fixed", top: menuPos?.top ?? 0, right: menuPos?.right ?? 0, width: 200, borderRadius: "12px", padding: "4px", zIndex: 9999 }}
+                            style={{
+                              position: "fixed",
+                              ...(menuPos?.top !== undefined ? { top: menuPos.top } : {}),
+                              ...(menuPos?.bottom !== undefined ? { bottom: menuPos.bottom } : {}),
+                              right: menuPos?.right ?? 0,
+                              width: 200, borderRadius: "12px", padding: "4px", zIndex: 9999,
+                            }}
                             onClick={() => { setOpenMenu(null); setMenuPos(null); }}>
                             {[{ icon: Layers, label: "Edit & Preview", href: `/dashboard/forms/${form.id}/edit` }].map(({ icon: Icon, label, href }) => (
                               <Link key={label} href={href}
