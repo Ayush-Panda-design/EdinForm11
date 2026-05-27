@@ -142,7 +142,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.15rem", color: "var(--foreground)", marginBottom: "3px" }}>
-                FormCraft is your end-to-end form intelligence platform.
+                EdinForm is your end-to-end form intelligence platform.
               </p>
               <p style={{ fontSize: "13px", color: "var(--muted-foreground)", lineHeight: 1.5 }}>
                 Build adaptive multi-step forms with conditional logic, share via QR, enforce response limits, and analyse every submission — all from one workspace.
@@ -320,12 +320,20 @@ export default function DashboardPage() {
             <p style={{ fontSize: "12px", color: "var(--muted-foreground)", lineHeight: 1.6, marginBottom: "12px" }}>
               Full REST + tRPC API. Manage forms, submit responses, and pull analytics programmatically. Full OpenAPI 3.1 docs available.
             </p>
-            <a href="http://localhost:8000/docs" target="_blank" rel="noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#C89B63", textDecoration: "none" }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "underline"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "none"; }}>
-              Open API docs <ExternalLink style={{ width: 11, height: 11 }} />
-            </a>
+           
+            <a href="https://edinform11-2.onrender.com/docs" target="_blank" rel="noreferrer"
+  style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#C89B63", textDecoration: "none" }}
+  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "underline"; }}
+  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "none"; }}>
+  Open API docs <ExternalLink style={{ width: 11, height: 11 }} />
+</a>
+
+<a href="https://edinform11-2.onrender.com/openapi.json" target="_blank" rel="noreferrer"
+  style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "var(--muted-foreground)", textDecoration: "none", marginLeft: "12px" }}
+  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "underline"; }}
+  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "none"; }}>
+  OpenAPI JSON <ExternalLink style={{ width: 11, height: 11 }} />
+</a>
           </div>
         </div>
       </div>
@@ -341,7 +349,7 @@ export default function DashboardPage() {
             Everything you need to build great forms.
           </h2>
           <p style={{ marginTop: "6px", fontSize: "14px", color: "var(--muted-foreground)", maxWidth: "480px", lineHeight: 1.6 }}>
-            FormCraft combines a beautiful respondent experience with serious backend infrastructure — rate limiting, expiry enforcement, conditional logic, and a full analytics suite.
+            EdinForm combines a beautiful respondent experience with serious backend infrastructure — rate limiting, expiry enforcement, conditional logic, and a full analytics suite.
           </p>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
