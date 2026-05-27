@@ -29,15 +29,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     setTokenChecked(true);
-    if (!isAuthenticated()) {
-      router.push("/auth/login");
-    }
+    if (!isAuthenticated()) router.push("/auth/login");
   }, [router]);
 
   useEffect(() => {
-    if (tokenChecked && !isLoading && !user && !isAuthenticated()) {
+    if (tokenChecked && !isLoading && !user && !isAuthenticated())
       router.push("/auth/login");
-    }
   }, [user, isLoading, tokenChecked, router]);
 
   if (!tokenChecked || isLoading) {
@@ -52,15 +49,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const linkClass = (active: boolean) =>
     cn(
-      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all",
       active
-        ? "bg-white/[0.05] text-[color:var(--foreground)] border border-[color:var(--border)]"
-        : "text-[color:var(--muted-foreground)] hover:bg-white/[0.03] hover:text-[color:var(--foreground)]",
+        ? "bg-[rgba(200,155,99,0.10)] text-[color:var(--foreground)] border border-[rgba(200,155,99,0.18)] font-medium"
+        : "text-[color:var(--muted-foreground)] hover:bg-white/[0.03] hover:text-[color:var(--foreground)] border border-transparent font-normal",
     );
 
+  const navItems = [
+    { href: "/dashboard",           icon: LayoutDashboard, label: "Dashboard",    active: pathname === "/dashboard" },
+    { href: "/dashboard/forms/new", icon: Plus,            label: "New Form",     active: pathname === "/dashboard/forms/new" },
+    { href: "/dashboard/analytics", icon: BarChart3,       label: "Analytics",    active: pathname.startsWith("/dashboard/analytics") },
+    { href: "/explore",             icon: FileText,        label: "Explore Forms",active: false },
+    { href: "/dashboard/settings",  icon: Settings,        label: "Settings",     active: pathname.startsWith("/dashboard/settings") },
+    ...(user.role === "admin"
+      ? [{ href: "/dashboard/admin", icon: ShieldCheck, label: "Admin", active: pathname.startsWith("/dashboard/admin") }]
+      : []),
+  ];
+
   return (
-    <div className="min-h-screen flex">
-      {/* Mobile top bar */}
+    /* KEY FIX: h-screen + overflow-hidden on the shell so sidebar can be h-full */
+    <div className="h-screen overflow-hidden flex">
+
+      {/* ══════ MOBILE TOP BAR ══════ */}
       <div className="lg:hidden fixed top-0 inset-x-0 z-40 flex items-center justify-between ef-glass-soft px-4 h-14">
         <EdinFormLogo size={24} />
         <details className="relative">
@@ -69,65 +79,48 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </summary>
-          <div className="absolute right-0 mt-2 w-56 rounded-lg ef-glass p-2 space-y-1 text-sm">
-            <Link href="/dashboard" className="block px-3 py-2 rounded hover:bg-white/[0.04]">Dashboard</Link>
-            <Link href="/dashboard/forms/new" className="block px-3 py-2 rounded hover:bg-white/[0.04]">New form</Link>
-            <Link href="/dashboard/analytics" className="block px-3 py-2 rounded hover:bg-white/[0.04]">Analytics</Link>
-            <Link href="/explore" className="block px-3 py-2 rounded hover:bg-white/[0.04]">Templates</Link>
-            <Link href="/dashboard/settings" className="block px-3 py-2 rounded hover:bg-white/[0.04]">Settings</Link>
-            {user.role === "admin" && (
-              <Link href="/dashboard/admin" className="block px-3 py-2 rounded hover:bg-white/[0.04]">Admin</Link>
-            )}
+          <div className="absolute right-0 mt-2 w-56 rounded-lg ef-glass p-2 space-y-1 text-sm z-50">
+            {navItems.map(({ href, label }) => (
+              <Link key={href} href={href} className="block px-3 py-2 rounded hover:bg-white/[0.04]">{label}</Link>
+            ))}
             <div className="border-t border-[color:var(--border)] my-1" />
-            <button
-              onClick={toggleTheme}
-              className="w-full text-left px-3 py-2 rounded hover:bg-white/[0.04]"
-            >
+            <button onClick={toggleTheme} className="w-full text-left px-3 py-2 rounded hover:bg-white/[0.04]">
               {theme === "dark" ? "Light mode" : "Dark mode"}
             </button>
-            <button
-              onClick={logout}
-              className="w-full text-left px-3 py-2 rounded text-[color:var(--destructive)] hover:bg-white/[0.04]"
-            >
+            <button onClick={logout} className="w-full text-left px-3 py-2 rounded text-[color:var(--destructive)] hover:bg-white/[0.04]">
               Sign out
             </button>
           </div>
         </details>
       </div>
 
-      {/* Sidebar */}
-      <aside className="hidden lg:flex w-64 bg-[color:var(--sidebar)]/80 backdrop-blur-xl border-r border-[color:var(--border)] flex-col fixed h-full">
-        <div className="p-6 border-b border-[color:var(--border)]">
+      {/* ══════ SIDEBAR ══════ */}
+      {/* h-full works because parent is h-screen (defined height, not min-h-screen) */}
+      <aside className="hidden lg:flex w-64 flex-col h-full bg-[color:var(--sidebar)] border-r border-[color:var(--border)] flex-shrink-0">
+
+        {/* Logo */}
+        <div className="p-6 border-b border-[color:var(--border)] flex-shrink-0">
           <EdinFormLogo size={26} />
         </div>
 
-        <nav className="p-4 flex-1 space-y-1">
-          <Link href="/dashboard" className={linkClass(pathname === "/dashboard")}>
-            <LayoutDashboard className="w-4 h-4" /> Dashboard
-          </Link>
-          <Link href="/dashboard/forms/new" className={linkClass(pathname === "/dashboard/forms/new")}>
-            <Plus className="w-4 h-4" /> New Form
-          </Link>
-          <Link href="/dashboard/analytics" className={linkClass(pathname === "/dashboard/analytics")}>
-            <BarChart3 className="w-4 h-4" /> Analytics
-          </Link>
-          <Link href="/explore" className={linkClass(false)}>
-            <FileText className="w-4 h-4" /> Explore Forms
-          </Link>
-          <Link href="/dashboard/settings" className={linkClass(pathname === "/dashboard/settings")}>
-            <Settings className="w-4 h-4" /> Settings
-          </Link>
-          {user.role === "admin" && (
-            <Link href="/dashboard/admin" className={linkClass(pathname.startsWith("/dashboard/admin"))}>
-              <ShieldCheck className="w-4 h-4" /> Admin
+        {/* Nav links — flex-1 so it fills all space between logo and user */}
+        <nav className="p-4 flex-1 space-y-0.5 overflow-y-auto">
+          {navItems.map(({ href, icon: Icon, label, active }) => (
+            <Link key={href} href={href} className={linkClass(active)}>
+              <Icon
+                className="w-4 h-4 flex-shrink-0"
+                style={{ color: active ? "#C89B63" : "currentColor" }}
+              />
+              {label}
             </Link>
-          )}
+          ))}
         </nav>
 
-        <div className="p-4 border-t border-[color:var(--border)]">
+        {/* User section — flex-shrink-0 keeps it always visible at the bottom */}
+        <div className="p-4 border-t border-[color:var(--border)] flex-shrink-0">
           <div className="flex items-center gap-3 mb-3">
             <div
-              className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold"
+              className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0"
               style={{
                 background: "linear-gradient(140deg, #C89B63 0%, #8B7355 100%)",
                 color: "#14110C",
@@ -136,35 +129,34 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {user.fullName[0]}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[color:var(--foreground)] truncate">
-                {user.fullName}
-              </p>
-              <p className="text-xs text-[color:var(--muted-foreground)] truncate">
-                {user.email}
-              </p>
+              <p className="text-sm font-medium text-[color:var(--foreground)] truncate">{user.fullName}</p>
+              <p className="text-xs text-[color:var(--muted-foreground)] truncate">{user.email}</p>
             </div>
           </div>
-          <div className="flex items-center justify-between mb-2">
-            <button
-              onClick={toggleTheme}
-              className="flex items-center gap-1.5 text-xs text-[color:var(--muted-foreground)] hover:text-[color:var(--foreground)] px-2 py-1.5 rounded-lg hover:bg-white/[0.04] transition-colors"
-            >
-              {theme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-              {theme === "dark" ? "Light" : "Dark"}
-            </button>
-          </div>
+
+          <button
+            onClick={toggleTheme}
+            className="flex items-center gap-1.5 text-xs text-[color:var(--muted-foreground)] hover:text-[color:var(--foreground)] px-2 py-1.5 rounded-lg hover:bg-white/[0.04] transition-colors w-full mb-1"
+          >
+            {theme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+            {theme === "dark" ? "Light mode" : "Dark mode"}
+          </button>
+
           <button
             onClick={logout}
-            className="w-full flex items-center gap-2 text-sm text-[color:var(--muted-foreground)] hover:text-[color:var(--destructive)] px-2 py-1.5 rounded-lg transition-colors"
+            className="w-full flex items-center gap-2 text-xs text-[color:var(--muted-foreground)] hover:text-red-400 px-2 py-1.5 rounded-lg hover:bg-red-500/[0.06] transition-colors"
           >
-            <LogOut className="w-4 h-4" /> Sign out
+            <LogOut className="w-3.5 h-3.5" /> Sign out
           </button>
         </div>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 lg:ml-64 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8 min-h-screen">
-        {children}
+      {/* ══════ MAIN CONTENT ══════ */}
+      {/* overflow-y-auto here so only main scrolls, sidebar stays fixed */}
+      <main className="flex-1 overflow-y-auto pt-14 lg:pt-0">
+        <div className="p-4 sm:p-6 lg:p-8">
+          {children}
+        </div>
       </main>
     </div>
   );
