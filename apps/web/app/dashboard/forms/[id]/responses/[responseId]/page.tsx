@@ -3,188 +3,315 @@
 import { use } from "react";
 import Link from "next/link";
 import { trpc } from "~/trpc/client";
-import { ArrowLeft, Loader2, User, Clock, Mail, Globe, AlertCircle, Flag } from "lucide-react";
-import { formatDistanceToNow, format } from "date-fns";
+import {
+  ArrowLeft,
+  Loader2,
+  User,
+ Clock,
+  Mail,
+  Globe,
+  AlertCircle,
+  Flag,
+} from "lucide-react";
+import {
+  formatDistanceToNow,
+  format,
+} from "date-fns";
 import { toast } from "sonner";
 
 export default function ResponseDetailPage({
   params,
 }: {
-  params: Promise<{ id: string; responseId: string }>;
+  params: Promise<{
+    id: string;
+    responseId: string;
+  }>;
 }) {
   const { id, responseId } = use(params);
+
   const utils = trpc.useUtils();
 
-  const { data: form } = trpc.forms.getById.useQuery({ id });
-  const { data: response, isLoading } = trpc.responses.getById.useQuery({ id: responseId });
+  const { data: form } =
+    trpc.forms.getById.useQuery({
+      id,
+    });
 
-  const markSpamMutation = trpc.responses.markAsSpam.useMutation({
-    onSuccess: () => {
-      toast.success("Response marked as spam");
-      utils.responses.list.invalidate({ formId: id });
-    },
-    onError: (e) => toast.error(e.message),
-  });
+  const { data: response, isLoading } =
+    trpc.responses.getById.useQuery({
+      id: responseId,
+    });
+
+  const markSpamMutation =
+    trpc.responses.markAsSpam.useMutation({
+      onSuccess: () => {
+        toast.success(
+          "Response marked as spam"
+        );
+
+        utils.responses.list.invalidate({
+          formId: id,
+        });
+      },
+
+      onError: (e) =>
+        toast.error(e.message),
+    });
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-16">
-        <Loader2 className="w-6 h-6 animate-spin text-stone-900" />
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
       </div>
     );
   }
 
   if (!response) {
     return (
-      <div className="max-w-2xl mx-auto text-center p-16">
-        <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-        <p className="text-gray-600 dark:text-gray-400">Response not found.</p>
-        <Link href={`/dashboard/forms/${id}/responses`} className="text-stone-900 hover:underline text-sm mt-2 inline-block">
-          ← Back to responses
-        </Link>
+      <div className="relative max-w-2xl mx-auto text-center py-20">
+        {/* Ambient glow */}
+        <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-1/3 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-violet-500/10 blur-3xl" />
+        </div>
+
+        <div className="rounded-3xl border border-border/50 bg-background/70 backdrop-blur-xl shadow-sm p-12">
+          <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto mb-5">
+            <AlertCircle className="w-8 h-8 text-red-400" />
+          </div>
+
+          <h1 className="text-2xl font-semibold text-foreground mb-2">
+            Response not found
+          </h1>
+
+          <p className="text-muted-foreground mb-6">
+            This response may have been deleted
+            or is no longer available.
+          </p>
+
+          <Link
+            href={`/dashboard/forms/${id}/responses`}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to responses
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="relative max-w-3xl mx-auto">
+      {/* Cinematic ambient glow */}
+      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-violet-500/10 blur-3xl" />
+      </div>
+
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         <Link
           href={`/dashboard/forms/${id}/responses`}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
+          className="p-2.5 rounded-2xl bg-secondary/50 hover:bg-secondary transition-colors text-muted-foreground"
         >
           <ArrowLeft className="w-4 h-4" />
         </Link>
-        <div className="flex-1">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl font-semibold text-foreground">
             Response Detail
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">{form?.title}</p>
+
+          <p className="text-sm text-muted-foreground mt-1 truncate">
+            {form?.title}
+          </p>
         </div>
+
         {response.status !== "spam" && (
           <button
             onClick={() => {
-              if (confirm("Mark this response as spam?")) {
-                markSpamMutation.mutate({ id: responseId });
+              if (
+                confirm(
+                  "Mark this response as spam?"
+                )
+              ) {
+                markSpamMutation.mutate({
+                  id: responseId,
+                });
               }
             }}
-            className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-lg border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-red-500/20 bg-red-500/10 text-sm font-medium text-red-400 hover:bg-red-500/20 transition-colors"
           >
-            <Flag className="w-3.5 h-3.5" /> Mark Spam
+            <Flag className="w-4 h-4" />
+            Mark Spam
           </button>
         )}
       </div>
 
-      {/* Metadata card */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-6 mb-6">
-        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">
-          Respondent Info
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-900/30 flex items-center justify-center flex-shrink-0">
-              <User className="w-4 h-4 text-stone-900" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Name</p>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                {response.respondentName || <span className="text-gray-400 italic">Anonymous</span>}
-              </p>
-            </div>
+      {/* Respondent Info */}
+      <div className="rounded-3xl border border-border/50 bg-background/70 backdrop-blur-xl shadow-sm p-7 mb-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              Respondent Info
+            </p>
+
+            <h2 className="text-lg font-semibold text-foreground mt-1">
+              Submission Metadata
+            </h2>
           </div>
 
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-              <Mail className="w-4 h-4 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Email</p>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                {response.respondentEmail || <span className="text-gray-400 italic">Not provided</span>}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
-              <Clock className="w-4 h-4 text-green-600" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Submitted</p>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                {response.submittedAt
-                  ? `${format(new Date(response.submittedAt), "PPP 'at' p")} (${formatDistanceToNow(new Date(response.submittedAt))} ago)`
-                  : "—"}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
-              <Globe className="w-4 h-4 text-orange-600" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Completion time</p>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                {response.completionTimeSeconds != null
-                  ? `${response.completionTimeSeconds}s`
-                  : "—"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center gap-3">
-          <span className="text-xs text-gray-500">Status:</span>
           <span
-            className={`text-xs font-medium px-2 py-1 rounded-full ${
-              response.status === "completed"
-                ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400"
+            className={`px-3 py-1 rounded-full text-xs font-medium border ${
+              response.status ===
+              "completed"
+                ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
                 : response.status === "spam"
-                ? "bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400"
-                : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                ? "border-red-500/20 bg-red-500/10 text-red-400"
+                : "border-border/60 bg-secondary/60 text-muted-foreground"
             }`}
           >
             {response.status}
           </span>
         </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {/* Name */}
+          <InfoCard
+            icon={
+              <User className="w-4 h-4 text-primary" />
+            }
+            title="Name"
+            value={
+              response.respondentName || (
+                <span className="italic text-muted-foreground">
+                  Anonymous
+                </span>
+              )
+            }
+          />
+
+          {/* Email */}
+          <InfoCard
+            icon={
+              <Mail className="w-4 h-4 text-blue-400" />
+            }
+            title="Email"
+            value={
+              response.respondentEmail || (
+                <span className="italic text-muted-foreground">
+                  Not provided
+                </span>
+              )
+            }
+          />
+
+          {/* Submitted */}
+          <InfoCard
+            icon={
+              <Clock className="w-4 h-4 text-emerald-400" />
+            }
+            title="Submitted"
+            value={
+              response.submittedAt
+                ? `${format(
+                    new Date(
+                      response.submittedAt
+                    ),
+                    "PPP 'at' p"
+                  )} (${formatDistanceToNow(
+                    new Date(
+                      response.submittedAt
+                    )
+                  )} ago)`
+                : "—"
+            }
+          />
+
+          {/* Completion */}
+          <InfoCard
+            icon={
+              <Globe className="w-4 h-4 text-orange-400" />
+            }
+            title="Completion Time"
+            value={
+              response.completionTimeSeconds !=
+              null
+                ? `${response.completionTimeSeconds}s`
+                : "—"
+            }
+          />
+        </div>
       </div>
 
       {/* Answers */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-6">
-        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-6">
-          Answers ({response.answers.length})
-        </h2>
+      <div className="rounded-3xl border border-border/50 bg-background/70 backdrop-blur-xl shadow-sm p-7">
+        <div className="mb-7">
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            Answers
+          </p>
+
+          <h2 className="text-lg font-semibold text-foreground mt-1">
+            {response.answers.length} Responses
+          </h2>
+        </div>
 
         {response.answers.length === 0 ? (
-          <p className="text-gray-400 italic text-sm">No answers recorded.</p>
+          <div className="rounded-2xl border border-border/50 bg-background/50 backdrop-blur-md p-8 text-center">
+            <p className="text-muted-foreground italic">
+              No answers recorded.
+            </p>
+          </div>
         ) : (
           <div className="space-y-6">
             {response.answers.map((ans, i) => {
-              const field = form?.fields.find((f) => f.id === ans.fieldId);
-              const value = ans.valueArray?.join(", ") || ans.value || "";
+              const field = form?.fields.find(
+                (f) => f.id === ans.fieldId
+              );
+
+              const value =
+                ans.valueArray?.join(", ") ||
+                ans.value ||
+                "";
 
               return (
-                <div key={ans.id} className="pb-6 border-b border-gray-100 dark:border-gray-800 last:border-0 last:pb-0">
-                  <div className="flex items-start gap-2 mb-2">
-                    <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded font-mono flex-shrink-0 mt-0.5">
+                <div
+                  key={ans.id}
+                  className="rounded-2xl border border-border/50 bg-background/50 backdrop-blur-md p-5"
+                >
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="flex items-center justify-center min-w-8 h-8 rounded-xl bg-secondary/60 text-xs font-mono text-muted-foreground">
                       Q{i + 1}
-                    </span>
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {field?.label ?? `Field ${ans.fieldId.slice(0, 8)}`}
-                      {field?.required && (
-                        <span className="ml-1.5 text-xs text-red-400">*required</span>
-                      )}
-                    </p>
-                  </div>
-                  <div className="ml-8">
-                    {value ? (
-                      <p className="text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2">
-                        {value}
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground">
+                        {field?.label ??
+                          `Field ${ans.fieldId.slice(
+                            0,
+                            8
+                          )}`}
                       </p>
+
+                      {field?.required && (
+                        <span className="inline-flex mt-1 text-xs text-red-400">
+                          * required
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="ml-11">
+                    {value ? (
+                      <div className="rounded-2xl border border-border/50 bg-background/60 backdrop-blur-md px-4 py-3">
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground">
+                          {value}
+                        </p>
+                      </div>
                     ) : (
-                      <p className="text-sm text-gray-400 italic">Not answered</p>
+                      <p className="text-sm italic text-muted-foreground">
+                        Not answered
+                      </p>
                     )}
                   </div>
                 </div>
@@ -192,6 +319,36 @@ export default function ResponseDetailPage({
             })}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function InfoCard({
+  icon,
+  title,
+  value,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  value: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-border/50 bg-background/50 backdrop-blur-md p-4">
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 rounded-2xl bg-secondary/60 flex items-center justify-center flex-shrink-0">
+          {icon}
+        </div>
+
+        <div className="min-w-0">
+          <p className="text-xs text-muted-foreground mb-1">
+            {title}
+          </p>
+
+          <div className="text-sm font-medium text-foreground break-words">
+            {value}
+          </div>
+        </div>
       </div>
     </div>
   );
