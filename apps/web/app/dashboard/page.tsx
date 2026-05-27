@@ -50,16 +50,16 @@ export default function DashboardPage() {
     { label: "Total Forms",    value: dashboard?.totalForms ?? 0,                               icon: FileText,   suffix: "",  delta: "+2 this week",        deltaUp: true  },
     { label: "Total Views",    value: dashboard?.totalViews ?? 0,                               icon: Eye,        suffix: "",  delta: "+12% vs last week",   deltaUp: true  },
     { label: "Responses",      value: dashboard?.totalResponses ?? 0,                           icon: BarChart3,  suffix: "",  delta: "+8 today",            deltaUp: true  },
-    { label: "Avg Conversion", value: dashboard ? dashboard.avgConversionRate.toFixed(1) : "0", icon: TrendingUp, suffix: "%", delta: "Industry avg 3.2%",   deltaUp: false },
+    { label: "Avg Completion", value: dashboard ? dashboard.avgConversionRate.toFixed(1) : "0", icon: TrendingUp, suffix: "%", delta: "Average is 3.2%",     deltaUp: false },
   ];
 
   const features = [
-    { icon: GitBranch,     title: "Conditional Logic",        desc: "Show or hide fields based on previous answers. Build smart, adaptive forms that feel conversational and reduce respondent friction." },
-    { icon: MousePointer2, title: "Multi-step Form UI",       desc: "One question at a time with animated transitions, keyboard navigation, and a polished progress bar. Designed to maximise completion rates." },
-    { icon: QrCode,        title: "QR Code Sharing",          desc: "Every published form gets a downloadable QR code. Perfect for print, events, and offline-to-online campaigns." },
-    { icon: Shield,        title: "Response Limits & Expiry", desc: "Set a max response count or a close date. EdinForm enforces both server-side so you never over-collect." },
-    { icon: Eye,           title: "Live Preview",             desc: "Preview your form in multi-step or classic mode before you hit publish. No guessing how respondents will see it." },
-    { icon: Download,      title: "CSV Export",               desc: "One-click export of all responses to CSV. Bring your data into Excel, Google Sheets, or any analytics tool instantly." },
+    { icon: GitBranch,     title: "Smart Branching",          desc: "Show or hide questions based on previous answers. Build forms that feel like a natural conversation and keep people engaged to the end." },
+    { icon: MousePointer2, title: "One Question at a Time",   desc: "Present each question on its own screen with smooth transitions and keyboard support. Designed to keep people focused and boost completion rates." },
+    { icon: QrCode,        title: "QR Code Sharing",          desc: "Every published form gets a downloadable QR code. Perfect for printed materials, events, and bringing people online from the physical world." },
+    { icon: Shield,        title: "Response Limits & Closing Dates", desc: "Set a maximum number of responses or a close date. EdinForm enforces both automatically so you never over-collect." },
+    { icon: Eye,           title: "Live Preview",             desc: "See exactly how your form will look before you share it — in both single-question and classic layouts. No surprises." },
+    { icon: Download,      title: "Export to Spreadsheet",    desc: "Download all your responses as a spreadsheet file with one click. Open it straight in Excel, Google Sheets, or any other tool you use." },
   ];
 
   const visibilityBadge = (v: string) => {
@@ -88,11 +88,33 @@ export default function DashboardPage() {
   return (
     <div style={{ fontFamily: "'Inter', sans-serif" }}>
 
+      {/* ── Mobile-responsive styles ── */}
+      <style>{`
+        @media (max-width: 768px) {
+          .dashboard-header { flex-direction: column !important; gap: 1rem !important; }
+          .dashboard-header-actions { margin-top: 0 !important; width: 100%; }
+          .dashboard-header-actions a { flex: 1; justify-content: center; }
+          .stats-grid { grid-template-columns: 1fr 1fr !important; }
+          .banner-inner { flex-direction: column !important; gap: 1rem !important; }
+          .banner-links { width: 100%; }
+          .banner-links a { flex: 1; justify-content: center; }
+          .two-col { grid-template-columns: 1fr !important; }
+          .feature-grid { grid-template-columns: 1fr 1fr !important; }
+          .status-strip { flex-direction: column !important; gap: 0.75rem !important; align-items: flex-start !important; }
+        }
+        @media (max-width: 480px) {
+          .stats-grid { grid-template-columns: 1fr !important; }
+          .feature-grid { grid-template-columns: 1fr !important; }
+          .form-row-meta { flex-wrap: wrap; gap: 0.5rem !important; }
+          .form-row-actions { gap: 0 !important; }
+        }
+      `}</style>
+
       {/* ── Page header ── */}
-      <div className="flex items-start justify-between mb-10">
+      <div className="dashboard-header" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "2.5rem" }}>
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)" }}>Studio</p>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+            <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)" }}>EdinForm</p>
             <span style={{ fontSize: "11px", color: "var(--muted-foreground)", opacity: 0.4 }}>/</span>
             <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)", opacity: 0.6 }}>Dashboard</p>
           </div>
@@ -103,7 +125,7 @@ export default function DashboardPage() {
             Your forms are live and collecting responses. Here's everything happening in your workspace today.
           </p>
         </div>
-        <div className="flex items-center gap-2" style={{ flexShrink: 0, marginTop: "4px" }}>
+        <div className="dashboard-header-actions" style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0, marginTop: "4px" }}>
           <Link href="/dashboard/analytics" className="ef-btn-ghost inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm">
             <Activity className="w-4 h-4" /> Analytics
           </Link>
@@ -114,11 +136,11 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Stats ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+      <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1rem", marginBottom: "2.5rem" }}>
         {stats.map((s, i) => (
           <div key={s.label} className="ef-card p-5"
             style={{ animationDelay: `${i * 60}ms`, animation: "ef-fade-up .6s cubic-bezier(.2,.7,.2,1) both" }}>
-            <div className="flex items-center justify-between mb-4">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
               <span style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)" }}>{s.label}</span>
               <s.icon style={{ width: 14, height: 14, color: "#C89B63", opacity: 0.7 }} />
             </div>
@@ -133,39 +155,39 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Platform callout banner ── */}
-      <div className="ef-card mb-10 overflow-hidden" style={{ borderRadius: "1rem", position: "relative" }}>
+      <div className="ef-card" style={{ marginBottom: "2.5rem", borderRadius: "1rem", overflow: "hidden", position: "relative" }}>
         <div style={{ position: "absolute", inset: 0, opacity: 0.04, backgroundImage: "radial-gradient(circle at 20% 50%, #C89B63 0%, transparent 60%), radial-gradient(circle at 80% 50%, #7EB884 0%, transparent 60%)", pointerEvents: "none" }} />
-        <div style={{ padding: "1.5rem 2rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "2rem", flexWrap: "wrap" }}>
+        <div className="banner-inner" style={{ padding: "1.5rem 2rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "2rem", flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             <div style={{ width: 44, height: 44, borderRadius: "12px", background: "rgba(200,155,99,0.1)", border: "1px solid rgba(200,155,99,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <Sparkles style={{ width: 20, height: 20, color: "#C89B63" }} />
             </div>
             <div>
               <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.15rem", color: "var(--foreground)", marginBottom: "3px" }}>
-                EdinForm is your end-to-end form intelligence platform.
+                EdinForm is your complete form-building and insights platform.
               </p>
               <p style={{ fontSize: "13px", color: "var(--muted-foreground)", lineHeight: 1.5 }}>
-                Build adaptive multi-step forms with conditional logic, share via QR, enforce response limits, and analyse every submission — all from one workspace.
+                Build smart multi-step forms with branching questions, share via QR code, cap responses, and review every submission — all from one place.
               </p>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+          <div className="banner-links" style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
             <Link href="/explore" className="ef-btn-ghost inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm">
-              Explore public forms <ChevronRight className="w-3.5 h-3.5" />
+              Browse public forms <ChevronRight className="w-3.5 h-3.5" />
             </Link>
             <Link href="/docs" className="ef-btn-ghost inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm">
-              API docs <ExternalLink className="w-3 h-3" />
+              How it works <ExternalLink className="w-3 h-3" />
             </Link>
           </div>
         </div>
       </div>
 
       {/* ── Two-column layout ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "1.5rem", alignItems: "start" }}>
+      <div className="two-col" style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "1.5rem", alignItems: "start" }}>
 
         {/* LEFT — Forms list */}
         <div>
-          <div className="ef-card overflow-hidden" style={{ borderRadius: "1rem" }}>
+          <div className="ef-card" style={{ borderRadius: "1rem", overflow: "hidden" }}>
             <div style={{ padding: "1rem 1.5rem", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
                 <span style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)" }}>Your Forms</span>
@@ -192,9 +214,9 @@ export default function DashboardPage() {
                   <FileText style={{ width: 22, height: 22, color: "#C89B63" }} />
                 </div>
                 <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.4rem", color: "var(--foreground)", marginBottom: "0.5rem" }}>No forms yet.</p>
-                <p style={{ fontSize: "13px", color: "var(--muted-foreground)", marginBottom: "1.5rem" }}>Draft your first question. It only takes a minute.</p>
+                <p style={{ fontSize: "13px", color: "var(--muted-foreground)", marginBottom: "1.5rem" }}>Write your first question. It only takes a minute.</p>
                 <Link href="/dashboard/forms/new" className="ef-btn-primary inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm">
-                  <Plus className="w-4 h-4" /> Begin a form
+                  <Plus className="w-4 h-4" /> Create a form
                 </Link>
               </div>
             )}
@@ -221,15 +243,15 @@ export default function DashboardPage() {
                         </Link>
                         {visibilityBadge(form.visibility)}
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "1rem", fontSize: "11px", color: "var(--muted-foreground)", fontFamily: "monospace", letterSpacing: "0.04em" }}>
+                      <div className="form-row-meta" style={{ display: "flex", alignItems: "center", gap: "1rem", fontSize: "11px", color: "var(--muted-foreground)", fontFamily: "monospace", letterSpacing: "0.04em" }}>
                         <span>{form.responseCount} replies</span>
                         <span>{form.viewCount} views</span>
-                        {form.conversionRate > 0 && <span>{form.conversionRate.toFixed(0)}% conv.</span>}
+                        {form.conversionRate > 0 && <span>{form.conversionRate.toFixed(0)}% completed</span>}
                         {form.createdAt && <span>{formatDistanceToNow(new Date(form.createdAt))} ago</span>}
                       </div>
                     </div>
 
-                    <div style={{ display: "flex", alignItems: "center", gap: "2px", flexShrink: 0 }}>
+                    <div className="form-row-actions" style={{ display: "flex", alignItems: "center", gap: "2px", flexShrink: 0 }}>
                       {form.visibility !== "unpublished" && (
                         <button onClick={() => setQrForm({ title: form.title, slug: form.slug })}
                           title="Share QR" className="ef-btn-ghost"
@@ -276,10 +298,10 @@ export default function DashboardPage() {
             </div>
             <div style={{ padding: "0.5rem" }}>
               {[
-                { icon: Plus,     label: "New form",        sub: "Start from scratch",       href: "/dashboard/forms/new" },
-                { icon: Users,    label: "View responses",  sub: "All recent submissions",   href: "/dashboard/analytics" },
-                { icon: Globe,    label: "Explore forms",   sub: "Browse public library",    href: "/explore" },
-                { icon: Calendar, label: "Set expiry",      sub: "Manage form limits",       href: "/dashboard/settings" },
+                { icon: Plus,     label: "New form",         sub: "Start from scratch",        href: "/dashboard/forms/new" },
+                { icon: Users,    label: "View responses",   sub: "All recent submissions",    href: "/dashboard/analytics" },
+                { icon: Globe,    label: "Browse forms",     sub: "Explore the public library", href: "/explore" },
+                { icon: Calendar, label: "Set a close date", sub: "Manage limits & expiry",    href: "/dashboard/settings" },
               ].map(({ icon: Icon, label, sub, href }) => (
                 <Link key={label} href={href}
                   style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "8px", textDecoration: "none", transition: "background 0.15s" }}
@@ -300,20 +322,20 @@ export default function DashboardPage() {
 
           <div className="ef-card" style={{ borderRadius: "1rem", overflow: "hidden" }}>
             <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid var(--border)" }}>
-              <span style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)" }}>What's Available</span>
+              <span style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)" }}>What's Included</span>
             </div>
             <div style={{ padding: "0.75rem 1.25rem 1rem" }}>
               {[
-                "Multi-step form UI with animations",
-                "Conditional field logic",
-                "QR code sharing + PNG export",
-                "Response limits & expiry dates",
-                "Live form preview (modal)",
-                "CSV export of all responses",
-                "Analytics dashboard with charts",
-                "Full API documentation",
-                "Rate limiting & abuse protection",
-                "JWT auth with bearer tokens",
+                "One-question-at-a-time form layout",
+                "Branching questions based on answers",
+                "QR code sharing & image download",
+                "Response caps & closing dates",
+                "Live preview before publishing",
+                "Export all responses to spreadsheet",
+                "Charts and insights dashboard",
+                "Full developer documentation",
+                "Spam & abuse protection built in",
+                "Secure login with access tokens",
               ].map((feat) => (
                 <div key={feat} style={{ display: "flex", alignItems: "flex-start", gap: "8px", padding: "5px 0" }}>
                   <CheckCircle2 style={{ width: 13, height: 13, color: "#7EB884", marginTop: "2px", flexShrink: 0 }} />
@@ -326,24 +348,24 @@ export default function DashboardPage() {
           <div className="ef-card" style={{ borderRadius: "1rem", padding: "1.25rem", background: "rgba(200,155,99,0.04)", border: "1px solid rgba(200,155,99,0.12)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
               <Zap style={{ width: 14, height: 14, color: "#C89B63" }} />
-              <span style={{ fontSize: "12px", fontWeight: 600, color: "#C89B63", textTransform: "uppercase", letterSpacing: "0.1em" }}>API Access</span>
+              <span style={{ fontSize: "12px", fontWeight: 600, color: "#C89B63", textTransform: "uppercase", letterSpacing: "0.1em" }}>Developer Access</span>
             </div>
             <p style={{ fontSize: "12px", color: "var(--muted-foreground)", lineHeight: 1.6, marginBottom: "12px" }}>
-              Full REST API. Manage forms, submit responses, and pull analytics programmatically. Complete OpenAPI 3.1 docs available.
+              Connect EdinForm directly to your own apps and tools. Full documentation with live examples is available online.
             </p>
 
-            <a href="https://edinform11-2.onrender.com/docs" target="_blank" rel="noreferrer"
+            <a href="https://edinform.io/docs" target="_blank" rel="noreferrer"
               style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#C89B63", textDecoration: "none" }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "underline"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "none"; }}>
-              Open API docs <ExternalLink style={{ width: 11, height: 11 }} />
+              Open documentation <ExternalLink style={{ width: 11, height: 11 }} />
             </a>
 
-            <a href="https://edinform11-2.onrender.com/openapi.json" target="_blank" rel="noreferrer"
+            <a href="https://edinform.io/docs/api" target="_blank" rel="noreferrer"
               style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "var(--muted-foreground)", textDecoration: "none", marginLeft: "12px" }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "underline"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "none"; }}>
-              OpenAPI JSON <ExternalLink style={{ width: 11, height: 11 }} />
+              API reference <ExternalLink style={{ width: 11, height: 11 }} />
             </a>
           </div>
         </div>
@@ -355,15 +377,15 @@ export default function DashboardPage() {
       {/* ── Feature grid ── */}
       <div style={{ marginBottom: "3rem" }}>
         <div style={{ marginBottom: "1.5rem" }}>
-          <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)", marginBottom: "6px" }}>Platform</p>
+          <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)", marginBottom: "6px" }}>Features</p>
           <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(1.4rem, 2.5vw, 2rem)", fontWeight: 400, color: "var(--foreground)" }}>
             Everything you need to build great forms.
           </h2>
           <p style={{ marginTop: "6px", fontSize: "14px", color: "var(--muted-foreground)", maxWidth: "480px", lineHeight: 1.6 }}>
-            EdinForm combines a beautiful respondent experience with serious backend infrastructure — rate limiting, expiry enforcement, conditional logic, and a full analytics suite.
+            EdinForm pairs a beautiful experience for your respondents with a solid set of tools on your end — spam protection, automatic closing, branching logic, and a full insights suite.
           </p>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
+        <div className="feature-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
           {features.map((f, i) => (
             <div key={f.title} className="ef-card p-5"
               style={{ borderRadius: "1rem", animationDelay: `${i * 50}ms`, animation: "ef-fade-up .6s cubic-bezier(.2,.7,.2,1) both" }}>
@@ -378,14 +400,14 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Status strip ── */}
-      <div className="ef-card" style={{ borderRadius: "1rem", padding: "1.25rem 1.75rem", display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap", justifyContent: "space-between" }}>
+      <div className="ef-card status-strip" style={{ borderRadius: "1rem", padding: "1.25rem 1.75rem", display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap", justifyContent: "space-between" }}>
         <div>
-          <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)", marginBottom: "4px" }}>Platform</p>
-          <p style={{ fontSize: "13px", color: "var(--foreground)", lineHeight: 1.5 }}>EdinForm — form intelligence, analytics, and API access in one workspace.</p>
+          <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)", marginBottom: "4px" }}>EdinForm</p>
+          <p style={{ fontSize: "13px", color: "var(--foreground)", lineHeight: 1.5 }}>Build, share, and understand your forms — all in one place.</p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#7EB884" }} />
-          <span style={{ fontSize: "12px", color: "var(--muted-foreground)" }}>All systems operational</span>
+          <span style={{ fontSize: "12px", color: "var(--muted-foreground)" }}>All systems running normally</span>
         </div>
       </div>
 
@@ -397,7 +419,7 @@ export default function DashboardPage() {
             style={{ position: "fixed", inset: 0, zIndex: 9990 }}
             onClick={closeMenu}
           />
-          {/* Menu panel: stopPropagation so clicks inside don't hit backdrop */}
+          {/* Menu panel */}
           <div
             style={{
               position: "fixed",
