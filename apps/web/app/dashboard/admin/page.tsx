@@ -54,7 +54,7 @@ function VisBadge({ v }: { v: string }) {
     unlisted:  { bg: "rgba(200,155,99,0.12)",  color: "#C89B63", border: "rgba(200,155,99,0.25)" },
     unpublished:{ bg: "rgba(255,255,255,0.04)", color: "var(--muted-foreground)", border: "rgba(255,255,255,0.07)" },
   };
-  const s = map[v] ?? map.unpublished;
+  const s = map[v] ?? map["unpublished"]!;
   return (
     <span style={{
       display: "inline-block",
