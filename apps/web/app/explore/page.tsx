@@ -3,7 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { trpc } from "~/trpc/client";
-import { Search, FileText, Loader2, ArrowRight } from "lucide-react";
+import {
+  Search,
+  FileText,
+  Loader2,
+  ArrowRight,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 export default function ExplorePage() {
@@ -11,94 +16,234 @@ export default function ExplorePage() {
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
 
-  const { data, isLoading } = trpc.public.exploreForms.useQuery({
-    page,
-    limit: 12,
-    search: query || undefined,
-  });
+  const { data, isLoading } =
+    trpc.public.exploreForms.useQuery({
+      page,
+      limit: 12,
+      search: query || undefined,
+    });
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = (
+    e: React.FormEvent
+  ) => {
     e.preventDefault();
     setQuery(search);
     setPage(1);
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-stone-900 to-stone-900 py-20 px-4 text-center">
-        <Link href="/" className="inline-flex items-center gap-2 mb-8 text-stone-200 hover:text-white transition-colors">
-          <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
-            <span className="text-stone-50 dark:text-stone-900 font-bold text-sm">E</span>
-          </div>
-          EdinForm
-        </Link>
-        <h1 className="text-4xl font-bold text-white mb-4">Explore Public Forms</h1>
-        <p className="text-stone-200 max-w-md mx-auto mb-8">Discover forms created by the community. Fill them out or use them as inspiration.</p>
-        <form onSubmit={handleSearch} className="max-w-md mx-auto flex gap-3">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search forms..."
-              className="w-full pl-10 pr-4 py-3 rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/50" />
-          </div>
-          <button type="submit" className="px-5 py-3 bg-white/20 hover:bg-white/30 text-white rounded-xl font-medium transition-colors">Search</button>
-        </form>
+    <div className="relative min-h-screen overflow-hidden bg-background">
+      {/* Atmospheric layers */}
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <div className="absolute left-[-10%] top-[-10%] h-[600px] w-[600px] rounded-full bg-[rgba(200,155,99,0.10)] blur-3xl" />
+
+        <div className="absolute bottom-[-20%] right-[-10%] h-[700px] w-[700px] rounded-full bg-[rgba(139,115,85,0.08)] blur-3xl" />
+
+        <div className="absolute inset-0 opacity-[0.03] [background-image:linear-gradient(to_right,var(--border)_1px,transparent_1px)] [background-size:80px_100%]" />
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {isLoading ? (
-          <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-stone-900" /></div>
-        ) : data?.data.length === 0 ? (
-          <div className="text-center py-12">
-            <FileText className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-            <p className="text-gray-600 dark:text-gray-400">No public forms found{query ? ` for "${query}"` : ""}.</p>
-          </div>
-        ) : (
-          <>
-            <div className="flex items-center justify-between mb-8">
-              <p className="text-gray-600 dark:text-gray-400">
-                {data?.total ?? 0} public forms {query && `matching "${query}"`}
+      {/* Hero */}
+      <section className="relative z-10 border-b border-border/60 px-4 py-24">
+        <div className="mx-auto max-w-4xl text-center">
+          {/* Brand */}
+          <Link
+            href="/"
+            className="mb-10 inline-flex flex-col items-center"
+          >
+            <div className="ef-btn-primary flex h-14 w-14 items-center justify-center rounded-2xl">
+              <span className="font-display text-xl font-semibold">
+                E
+              </span>
+            </div>
+
+            <div className="mx-auto mt-6 mb-5 h-px w-24 ef-divider" />
+
+            <span className="font-display text-3xl tracking-[-0.04em] text-foreground">
+              EdinForm
+            </span>
+          </Link>
+
+          <h1 className="font-display text-6xl leading-none tracking-[-0.06em] text-foreground md:text-7xl">
+            Explore public forms
+          </h1>
+
+          <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground">
+            Discover forms shared by the community —
+            from surveys and applications to creative
+            workflows and research collections.
+          </p>
+
+          {/* Search */}
+          <form
+            onSubmit={handleSearch}
+            className="mx-auto mt-10 flex max-w-2xl flex-col gap-3 sm:flex-row"
+          >
+            <div className="ef-glass-soft relative flex-1 rounded-2xl">
+              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+              <input
+                value={search}
+                onChange={(e) =>
+                  setSearch(e.target.value)
+                }
+                placeholder="Search forms, surveys, collections..."
+                className="h-14 w-full rounded-2xl bg-transparent pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="ef-btn-primary rounded-2xl px-6 py-3 text-sm font-medium"
+            >
+              Search
+            </button>
+          </form>
+        </div>
+      </section>
+
+      {/* Content */}
+      <section className="relative z-10 px-4 py-16">
+        <div className="mx-auto max-w-7xl">
+          {isLoading ? (
+            <div className="flex justify-center py-24">
+              <div className="ef-card flex items-center gap-3 rounded-2xl px-5 py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-[var(--accent-amber)]" />
+
+                <span className="text-sm text-muted-foreground">
+                  Loading public forms…
+                </span>
+              </div>
+            </div>
+          ) : data?.data.length === 0 ? (
+            <div className="py-24 text-center">
+              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-card/60 backdrop-blur-xl">
+                <FileText className="h-7 w-7 text-muted-foreground" />
+              </div>
+
+              <h2 className="font-display text-4xl tracking-[-0.04em] text-foreground">
+                Nothing found
+              </h2>
+
+              <p className="mt-4 text-sm text-muted-foreground">
+                No public forms found
+                {query ? ` for "${query}"` : "."}
               </p>
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {data?.data.map((form) => (
-                <Link href={"/forms/" + form.slug} key={form.id}
-                  className="group bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 hover:border-stone-200 dark:hover:border-stone-900 transition-all fc-card-hover">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-stone-100 to-stone-100 dark:from-stone-900/30 dark:to-stone-900/30 flex items-center justify-center mb-4">
-                    <FileText className="w-5 h-5 text-stone-900 dark:text-stone-400" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-stone-900 dark:group-hover:text-stone-400 transition-colors mb-2">
-                    {form.title}
-                  </h3>
-                  {form.description && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4">{form.description}</p>
-                  )}
-                  <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
-                    {form.createdAt && <span>{formatDistanceToNow(new Date(form.createdAt))} ago</span>}
-                    <span className="flex items-center gap-1 text-stone-900 dark:text-stone-400 font-medium">
-                      Fill out <ArrowRight className="w-3 h-3" />
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
+          ) : (
+            <>
+              {/* Top meta */}
+              <div className="mb-10 flex flex-col items-start justify-between gap-4 border-b border-border/60 pb-6 sm:flex-row sm:items-center">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                    Public collection
+                  </p>
 
-            {data && data.totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-10">
-                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                  className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800">
-                  Previous
-                </button>
-                <span className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">{page} / {data.totalPages}</span>
-                <button onClick={() => setPage(p => Math.min(data.totalPages, p + 1))} disabled={page === data.totalPages}
-                  className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800">
-                  Next
-                </button>
+                  <h2 className="mt-2 font-display text-4xl tracking-[-0.04em] text-foreground">
+                    {data?.total ?? 0} forms discovered
+                  </h2>
+                </div>
+
+                {query && (
+                  <div className="rounded-full border border-border bg-card/40 px-4 py-2 text-xs uppercase tracking-[0.16em] text-muted-foreground backdrop-blur-xl">
+                    Search: {query}
+                  </div>
+                )}
               </div>
-            )}
-          </>
-        )}
-      </div>
+
+              {/* Grid */}
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {data?.data.map((form) => (
+                  <Link
+                    href={"/forms/" + form.slug}
+                    key={form.id}
+                    className="ef-card group relative overflow-hidden rounded-[28px] p-7"
+                  >
+                    {/* Glow */}
+                    <div className="pointer-events-none absolute right-0 top-0 h-28 w-28 rounded-full bg-[rgba(200,155,99,0.06)] blur-3xl transition-opacity duration-500 group-hover:opacity-100" />
+
+                    <div className="relative z-10">
+                      {/* Icon */}
+                      <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-[rgba(200,155,99,0.14)] bg-[rgba(200,155,99,0.08)]">
+                        <FileText className="h-5 w-5 text-[var(--accent-amber)]" />
+                      </div>
+
+                      {/* Title */}
+                      <h3 className="font-display text-3xl leading-tight tracking-[-0.03em] text-foreground transition-colors group-hover:text-[var(--accent-amber)]">
+                        {form.title}
+                      </h3>
+
+                      {/* Description */}
+                      {form.description && (
+                        <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                          {form.description}
+                        </p>
+                      )}
+
+                      {/* Divider */}
+                      <div className="my-6 h-px ef-divider" />
+
+                      {/* Footer */}
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                          {form.createdAt
+                            ? `${formatDistanceToNow(
+                                new Date(form.createdAt)
+                              )} ago`
+                            : "Recently"}
+                        </div>
+
+                        <div className="inline-flex items-center gap-2 text-sm text-[var(--accent-amber)] transition-transform duration-300 group-hover:translate-x-1">
+                          Open form
+
+                          <ArrowRight className="h-4 w-4" />
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {data && data.totalPages > 1 && (
+                <div className="mt-14 flex items-center justify-center gap-3">
+                  <button
+                    onClick={() =>
+                      setPage((p) =>
+                        Math.max(1, p - 1)
+                      )
+                    }
+                    disabled={page === 1}
+                    className="ef-btn-ghost rounded-2xl px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Previous
+                  </button>
+
+                  <div className="rounded-2xl border border-border bg-card/40 px-5 py-3 text-sm text-muted-foreground backdrop-blur-xl">
+                    {page} / {data.totalPages}
+                  </div>
+
+                  <button
+                    onClick={() =>
+                      setPage((p) =>
+                        Math.min(
+                          data.totalPages,
+                          p + 1
+                        )
+                      )
+                    }
+                    disabled={
+                      page === data.totalPages
+                    }
+                    className="ef-btn-ghost rounded-2xl px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
