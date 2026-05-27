@@ -107,14 +107,16 @@ export default function DashboardPage() {
   const recentForms = useMemo(
     () =>
       [...(forms ?? [])]
-        .sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() -
-            new Date(a.createdAt).getTime()
-        )
+          .sort((a, b) => {
+  const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+  const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+
+  return bTime - aTime;
+})
         .slice(0, 5),
     [forms]
   );
+
 
   const bestPerformingForm = useMemo(() => {
     if (!forms?.length) return null;
