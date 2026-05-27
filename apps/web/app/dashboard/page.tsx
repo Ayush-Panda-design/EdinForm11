@@ -354,14 +354,14 @@ export default function DashboardPage() {
               Connect EdinForm directly to your own apps and tools. Full documentation with live examples is available online.
             </p>
 
-            <a href="https://edinform.io/docs" target="_blank" rel="noreferrer"
+            <a href="https://edinform11-2.onrender.com/docs" target="_blank" rel="noreferrer"
               style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#C89B63", textDecoration: "none" }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "underline"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "none"; }}>
               Open documentation <ExternalLink style={{ width: 11, height: 11 }} />
             </a>
 
-            <a href="https://edinform.io/docs/api" target="_blank" rel="noreferrer"
+            <a href="https://edinform11-2.onrender.com/openapi.json" target="_blank" rel="noreferrer"
               style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "var(--muted-foreground)", textDecoration: "none", marginLeft: "12px" }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "underline"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "none"; }}>
