@@ -4,48 +4,30 @@ import { useState } from "react";
 import Link from "next/link";
 import { trpc } from "~/trpc/client";
 import {
-  FileText,
-  Eye,
-  BarChart3,
-  TrendingUp,
-  Loader2,
-  Calendar,
-  Search,
-  ArrowUpDown,
-  ExternalLink,
-  ChevronRight,
-  Sparkles,
-  Mail,
-  Clock,
-  User,
-  Zap,
+  FileText, Eye, BarChart3, TrendingUp, Loader2,
+  Calendar, Search, ArrowUpDown, ExternalLink,
+  ChevronRight, Sparkles, Mail, Clock, User, Zap,
 } from "lucide-react";
 import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer,
 } from "recharts";
 import { format, parseISO, subDays, formatDistanceToNow } from "date-fns";
 
+/* ── shared tokens ── */
+const AMBER = "#C89B63";
+const AMBER_DIM = "#8B7355";
+const GREEN = "#58745C";
+
 export default function AnalyticsDashboardPage() {
-  // Configured to poll for absolute live real-time updates!
   const { data: dashboard, isLoading } = trpc.analytics.dashboard.useQuery(undefined, {
     refetchInterval: 1000,
     refetchOnWindowFocus: true,
   });
-
-  // Real-time recent submissions feed — polls every 3 seconds
   const { data: recentSubmissions, isLoading: isLoadingRecent } =
     trpc.analytics.recentSubmissions.useQuery(
       { limit: 20 },
-      {
-        refetchInterval: 3000,
-        refetchOnWindowFocus: true,
-      }
+      { refetchInterval: 3000, refetchOnWindowFocus: true }
     );
 
   const [daysFilter, setDaysFilter] = useState<7 | 30 | 90>(30);
@@ -55,25 +37,22 @@ export default function AnalyticsDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center p-32">
-        <Loader2 className="w-10 h-10 animate-spin text-stone-900 dark:text-stone-400" />
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "8rem" }}>
+        <Loader2 className="animate-spin" style={{ width: 28, height: 28, color: AMBER }} />
       </div>
     );
   }
 
-  const filteredTrend =
-    dashboard?.dailyTrend.filter((t) => {
-      const date = parseISO(t.date);
-      const minDate = subDays(new Date(), daysFilter);
-      return date >= minDate;
-    }) ?? [];
+  const filteredTrend = (dashboard?.dailyTrend ?? []).filter((t) => {
+    const date = parseISO(t.date);
+    return date >= subDays(new Date(), daysFilter);
+  });
 
   const sortedBreakdown = [...(dashboard?.formBreakdown ?? [])]
     .filter((f) => f.title.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort((a, b) => {
-      const valA = a[sortField];
-      const valB = b[sortField];
-      return sortOrder === "asc" ? valA - valB : valB - valA;
+      const vA = a[sortField], vB = b[sortField];
+      return sortOrder === "asc" ? vA - vB : vB - vA;
     });
 
   const topForms = [...(dashboard?.formBreakdown ?? [])]
@@ -81,414 +60,413 @@ export default function AnalyticsDashboardPage() {
     .slice(0, 3);
 
   const stats = [
-    { label: "Total Forms", value: dashboard?.totalForms ?? 0, icon: FileText, desc: "Active forms" },
-    { label: "Total Views", value: dashboard?.totalViews ?? 0, icon: Eye, desc: "All view count" },
-    { label: "Submissions", value: dashboard?.totalResponses ?? 0, icon: BarChart3, desc: "Form submissions" },
-    {
-      label: "Avg Conversion",
-      value: dashboard ? dashboard.avgConversionRate.toFixed(1) + "%" : "0%",
-      icon: TrendingUp,
-      desc: "Views to conversion",
-    },
+    { label: "Total Forms",    value: dashboard?.totalForms ?? 0,                              icon: FileText,   desc: "Active forms" },
+    { label: "Total Views",    value: dashboard?.totalViews ?? 0,                              icon: Eye,        desc: "All view count" },
+    { label: "Submissions",    value: dashboard?.totalResponses ?? 0,                          icon: BarChart3,  desc: "Form submissions" },
+    { label: "Avg Conversion", value: dashboard ? dashboard.avgConversionRate.toFixed(1) + "%" : "0%", icon: TrendingUp, desc: "Views to conversion" },
   ];
 
   const handleSort = (field: "views" | "responses" | "conversionRate") => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortOrder("desc");
-    }
+    if (sortField === field) setSortOrder(o => o === "asc" ? "desc" : "asc");
+    else { setSortField(field); setSortOrder("desc"); }
+  };
+
+  /* ── shared section card style ── */
+  const card: React.CSSProperties = {
+    background: "rgba(255,255,255,0.025)",
+    border: "1px solid rgba(255,255,255,0.07)",
+    borderRadius: "16px",
+    backdropFilter: "blur(24px)",
+  };
+
+  const th: React.CSSProperties = {
+    padding: "10px 16px",
+    fontSize: "10px",
+    textTransform: "uppercase",
+    letterSpacing: "0.28em",
+    color: "var(--muted-foreground)",
+    fontFamily: "'Inter', sans-serif",
+    fontWeight: 500,
+    borderBottom: "1px solid var(--border)",
+    textAlign: "left",
+    background: "rgba(255,255,255,0.02)",
+  };
+
+  const td: React.CSSProperties = {
+    padding: "12px 16px",
+    fontSize: "13px",
+    color: "var(--foreground)",
+    fontFamily: "'Inter', sans-serif",
+    borderBottom: "1px solid var(--border)",
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div style={{ display: "flex", flexDirection: "column", gap: "2rem", fontFamily: "'Inter', sans-serif" }}>
+
+      {/* ── Header ── */}
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem" }}>
         <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-              Analytics Overview
+          <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)", marginBottom: "6px" }}>
+            Analytics
+          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <h1 style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: "clamp(1.8rem, 3vw, 2.4rem)",
+              fontWeight: 400, color: "var(--foreground)", lineHeight: 1.1,
+            }}>
+              Workspace <em style={{ color: AMBER }}>Overview</em>
             </h1>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50 mt-1">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            {/* live dot */}
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: "6px",
+              padding: "3px 10px", borderRadius: "999px", fontSize: "11px",
+              fontWeight: 600, letterSpacing: "0.08em",
+              background: "rgba(88,116,92,0.15)", color: "#7EB884",
+              border: "1px solid rgba(88,116,92,0.25)", marginTop: "4px",
+            }}>
+              <span style={{ position: "relative", display: "flex", width: 8, height: 8 }}>
+                <span className="animate-ping" style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#7EB884", opacity: 0.6 }} />
+                <span style={{ position: "relative", width: 8, height: 8, borderRadius: "50%", background: "#7EB884", display: "block" }} />
               </span>
               Live
             </span>
           </div>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Real-time insights across your entire EdinForm workspace
+          <p style={{ fontSize: "13px", color: "var(--muted-foreground)", marginTop: "5px" }}>
+            Real-time insights across your EdinForm workspace.
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-900 p-1 rounded-xl border border-gray-200 dark:border-gray-800 self-start">
-          <Calendar className="w-4 h-4 text-gray-500 ml-2 mr-1" />
+        {/* Days filter */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: "4px",
+          background: "rgba(255,255,255,0.03)",
+          border: "1px solid var(--border)", borderRadius: "12px", padding: "4px",
+        }}>
+          <Calendar style={{ width: 13, height: 13, color: "var(--muted-foreground)", marginLeft: "6px", marginRight: "2px" }} />
           {([7, 30, 90] as const).map((days) => (
-            <button
-              key={days}
-              onClick={() => setDaysFilter(days)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 ${
-                daysFilter === days
-                  ? "bg-white dark:bg-gray-800 text-stone-900 dark:text-stone-400 shadow-sm"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              }`}
-            >
-              Last {days} days
+            <button key={days} onClick={() => setDaysFilter(days)} style={{
+              padding: "6px 12px", borderRadius: "8px", fontSize: "12px",
+              fontFamily: "'Inter', sans-serif", border: "none", cursor: "pointer",
+              transition: "all 0.18s",
+              background: daysFilter === days ? "rgba(200,155,99,0.12)" : "transparent",
+              color: daysFilter === days ? AMBER : "var(--muted-foreground)",
+              boxShadow: daysFilter === days ? "inset 0 0 0 1px rgba(200,155,99,0.2)" : "none",
+              fontWeight: daysFilter === days ? 600 : 400,
+            }}>
+              {days}d
             </button>
           ))}
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-        {stats.map((s) => (
-          <div
-            key={s.label}
-            className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200"
-          >
-            <div className="w-10 h-10 rounded-xl bg-stone-50 dark:bg-stone-950/30 flex items-center justify-center mb-4">
-              <s.icon className="w-5 h-5 text-stone-900 dark:text-stone-400" />
+      {/* ── Stats ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem" }}>
+        {stats.map(({ label, value, icon: Icon, desc }, i) => (
+          <div key={label} className="ef-card" style={{ padding: "1.25rem", animation: `ef-fade-up .6s ease ${i * 60}ms both` }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+              <span style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)" }}>{label}</span>
+              <Icon style={{ width: 13, height: 13, color: AMBER, opacity: 0.7 }} />
             </div>
-            <p className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-              {s.value}
-            </p>
-            <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1.5">{s.label}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">{s.desc}</p>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", color: "var(--foreground)", lineHeight: 1 }}>{value}</p>
+            <p style={{ fontSize: "11px", color: "var(--muted-foreground)", marginTop: "4px" }}>{desc}</p>
           </div>
         ))}
       </div>
 
-      {/* Main Grid: Trend Chart & Top Forms Spotlight */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Trend Area Chart */}
-        <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Workspace Performance</h2>
-              <p className="text-xs text-gray-500">Cumulative views and submissions trend</p>
+      {/* ── Chart + Top Forms ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "1.5rem" }} className="lg:grid-cols-3-custom">
+        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1.5rem" }} className="analytics-grid">
+
+          {/* Area chart */}
+          <div style={{ ...card, padding: "1.5rem", gridColumn: "1" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1.5rem" }}>
+              <div>
+                <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)", marginBottom: "4px" }}>Performance</p>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.3rem", color: "var(--foreground)" }}>Workspace Trend</h2>
+              </div>
+              <div style={{ display: "flex", gap: "16px", fontSize: "11px", color: "var(--muted-foreground)" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: AMBER, display: "inline-block" }} /> Views
+                </span>
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: GREEN, display: "inline-block" }} /> Submissions
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-4 text-xs font-semibold">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-stone-900 inline-block" />
-                <span className="text-gray-600 dark:text-gray-400">Views</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
-                <span className="text-gray-600 dark:text-gray-400">Submissions</span>
-              </div>
+
+            <div style={{ height: 260 }}>
+              {filteredTrend.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={filteredTrend} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="gViews" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={AMBER} stopOpacity={0.18} />
+                        <stop offset="95%" stopColor={AMBER} stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="gSubs" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={GREEN} stopOpacity={0.18} />
+                        <stop offset="95%" stopColor={GREEN} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                    <XAxis dataKey="date"
+                      tickFormatter={(s) => { try { return format(parseISO(s), "MMM d"); } catch { return s; } }}
+                      tick={{ fontSize: 10, fill: "var(--muted-foreground)", fontFamily: "monospace" }}
+                      axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "var(--muted-foreground)", fontFamily: "monospace" }} axisLine={false} tickLine={false} />
+                    <Tooltip
+                      contentStyle={{
+                        background: "rgba(15,15,17,0.95)",
+                        borderRadius: "12px",
+                        border: "1px solid rgba(200,155,99,0.2)",
+                        color: "#F5F1EA",
+                        fontSize: "12px",
+                        fontFamily: "'Inter', sans-serif",
+                      }}
+                      labelFormatter={(l) => { try { return format(parseISO(l), "MMMM d, yyyy"); } catch { return l; } }}
+                    />
+                    <Area type="monotone" dataKey="views" stroke={AMBER} strokeWidth={1.5} fill="url(#gViews)" name="Views" />
+                    <Area type="monotone" dataKey="submissions" stroke={GREEN} strokeWidth={1.5} fill="url(#gSubs)" name="Submissions" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--muted-foreground)" }}>
+                  <BarChart3 style={{ width: 32, height: 32, marginBottom: "8px", opacity: 0.4 }} />
+                  <p style={{ fontSize: "13px" }}>No activity in this range</p>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="h-[280px]">
-            {filteredTrend.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={filteredTrend}
-                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient id="views" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.12} />
-                      <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="subs" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.12} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    className="stroke-gray-100 dark:stroke-gray-800"
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="date"
-                    tickFormatter={(str) => {
-                      try {
-                        return format(parseISO(str), "MMM d");
-                      } catch {
-                        return str;
-                      }
-                    }}
-                    tick={{ fontSize: 11 }}
-                    className="text-gray-400"
-                  />
-                  <YAxis tick={{ fontSize: 11 }} className="text-gray-400" />
-                  <Tooltip
-                    contentStyle={{
-                      background: "rgba(17, 24, 39, 0.95)",
-                      borderRadius: "12px",
-                      border: "none",
-                      color: "#fff",
-                      fontSize: "12px",
-                    }}
-                    labelFormatter={(label) => format(parseISO(label), "MMMM d, yyyy")}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="views"
-                    stroke="#7c3aed"
-                    strokeWidth={2}
-                    fill="url(#views)"
-                    name="Views"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="submissions"
-                    stroke="#10b981"
-                    strokeWidth={2}
-                    fill="url(#subs)"
-                    name="Submissions"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-gray-400">
-                <BarChart3 className="w-10 h-10 mb-2 stroke-1" />
-                <p className="text-sm">No activity recorded in this range</p>
-              </div>
-            )}
-          </div>
-        </div>
+          {/* Top forms */}
+          <div style={{ ...card, padding: "1.5rem", display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "1.25rem" }}>
+              <Sparkles style={{ width: 15, height: 15, color: AMBER }} />
+              <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)" }}>Top Forms</p>
+            </div>
 
-        {/* Top Performers Spotlight */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm flex flex-col">
-          <div className="flex items-center gap-2 mb-6">
-            <Sparkles className="w-5 h-5 text-amber-500" />
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Top Performing Forms</h2>
-          </div>
-
-          <div className="space-y-4 flex-1">
-            {topForms.length > 0 ? (
-              topForms.map((form, idx) => (
-                <div
-                  key={form.id}
-                  className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-gray-800 hover:border-stone-300 dark:hover:border-stone-900 transition-colors"
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", flex: 1 }}>
+              {topForms.length > 0 ? topForms.map((form, idx) => (
+                <div key={form.id} style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "12px", borderRadius: "12px",
+                  background: "rgba(255,255,255,0.025)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  transition: "border-color 0.2s",
+                }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "rgba(200,155,99,0.2)"}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)"}
                 >
-                  <div className="min-w-0 flex-1 pr-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-stone-900 dark:text-stone-400 bg-stone-100 dark:bg-stone-950/50 px-2 py-0.5 rounded">
-                        #{idx + 1}
-                      </span>
-                      <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
-                        {form.title}
-                      </p>
+                  <div style={{ minWidth: 0, flex: 1, paddingRight: "8px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "3px" }}>
+                      <span style={{
+                        fontSize: "10px", fontWeight: 700, fontFamily: "monospace",
+                        color: AMBER, background: "rgba(200,155,99,0.1)",
+                        padding: "1px 6px", borderRadius: "4px",
+                      }}>#{idx + 1}</span>
+                      <p style={{ fontSize: "13px", color: "var(--foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{form.title}</p>
                     </div>
-                    <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-500">
-                      <span>{form.responses} submissions</span>
-                      <span>{form.conversionRate.toFixed(0)}% CR</span>
-                    </div>
+                    <p style={{ fontSize: "11px", color: "var(--muted-foreground)", fontFamily: "monospace" }}>
+                      {form.responses} replies · {form.conversionRate.toFixed(0)}% CR
+                    </p>
                   </div>
-                  <Link
-                    href={`/dashboard/forms/${form.id}/analytics`}
-                    className="p-2 bg-white dark:bg-gray-900 hover:bg-stone-50 dark:hover:bg-stone-950/30 rounded-lg text-gray-500 hover:text-stone-900 dark:hover:text-stone-400 border border-gray-150 dark:border-gray-800 transition-colors shadow-sm"
+                  <Link href={`/dashboard/forms/${form.id}/analytics`}
+                    style={{
+                      padding: "6px", borderRadius: "8px", display: "flex",
+                      color: "var(--muted-foreground)", textDecoration: "none",
+                      background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)",
+                      transition: "color 0.15s, background 0.15s", flexShrink: 0,
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = AMBER; (e.currentTarget as HTMLElement).style.background = "rgba(200,155,99,0.08)"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)"; (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)"; }}
                   >
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight style={{ width: 14, height: 14 }} />
                   </Link>
                 </div>
-              ))
-            ) : (
-              <div className="h-full flex items-center justify-center text-gray-400 text-sm">
-                No forms created yet
-              </div>
-            )}
+              )) : (
+                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted-foreground)", fontSize: "13px" }}>
+                  No forms yet
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── REAL-TIME LIVE SUBMISSION FEED ───────────────────────────────── */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+      {/* ── Live Feed ── */}
+      <div style={{ ...card, overflow: "hidden" }}>
+        <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ width: 36, height: 36, borderRadius: "10px", background: "rgba(88,116,92,0.12)", border: "1px solid rgba(88,116,92,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Zap style={{ width: 15, height: 15, color: "#7EB884" }} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Live Submission Feed</h2>
-              <p className="text-xs text-gray-500">
-                Instantly updates when someone submits — no refresh needed
-              </p>
+              <p style={{ fontSize: "14px", color: "var(--foreground)", marginBottom: "1px" }}>Live Submission Feed</p>
+              <p style={{ fontSize: "11px", color: "var(--muted-foreground)" }}>Updates every 3 seconds — no refresh needed</p>
             </div>
           </div>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: "6px", padding: "3px 10px",
+            borderRadius: "999px", fontSize: "11px", fontWeight: 600,
+            background: "rgba(88,116,92,0.15)", color: "#7EB884", border: "1px solid rgba(88,116,92,0.25)",
+          }}>
+            <span style={{ position: "relative", display: "flex", width: 7, height: 7 }}>
+              <span className="animate-ping" style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#7EB884", opacity: 0.6 }} />
+              <span style={{ position: "relative", width: 7, height: 7, borderRadius: "50%", background: "#7EB884", display: "block" }} />
             </span>
             Live
           </span>
         </div>
 
         {isLoadingRecent ? (
-          <div className="flex justify-center p-12">
-            <Loader2 className="w-6 h-6 animate-spin text-stone-900" />
+          <div style={{ display: "flex", justifyContent: "center", padding: "3rem" }}>
+            <Loader2 className="animate-spin" style={{ width: 20, height: 20, color: AMBER }} />
           </div>
         ) : !recentSubmissions || recentSubmissions.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center mx-auto mb-3">
-              <Mail className="w-5 h-5 text-gray-400" />
+          <div style={{ padding: "4rem 2rem", textAlign: "center" }}>
+            <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(200,155,99,0.08)", border: "1px solid rgba(200,155,99,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
+              <Mail style={{ width: 18, height: 18, color: AMBER }} />
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              No submissions yet — share your forms to start collecting responses!
-            </p>
+            <p style={{ fontSize: "13px", color: "var(--muted-foreground)" }}>No submissions yet — share your forms to start collecting responses.</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-50 dark:divide-gray-800/60">
-            {recentSubmissions.map((sub) => (
-              <div
-                key={sub.responseId}
-                className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/60 dark:hover:bg-gray-800/20 transition-colors group"
+          <div>
+            {recentSubmissions.map((sub, idx) => (
+              <div key={sub.responseId} style={{
+                display: "flex", alignItems: "center", gap: "1rem",
+                padding: "14px 24px",
+                borderBottom: idx < recentSubmissions.length - 1 ? "1px solid var(--border)" : "none",
+                transition: "background 0.15s",
+              }}
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.02)"}
+                onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
               >
-                {/* Avatar */}
-                <div className="w-9 h-9 rounded-full bg-stone-100 dark:bg-stone-900/30 flex items-center justify-center flex-shrink-0">
-                  <User className="w-4 h-4 text-stone-900 dark:text-stone-400" />
+                <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(200,155,99,0.08)", border: "1px solid rgba(200,155,99,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <User style={{ width: 14, height: 14, color: AMBER }} />
                 </div>
 
-                {/* Respondent info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginBottom: "2px" }}>
                     {sub.respondentEmail ? (
-                      <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-900 dark:text-white">
-                        <Mail className="w-3.5 h-3.5 text-stone-500 flex-shrink-0" />
+                      <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "13px", color: "var(--foreground)" }}>
+                        <Mail style={{ width: 11, height: 11, color: "var(--muted-foreground)" }} />
                         {sub.respondentEmail}
                       </span>
                     ) : sub.respondentName ? (
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {sub.respondentName}
-                      </span>
+                      <span style={{ fontSize: "13px", color: "var(--foreground)" }}>{sub.respondentName}</span>
                     ) : (
-                      <span className="text-sm font-medium text-gray-400 italic">Anonymous</span>
-                    )}
-                    {sub.respondentName && sub.respondentEmail && (
-                      <span className="text-xs text-gray-400">({sub.respondentName})</span>
+                      <span style={{ fontSize: "13px", color: "var(--muted-foreground)", fontStyle: "italic" }}>Anonymous</span>
                     )}
                   </div>
-                  <div className="mt-0.5">
-                    <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                      {sub.formTitle}
-                    </span>
-                  </div>
+                  <p style={{ fontSize: "11px", color: "var(--muted-foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sub.formTitle}</p>
                 </div>
 
-                {/* Time + Link */}
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  <div className="text-right hidden sm:block">
-                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1 justify-end">
-                      <Clock className="w-3 h-3" />
-                      {formatDistanceToNow(new Date(sub.submittedAt), { addSuffix: true })}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {format(new Date(sub.submittedAt), "MMM d, yyyy · h:mm a")}
-                    </p>
-                  </div>
-                  <Link
-                    href={`/dashboard/forms/${sub.formId}/responses/${sub.responseId}`}
-                    className="p-1.5 rounded-lg text-gray-400 hover:text-stone-900 dark:hover:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-950/30 transition-colors opacity-0 group-hover:opacity-100"
-                    title="View full response"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </Link>
+                <div style={{ flexShrink: 0, textAlign: "right" }}>
+                  <p style={{ fontSize: "11px", color: "var(--muted-foreground)", display: "flex", alignItems: "center", gap: "4px", justifyContent: "flex-end", marginBottom: "2px", fontFamily: "monospace" }}>
+                    <Clock style={{ width: 10, height: 10 }} />
+                    {formatDistanceToNow(new Date(sub.submittedAt), { addSuffix: true })}
+                  </p>
+                  <p style={{ fontSize: "10px", color: "var(--muted-foreground)", fontFamily: "monospace", opacity: 0.7 }}>
+                    {format(new Date(sub.submittedAt), "MMM d · h:mm a")}
+                  </p>
                 </div>
+
+                <Link href={`/dashboard/forms/${sub.formId}/responses/${sub.responseId}`}
+                  style={{ padding: "6px", borderRadius: "8px", display: "flex", color: "var(--muted-foreground)", textDecoration: "none", flexShrink: 0, transition: "color 0.15s, background 0.15s" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = AMBER; (e.currentTarget as HTMLElement).style.background = "rgba(200,155,99,0.08)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                >
+                  <ChevronRight style={{ width: 14, height: 14 }} />
+                </Link>
               </div>
             ))}
           </div>
         )}
       </div>
-      {/* ── END LIVE SUBMISSION FEED ─────────────────────────────────────── */}
 
-      {/* Per-form breakdown table */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-150 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* ── Per-form breakdown table ── */}
+      <div style={{ ...card, overflow: "hidden" }}>
+        <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--border)", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}>
           <div>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Form Performance List</h2>
-            <p className="text-xs text-gray-500">Key metrics broken down per form</p>
+            <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)", marginBottom: "4px" }}>Breakdown</p>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.2rem", color: "var(--foreground)" }}>Form Performance</h2>
           </div>
-
-          <div className="relative max-w-xs w-full">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <div style={{ position: "relative" }}>
+            <Search style={{ width: 13, height: 13, position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--muted-foreground)" }} />
             <input
               type="text"
-              placeholder="Search forms..."
+              placeholder="Search forms…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-2 text-sm bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-500/20 focus:border-stone-500 w-full text-gray-800 dark:text-gray-200"
+              className="ef-input"
+              style={{ paddingLeft: "30px", paddingRight: "12px", paddingTop: "8px", paddingBottom: "8px", borderRadius: "10px", fontSize: "13px", fontFamily: "'Inter', sans-serif", width: "220px" }}
             />
           </div>
         </div>
 
         {sortedBreakdown.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr className="bg-gray-50/50 dark:bg-gray-950/40 text-xs font-bold text-gray-500 dark:text-gray-400 border-b border-gray-150 dark:border-gray-800">
-                  <th className="p-4 pl-6">Form Name</th>
-                  <th
-                    className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-                    onClick={() => handleSort("views")}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      Views <ArrowUpDown className="w-3.5 h-3.5" />
-                    </div>
-                  </th>
-                  <th
-                    className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-                    onClick={() => handleSort("responses")}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      Submissions <ArrowUpDown className="w-3.5 h-3.5" />
-                    </div>
-                  </th>
-                  <th
-                    className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-                    onClick={() => handleSort("conversionRate")}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      Conversion Rate <ArrowUpDown className="w-3.5 h-3.5" />
-                    </div>
-                  </th>
-                  <th className="p-4 pr-6 text-right">Actions</th>
+                <tr>
+                  {[
+                    { label: "Form", field: null },
+                    { label: "Views", field: "views" },
+                    { label: "Submissions", field: "responses" },
+                    { label: "Conversion", field: "conversionRate" },
+                    { label: "", field: null },
+                  ].map(({ label, field }, i) => (
+                    <th key={i} style={{ ...th, cursor: field ? "pointer" : "default" }}
+                      onClick={() => field && handleSort(field as "views" | "responses" | "conversionRate")}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                        {label}
+                        {field && <ArrowUpDown style={{ width: 11, height: 11, opacity: 0.5 }} />}
+                      </span>
+                    </th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              <tbody>
                 {sortedBreakdown.map((form) => (
-                  <tr
-                    key={form.id}
-                    className="text-sm hover:bg-gray-50/55 dark:hover:bg-gray-800/10 transition-colors"
+                  <tr key={form.id}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.02)"}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                    style={{ transition: "background 0.15s" }}
                   >
-                    <td className="p-4 pl-6 font-semibold text-gray-900 dark:text-white max-w-[240px] truncate">
+                    <td style={{ ...td, fontFamily: "'Cormorant Garamond', serif", fontSize: "1rem", maxWidth: "240px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {form.title}
                     </td>
-                    <td className="p-4 text-gray-700 dark:text-gray-300">{form.views}</td>
-                    <td className="p-4 text-gray-700 dark:text-gray-300">{form.responses}</td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-700 dark:text-gray-300 font-semibold">
-                          {form.conversionRate.toFixed(1)}%
-                        </span>
-                        <div className="w-16 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden hidden sm:block">
-                          <div
-                            className="h-full bg-stone-900 dark:bg-stone-400 rounded-full"
-                            style={{ width: `${Math.min(form.conversionRate, 100)}%` }}
-                          />
+                    <td style={{ ...td, fontFamily: "monospace", fontSize: "12px" }}>{form.views}</td>
+                    <td style={{ ...td, fontFamily: "monospace", fontSize: "12px" }}>{form.responses}</td>
+                    <td style={td}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span style={{ fontFamily: "monospace", fontSize: "12px" }}>{form.conversionRate.toFixed(1)}%</span>
+                        <div style={{ width: 56, height: 3, background: "rgba(255,255,255,0.07)", borderRadius: "999px", overflow: "hidden" }}>
+                          <div style={{ width: `${Math.min(form.conversionRate, 100)}%`, height: "100%", background: AMBER, borderRadius: "999px" }} />
                         </div>
                       </div>
                     </td>
-                    <td className="p-4 pr-6 text-right">
-                      <div className="flex justify-end gap-2">
-                        <a
-                          href={`/forms/${form.slug}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 rounded-lg transition-colors"
-                          title="Open Form Live"
+                    <td style={{ ...td, textAlign: "right" }}>
+                      <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+                        <a href={`/forms/${form.slug}`} target="_blank" rel="noreferrer"
+                          style={{ padding: "5px", borderRadius: "7px", display: "flex", color: "var(--muted-foreground)", textDecoration: "none", transition: "color 0.15s, background 0.15s" }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = AMBER; (e.currentTarget as HTMLElement).style.background = "rgba(200,155,99,0.08)"; }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
                         >
-                          <ExternalLink className="w-4 h-4" />
+                          <ExternalLink style={{ width: 14, height: 14 }} />
                         </a>
-                        <Link
-                          href={`/dashboard/forms/${form.id}/analytics`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-stone-50 hover:bg-stone-100 text-stone-900 dark:bg-stone-950/30 dark:hover:bg-stone-950/60 dark:text-stone-300 rounded-lg transition-colors border border-stone-100/20"
+                        <Link href={`/dashboard/forms/${form.id}/analytics`}
+                          style={{
+                            display: "inline-flex", alignItems: "center", gap: "5px",
+                            padding: "4px 10px", borderRadius: "8px", fontSize: "11px",
+                            textDecoration: "none", fontFamily: "'Inter', sans-serif",
+                            color: AMBER, background: "rgba(200,155,99,0.08)",
+                            border: "1px solid rgba(200,155,99,0.15)",
+                            transition: "background 0.15s",
+                          }}
+                          onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(200,155,99,0.15)"}
+                          onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "rgba(200,155,99,0.08)"}
                         >
                           Full Analytics
                         </Link>
@@ -500,12 +478,18 @@ export default function AnalyticsDashboardPage() {
             </table>
           </div>
         ) : (
-          <div className="p-16 text-center text-gray-500">
-            <Search className="w-8 h-8 mx-auto mb-2 text-gray-400 stroke-1" />
-            <p className="text-sm">No forms match your search queries</p>
+          <div style={{ padding: "4rem 2rem", textAlign: "center", color: "var(--muted-foreground)" }}>
+            <Search style={{ width: 28, height: 28, margin: "0 auto 8px", opacity: 0.4 }} />
+            <p style={{ fontSize: "13px" }}>No forms match your search</p>
           </div>
         )}
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .analytics-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 }
