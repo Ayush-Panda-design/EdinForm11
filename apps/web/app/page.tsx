@@ -408,6 +408,426 @@ function BranchingDiagram() {
   );
 }
 
+/* ─── Live Demo Form ─── */
+function LiveDemoForm() {
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string | number>>({});
+  const [submitted, setSubmitted] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
+
+  const questions = [
+    {
+      id: "role",
+      type: "choice",
+      tag: "About you",
+      question: "What's your primary role?",
+      sub: "This helps us show you the most relevant features.",
+      options: ["Product Manager", "Designer", "Developer", "Researcher", "Marketer", "Founder / CEO"],
+    },
+    {
+      id: "tool",
+      type: "choice",
+      tag: "Current setup",
+      question: "Which form tool are you currently using?",
+      sub: "Don't worry — we'll convince you to switch.",
+      options: ["Google Forms", "Typeform", "Tally", "Jotform", "Airtable Forms", "None yet"],
+    },
+    {
+      id: "pain",
+      type: "multiline",
+      tag: "The problem",
+      question: "What's the biggest frustration with your current setup?",
+      sub: "Be blunt — we read every answer and use it to improve EdinForm.",
+      placeholder: "e.g. It's ugly, logic is confusing, responses are hard to read…",
+    },
+    {
+      id: "frequency",
+      type: "scale",
+      tag: "Usage",
+      question: "How often does your team need to create or update forms?",
+      sub: "We want to understand your workflow rhythm.",
+      options: ["Rarely", "Monthly", "Weekly", "Multiple times a week", "Daily"],
+    },
+    {
+      id: "priority",
+      type: "choice",
+      tag: "What matters most",
+      question: "Which matters most to you in a form tool?",
+      sub: "Pick the single most important factor.",
+      options: ["Ease of use", "Design quality", "Logic & branching", "Analytics depth", "Integrations", "Price"],
+    },
+    {
+      id: "email",
+      type: "email",
+      tag: "Stay in the loop",
+      question: "Where should we send your personalised EdinForm walkthrough?",
+      sub: "One email, no spam, unsubscribe any time.",
+      placeholder: "you@company.com",
+    },
+  ];
+
+  const current = questions[step]!;
+  const progress = ((step) / questions.length) * 100;
+  const answer = answers[current.id];
+  const canAdvance =
+    (current.type === "choice" && answer) ||
+    (current.type === "scale" && answer) ||
+    (current.type === "multiline" && typeof answer === "string" && answer.trim().length > 3) ||
+    (current.type === "email" && typeof answer === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(answer));
+
+  function goNext() {
+    if (!canAdvance) return;
+    setTransitioning(true);
+    setTimeout(() => {
+      if (step < questions.length - 1) {
+        setStep(s => s + 1);
+      } else {
+        setSubmitted(true);
+      }
+      setTransitioning(false);
+    }, 220);
+  }
+
+  function goPrev() {
+    if (step === 0) return;
+    setTransitioning(true);
+    setTimeout(() => { setStep(s => s - 1); setTransitioning(false); }, 220);
+  }
+
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", alignItems: "flex-start" }}>
+
+      {/* ── left: question panel ── */}
+      <div style={{ flex: "1 1 420px", minWidth: 0 }}>
+        <div style={{
+          background: "rgba(255,255,255,0.025)",
+          border: "1px solid rgba(255,255,255,0.07)",
+          borderRadius: "24px", overflow: "hidden",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.35)",
+        }}>
+          {/* chrome */}
+          <div style={{
+            padding: "12px 20px",
+            borderBottom: "1px solid rgba(255,255,255,0.06)",
+            background: "rgba(255,255,255,0.02)",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}>
+            <div style={{ display: "flex", gap: "6px" }}>
+              {["rgba(255,99,99,0.4)", "rgba(255,200,50,0.4)", "rgba(50,205,80,0.4)"].map((c, i) => (
+                <span key={i} style={{ width: 9, height: 9, borderRadius: "50%", background: c }} />
+              ))}
+            </div>
+            <span style={{ fontFamily: "monospace", fontSize: "11px", color: "var(--muted-foreground)" }}>
+              edinform.io/demo/product-feedback
+            </span>
+            <span style={{ fontSize: "11px", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif" }}>
+              {step + 1} / {questions.length}
+            </span>
+          </div>
+
+          {/* progress */}
+          <div style={{ height: 3, background: "rgba(255,255,255,0.05)" }}>
+            <div style={{
+              height: "100%",
+              width: submitted ? "100%" : `${progress}%`,
+              background: "linear-gradient(90deg, #C89B63, #D4A96A)",
+              transition: "width 0.5s cubic-bezier(0.4,0,0.2,1)",
+              borderRadius: "0 999px 999px 0",
+            }} />
+          </div>
+
+          <div style={{
+            padding: "2.5rem 2rem 2rem",
+            opacity: transitioning ? 0 : 1,
+            transform: transitioning ? "translateY(8px)" : "translateY(0)",
+            transition: "opacity 0.22s ease, transform 0.22s ease",
+          }}>
+            {submitted ? (
+              /* ── success state ── */
+              <div style={{ textAlign: "center", padding: "1.5rem 0 2rem" }}>
+                <div style={{
+                  width: 64, height: 64, borderRadius: "50%",
+                  background: "linear-gradient(135deg, rgba(200,155,99,0.2), rgba(111,207,151,0.15))",
+                  border: "1px solid rgba(200,155,99,0.3)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  margin: "0 auto 1.5rem",
+                  boxShadow: "0 0 40px rgba(200,155,99,0.15)",
+                }}>
+                  <CheckCircle2 style={{ width: 28, height: 28, color: "#C89B63" }} />
+                </div>
+                <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: "1.6rem", fontWeight: 700, marginBottom: "10px", color: "var(--foreground)" }}>
+                  You're all set.
+                </h3>
+                <p style={{ fontSize: "14px", color: "var(--muted-foreground)", lineHeight: 1.75, marginBottom: "1.75rem", maxWidth: "36ch", margin: "0 auto 1.75rem" }}>
+                  We've received your answers and will send a personalised walkthrough to your inbox. In the meantime — your first form is one click away.
+                </p>
+                <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
+                  <Link href="/auth/register" style={{
+                    display: "inline-flex", alignItems: "center", gap: "6px",
+                    borderRadius: "999px", padding: "10px 22px", fontSize: "13px",
+                    background: "linear-gradient(135deg, #C89B63 0%, #8B6540 100%)",
+                    color: "#0B0B0C", textDecoration: "none", fontWeight: 700,
+                  }}>
+                    Start building free <ArrowRight style={{ width: 13, height: 13 }} />
+                  </Link>
+                  <button onClick={() => { setStep(0); setAnswers({}); setSubmitted(false); }}
+                    style={{
+                      borderRadius: "999px", padding: "10px 18px", fontSize: "13px",
+                      background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+                      color: "var(--muted-foreground)", cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+                    }}>
+                    ↩ Start over
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div style={{ marginBottom: "1.75rem" }}>
+                  <div style={{
+                    display: "inline-block", fontSize: "10px", textTransform: "uppercase",
+                    letterSpacing: "0.22em", color: "#C89B63", fontWeight: 700,
+                    fontFamily: "'DM Sans', sans-serif", marginBottom: "12px",
+                    background: "rgba(200,155,99,0.10)", padding: "3px 10px", borderRadius: "999px",
+                  }}>
+                    {current.tag}
+                  </div>
+                  <h3 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: "clamp(1.2rem, 2.5vw, 1.5rem)", fontWeight: 600, lineHeight: 1.3, color: "var(--foreground)", marginBottom: "6px" }}>
+                    {current.question}
+                  </h3>
+                  <p style={{ fontSize: "13px", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif", lineHeight: 1.6 }}>
+                    {current.sub}
+                  </p>
+                </div>
+
+                {/* choice */}
+                {current.type === "choice" && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "2rem" }}>
+                    {current.options!.map(opt => {
+                      const active = answer === opt;
+                      return (
+                        <button key={opt}
+                          onClick={() => setAnswers(a => ({ ...a, [current.id]: opt }))}
+                          style={{
+                            textAlign: "left", padding: "11px 16px", borderRadius: "12px",
+                            border: "1px solid " + (active ? "rgba(200,155,99,0.55)" : "rgba(255,255,255,0.07)"),
+                            background: active ? "rgba(200,155,99,0.10)" : "rgba(255,255,255,0.02)",
+                            color: active ? "#C89B63" : "rgba(255,255,255,0.75)",
+                            fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: active ? 600 : 400,
+                            cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between",
+                            transition: "all 0.15s",
+                          }}
+                          onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; }}
+                          onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.02)"; }}>
+                          {opt}
+                          {active && <CheckCircle2 style={{ width: 15, height: 15, flexShrink: 0 }} />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* scale */}
+                {current.type === "scale" && (
+                  <div style={{ marginBottom: "2rem" }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                      {current.options!.map((opt, i) => {
+                        const active = answer === opt;
+                        return (
+                          <button key={opt}
+                            onClick={() => setAnswers(a => ({ ...a, [current.id]: opt }))}
+                            style={{
+                              flex: "1 1 80px", padding: "10px 8px", borderRadius: "12px", textAlign: "center",
+                              border: "1px solid " + (active ? "rgba(200,155,99,0.55)" : "rgba(255,255,255,0.07)"),
+                              background: active ? "rgba(200,155,99,0.10)" : "rgba(255,255,255,0.02)",
+                              color: active ? "#C89B63" : "rgba(255,255,255,0.65)",
+                              fontSize: "12px", fontFamily: "'DM Sans', sans-serif", fontWeight: active ? 700 : 400,
+                              cursor: "pointer", transition: "all 0.15s",
+                            }}>
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* multiline */}
+                {current.type === "multiline" && (
+                  <textarea
+                    value={typeof answer === "string" ? answer : ""}
+                    onChange={e => setAnswers(a => ({ ...a, [current.id]: e.target.value }))}
+                    placeholder={current.placeholder}
+                    rows={4}
+                    autoFocus
+                    style={{
+                      width: "100%", borderRadius: "14px", padding: "14px 16px",
+                      border: "1px solid " + (answer ? "rgba(200,155,99,0.35)" : "rgba(255,255,255,0.08)"),
+                      background: "rgba(255,255,255,0.03)",
+                      color: "var(--foreground)", fontSize: "14px", fontFamily: "'DM Sans', sans-serif",
+                      resize: "none", lineHeight: 1.65, outline: "none",
+                      transition: "border-color 0.2s, box-shadow 0.2s",
+                      marginBottom: "2rem", boxSizing: "border-box",
+                      boxShadow: answer ? "0 0 0 3px rgba(200,155,99,0.08)" : "none",
+                    }}
+                    onFocus={e => { e.currentTarget.style.borderColor = "rgba(200,155,99,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(200,155,99,0.10)"; }}
+                    onBlur={e => { e.currentTarget.style.borderColor = answer ? "rgba(200,155,99,0.35)" : "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
+                  />
+                )}
+
+                {/* email */}
+                {current.type === "email" && (
+                  <div style={{ marginBottom: "2rem" }}>
+                    <input
+                      type="email"
+                      value={typeof answer === "string" ? answer : ""}
+                      onChange={e => setAnswers(a => ({ ...a, [current.id]: e.target.value }))}
+                      placeholder={current.placeholder}
+                      autoFocus
+                      onKeyDown={e => { if (e.key === "Enter") goNext(); }}
+                      style={{
+                        width: "100%", borderRadius: "14px", padding: "14px 16px",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        background: "rgba(255,255,255,0.03)",
+                        color: "var(--foreground)", fontSize: "15px", fontFamily: "'DM Sans', sans-serif",
+                        outline: "none", transition: "border-color 0.2s, box-shadow 0.2s",
+                        boxSizing: "border-box",
+                      }}
+                      onFocus={e => { e.currentTarget.style.borderColor = "rgba(200,155,99,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(200,155,99,0.10)"; }}
+                      onBlur={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
+                    />
+                    <p style={{ fontSize: "11px", color: "var(--muted-foreground)", marginTop: "8px", fontFamily: "'DM Sans', sans-serif" }}>
+                      We respect your inbox. One email, no drip sequences.
+                    </p>
+                  </div>
+                )}
+
+                {/* nav buttons */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px" }}>
+                  <button
+                    onClick={goPrev}
+                    disabled={step === 0}
+                    style={{
+                      padding: "9px 16px", borderRadius: "999px", fontSize: "13px",
+                      background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+                      color: step === 0 ? "rgba(255,255,255,0.2)" : "var(--muted-foreground)",
+                      cursor: step === 0 ? "default" : "pointer",
+                      fontFamily: "'DM Sans', sans-serif", transition: "all 0.15s",
+                    }}>
+                    ← Back
+                  </button>
+                  <div style={{ display: "flex", gap: "4px" }}>
+                    {questions.map((_, i) => (
+                      <div key={i} style={{
+                        width: i === step ? 18 : 6, height: 6, borderRadius: "999px",
+                        background: i < step ? "#6FCF97" : i === step ? "#C89B63" : "rgba(255,255,255,0.1)",
+                        transition: "all 0.3s",
+                      }} />
+                    ))}
+                  </div>
+                  <button
+                    onClick={goNext}
+                    disabled={!canAdvance}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: "6px",
+                      padding: "9px 22px", borderRadius: "999px", fontSize: "13px",
+                      background: canAdvance
+                        ? "linear-gradient(135deg, #C89B63 0%, #8B6540 100%)"
+                        : "rgba(255,255,255,0.05)",
+                      border: "none",
+                      color: canAdvance ? "#0B0B0C" : "rgba(255,255,255,0.2)",
+                      cursor: canAdvance ? "pointer" : "default",
+                      fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                      transition: "all 0.2s",
+                      boxShadow: canAdvance ? "0 4px 16px rgba(200,155,99,0.3)" : "none",
+                    }}>
+                    {step === questions.length - 1 ? "Submit" : "Next"}
+                    <ArrowRight style={{ width: 13, height: 13 }} />
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── right: response summary sidebar ── */}
+      <div style={{ flex: "0 1 280px", minWidth: 220 }}>
+        <div style={{
+          background: "rgba(255,255,255,0.02)",
+          border: "1px solid rgba(255,255,255,0.06)",
+          borderRadius: "20px", padding: "1.5rem",
+          position: "sticky", top: "80px",
+        }}>
+          <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.24em", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif", marginBottom: "1.25rem", fontWeight: 600 }}>
+            Your answers so far
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {questions.map((q, i) => {
+              const ans = answers[q.id];
+              const done = !!ans;
+              const isCurrent = i === step && !submitted;
+              return (
+                <div key={q.id} style={{
+                  display: "flex", alignItems: "flex-start", gap: "10px",
+                  opacity: i > step && !submitted ? 0.35 : 1,
+                  transition: "opacity 0.3s",
+                }}>
+                  <div style={{
+                    width: 20, height: 20, borderRadius: "50%", flexShrink: 0, marginTop: "1px",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    background: done || submitted
+                      ? "rgba(111,207,151,0.15)"
+                      : isCurrent
+                        ? "rgba(200,155,99,0.15)"
+                        : "rgba(255,255,255,0.04)",
+                    border: "1px solid " + (done || submitted ? "rgba(111,207,151,0.3)" : isCurrent ? "rgba(200,155,99,0.35)" : "rgba(255,255,255,0.08)"),
+                  }}>
+                    {done || submitted
+                      ? <Check style={{ width: 10, height: 10, color: "#6FCF97" }} />
+                      : <span style={{ width: 5, height: 5, borderRadius: "50%", background: isCurrent ? "#C89B63" : "rgba(255,255,255,0.2)" }} />
+                    }
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: "11px", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif", marginBottom: "2px" }}>
+                      {q.tag}
+                    </div>
+                    {ans ? (
+                      <div style={{ fontSize: "12px", color: "var(--foreground)", fontFamily: "'DM Sans', sans-serif", fontWeight: 500, wordBreak: "break-word", lineHeight: 1.4 }}>
+                        {q.type === "email" ? "✉ " : ""}{String(ans).length > 40 ? String(ans).slice(0, 40) + "…" : String(ans)}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.25)", fontFamily: "'DM Sans', sans-serif", fontStyle: "italic" }}>
+                        {isCurrent ? "answering now…" : "not yet answered"}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {Object.keys(answers).length > 0 && !submitted && (
+            <div style={{ marginTop: "1.25rem", paddingTop: "1.25rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              <div style={{ fontSize: "11px", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif", marginBottom: "6px" }}>Progress</div>
+              <div style={{ height: 4, borderRadius: "999px", background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                <div style={{
+                  height: "100%", borderRadius: "999px",
+                  width: `${(Object.keys(answers).length / questions.length) * 100}%`,
+                  background: "linear-gradient(90deg, #C89B63, #6FCF97)",
+                  transition: "width 0.4s ease",
+                }} />
+              </div>
+              <div style={{ fontSize: "11px", color: "#C89B63", marginTop: "5px", fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>
+                {Object.keys(answers).length} of {questions.length} answered
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Hero Right-side Form Card ─── */
 function HeroFormCard() {
   const [step, setStep] = useState(0);
@@ -958,6 +1378,57 @@ export default function LandingPage() {
               </Reveal>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ══ LIVE DEMO ══ */}
+      <section id="demo" style={{ padding: "7rem 1.5rem", borderTop: "1px solid var(--border)", background: "rgba(200,155,99,0.02)" }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+          <Reveal>
+            <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
+              <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "#C89B63", fontWeight: 600, marginBottom: "12px" }}>Try it now</div>
+              <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 700, marginBottom: "1rem" }}>
+                A real EdinForm form, live right here.
+              </h2>
+              <p style={{ maxWidth: "50ch", margin: "0 auto", fontSize: "15px", lineHeight: 1.75, color: "var(--muted-foreground)" }}>
+                This isn't a mockup or a screenshot. Every interaction below — field focus, validation, progress, submission — is exactly what your respondents will experience. Fill it out and see for yourself.
+              </p>
+            </div>
+          </Reveal>
+
+          <Reveal delay={100}>
+            <LiveDemoForm />
+          </Reveal>
+
+          <Reveal delay={160}>
+            <div style={{
+              marginTop: "2rem", display: "flex", flexWrap: "wrap", justifyContent: "center",
+              gap: "2rem", padding: "1.5rem 2rem",
+              background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)",
+              borderRadius: "16px",
+            }}>
+              {[
+                { icon: Zap, label: "Instant responses", desc: "Submissions appear in your dashboard in real time" },
+                { icon: GitBranch, label: "Adaptive logic", desc: "Questions change based on previous answers" },
+                { icon: Globe, label: "Works everywhere", desc: "Any device, any browser — no app needed" },
+                { icon: BarChart3, label: "Built-in analytics", desc: "Completion rates, drop-off, and timing tracked automatically" },
+              ].map(({ icon: Icon, label, desc }) => (
+                <div key={label} style={{ display: "flex", alignItems: "flex-start", gap: "10px", flex: "1 1 200px", maxWidth: "260px" }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: "10px", flexShrink: 0,
+                    background: "rgba(200,155,99,0.10)", border: "1px solid rgba(200,155,99,0.2)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <Icon style={{ width: 15, height: 15, color: "#C89B63" }} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--foreground)", marginBottom: "2px" }}>{label}</div>
+                    <div style={{ fontSize: "12px", color: "var(--muted-foreground)", lineHeight: 1.5 }}>{desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
         </div>
       </section>
 
