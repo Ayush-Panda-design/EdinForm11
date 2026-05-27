@@ -47,19 +47,19 @@ export default function DashboardPage() {
   });
 
   const stats = [
-    { label: "Total Forms",    value: dashboard?.totalForms ?? 0,                          icon: FileText,   suffix: "",  delta: "+2 this week",        deltaUp: true  },
-    { label: "Total Views",    value: dashboard?.totalViews ?? 0,                          icon: Eye,        suffix: "",  delta: "+12% vs last week",   deltaUp: true  },
-    { label: "Responses",      value: dashboard?.totalResponses ?? 0,                      icon: BarChart3,  suffix: "",  delta: "+8 today",            deltaUp: true  },
-    { label: "Avg Conversion", value: dashboard ? dashboard.avgConversionRate.toFixed(1) : "0", icon: TrendingUp, suffix: "%", delta: "Industry avg 3.2%", deltaUp: false },
+    { label: "Total Forms",    value: dashboard?.totalForms ?? 0,                               icon: FileText,   suffix: "",  delta: "+2 this week",        deltaUp: true  },
+    { label: "Total Views",    value: dashboard?.totalViews ?? 0,                               icon: Eye,        suffix: "",  delta: "+12% vs last week",   deltaUp: true  },
+    { label: "Responses",      value: dashboard?.totalResponses ?? 0,                           icon: BarChart3,  suffix: "",  delta: "+8 today",            deltaUp: true  },
+    { label: "Avg Conversion", value: dashboard ? dashboard.avgConversionRate.toFixed(1) : "0", icon: TrendingUp, suffix: "%", delta: "Industry avg 3.2%",   deltaUp: false },
   ];
 
   const features = [
-    { icon: GitBranch,    title: "Conditional Logic",       desc: "Show or hide fields based on previous answers. Build smart, adaptive forms that feel conversational and reduce respondent friction." },
-    { icon: MousePointer2,title: "Multi-step Typeform UI",  desc: "One question at a time with animated transitions, keyboard navigation, and a polished progress bar. Designed to maximise completion rates." },
-    { icon: QrCode,       title: "QR Code Sharing",         desc: "Every published form gets a downloadable QR code. Perfect for print, events, and offline-to-online campaigns." },
-    { icon: Shield,       title: "Response Limits & Expiry",desc: "Set a max response count or a close date. FormCraft enforces both server-side so you never over-collect." },
-    { icon: Eye,          title: "Live Preview",            desc: "Preview your form in multi-step or classic mode before you hit publish. No guessing how respondents will see it." },
-    { icon: Download,     title: "CSV Export",              desc: "One-click export of all responses to CSV. Bring your data into Excel, Google Sheets, or any analytics tool instantly." },
+    { icon: GitBranch,     title: "Conditional Logic",        desc: "Show or hide fields based on previous answers. Build smart, adaptive forms that feel conversational and reduce respondent friction." },
+    { icon: MousePointer2, title: "Multi-step Form UI",       desc: "One question at a time with animated transitions, keyboard navigation, and a polished progress bar. Designed to maximise completion rates." },
+    { icon: QrCode,        title: "QR Code Sharing",          desc: "Every published form gets a downloadable QR code. Perfect for print, events, and offline-to-online campaigns." },
+    { icon: Shield,        title: "Response Limits & Expiry", desc: "Set a max response count or a close date. EdinForm enforces both server-side so you never over-collect." },
+    { icon: Eye,           title: "Live Preview",             desc: "Preview your form in multi-step or classic mode before you hit publish. No guessing how respondents will see it." },
+    { icon: Download,      title: "CSV Export",               desc: "One-click export of all responses to CSV. Bring your data into Excel, Google Sheets, or any analytics tool instantly." },
   ];
 
   const visibilityBadge = (v: string) => {
@@ -303,7 +303,18 @@ export default function DashboardPage() {
               <span style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)" }}>What's Available</span>
             </div>
             <div style={{ padding: "0.75rem 1.25rem 1rem" }}>
-              {["Typeform-style multi-step UI","Conditional field logic","QR code sharing + PNG export","Response limits & expiry dates","Live form preview (modal)","CSV export of all responses","Recharts analytics dashboard","Scalar API documentation","Rate limiting via Upstash Redis","JWT auth with bearer tokens"].map((feat) => (
+              {[
+                "Multi-step form UI with animations",
+                "Conditional field logic",
+                "QR code sharing + PNG export",
+                "Response limits & expiry dates",
+                "Live form preview (modal)",
+                "CSV export of all responses",
+                "Analytics dashboard with charts",
+                "Full API documentation",
+                "Rate limiting & abuse protection",
+                "JWT auth with bearer tokens",
+              ].map((feat) => (
                 <div key={feat} style={{ display: "flex", alignItems: "flex-start", gap: "8px", padding: "5px 0" }}>
                   <CheckCircle2 style={{ width: 13, height: 13, color: "#7EB884", marginTop: "2px", flexShrink: 0 }} />
                   <span style={{ fontSize: "12px", color: "var(--muted-foreground)", lineHeight: 1.4 }}>{feat}</span>
@@ -318,22 +329,22 @@ export default function DashboardPage() {
               <span style={{ fontSize: "12px", fontWeight: 600, color: "#C89B63", textTransform: "uppercase", letterSpacing: "0.1em" }}>API Access</span>
             </div>
             <p style={{ fontSize: "12px", color: "var(--muted-foreground)", lineHeight: 1.6, marginBottom: "12px" }}>
-              Full REST + tRPC API. Manage forms, submit responses, and pull analytics programmatically. Full OpenAPI 3.1 docs available.
+              Full REST API. Manage forms, submit responses, and pull analytics programmatically. Complete OpenAPI 3.1 docs available.
             </p>
-           
-            <a href="https://edinform11-2.onrender.com/docs" target="_blank" rel="noreferrer"
-  style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#C89B63", textDecoration: "none" }}
-  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "underline"; }}
-  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "none"; }}>
-  Open API docs <ExternalLink style={{ width: 11, height: 11 }} />
-</a>
 
-<a href="https://edinform11-2.onrender.com/openapi.json" target="_blank" rel="noreferrer"
-  style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "var(--muted-foreground)", textDecoration: "none", marginLeft: "12px" }}
-  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "underline"; }}
-  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "none"; }}>
-  OpenAPI JSON <ExternalLink style={{ width: 11, height: 11 }} />
-</a>
+            <a href="https://edinform11-2.onrender.com/docs" target="_blank" rel="noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#C89B63", textDecoration: "none" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "underline"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "none"; }}>
+              Open API docs <ExternalLink style={{ width: 11, height: 11 }} />
+            </a>
+
+            <a href="https://edinform11-2.onrender.com/openapi.json" target="_blank" rel="noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "var(--muted-foreground)", textDecoration: "none", marginLeft: "12px" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "underline"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "none"; }}>
+              OpenAPI JSON <ExternalLink style={{ width: 11, height: 11 }} />
+            </a>
           </div>
         </div>
       </div>
@@ -366,11 +377,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── Tech stack strip ── */}
+      {/* ── Status strip ── */}
       <div className="ef-card" style={{ borderRadius: "1rem", padding: "1.25rem 1.75rem", display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap", justifyContent: "space-between" }}>
         <div>
-          <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)", marginBottom: "4px" }}>Built on</p>
-          <p style={{ fontSize: "13px", color: "var(--foreground)", lineHeight: 1.5 }}>Turborepo · Next.js 16 · tRPC · Drizzle ORM · PostgreSQL · Zod · Recharts · Scalar</p>
+          <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)", marginBottom: "4px" }}>Platform</p>
+          <p style={{ fontSize: "13px", color: "var(--foreground)", lineHeight: 1.5 }}>EdinForm — form intelligence, analytics, and API access in one workspace.</p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#7EB884" }} />
