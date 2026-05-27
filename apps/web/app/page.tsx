@@ -408,6 +408,245 @@ function BranchingDiagram() {
   );
 }
 
+/* ─── Hero Right-side Form Card ─── */
+function HeroFormCard() {
+  const [step, setStep] = useState(0);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [rating, setRating] = useState<number | null>(null);
+  const [typed, setTyped] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const steps = [
+    {
+      type: "choice",
+      question: "What best describes your team?",
+      sub: "We'll tailor EdinForm to your workflow.",
+      options: ["Product & Design", "Research & UX", "Marketing", "Operations"],
+    },
+    {
+      type: "rating",
+      question: "How satisfied are you with your current form tool?",
+      sub: "1 = very unhappy, 5 = completely satisfied",
+    },
+    {
+      type: "text",
+      question: "What's one thing your current tool gets wrong?",
+      sub: "Be honest — this helps us build better.",
+    },
+  ];
+
+  const current = steps[step]!;
+
+  const canContinue =
+    (current.type === "choice" && selected !== null) ||
+    (current.type === "rating" && rating !== null) ||
+    (current.type === "text" && typed.trim().length > 0);
+
+  function handleNext() {
+    if (step < steps.length - 1) {
+      setStep(s => s + 1);
+      setSelected(null);
+      setRating(null);
+      setTyped("");
+    } else {
+      setSubmitted(true);
+    }
+  }
+
+  return (
+    <div style={{
+      background: "rgba(255,255,255,0.03)",
+      border: "1px solid rgba(255,255,255,0.09)",
+      borderRadius: "24px",
+      overflow: "hidden",
+      backdropFilter: "blur(24px)",
+      boxShadow: "0 24px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(200,155,99,0.08)",
+    }}>
+      {/* top chrome */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "12px 16px",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        background: "rgba(255,255,255,0.02)",
+      }}>
+        <div style={{ display: "flex", gap: "6px" }}>
+          {["rgba(255,99,99,0.45)", "rgba(255,200,50,0.45)", "rgba(50,205,80,0.45)"].map((c, i) => (
+            <span key={i} style={{ width: 9, height: 9, borderRadius: "50%", background: c }} />
+          ))}
+        </div>
+        <span style={{ fontFamily: "monospace", fontSize: "11px", color: "var(--muted-foreground)", letterSpacing: "0.05em" }}>
+          edinform.io · live preview
+        </span>
+        <div style={{ display: "flex", gap: "4px" }}>
+          {steps.map((_, i) => (
+            <div key={i} style={{
+              width: i === step ? 16 : 6, height: 6, borderRadius: "999px",
+              background: i < step ? "#6FCF97" : i === step ? "#C89B63" : "rgba(255,255,255,0.12)",
+              transition: "all 0.3s",
+            }} />
+          ))}
+        </div>
+      </div>
+
+      {/* progress bar */}
+      <div style={{ height: 2, background: "rgba(255,255,255,0.06)" }}>
+        <div style={{
+          height: "100%",
+          width: submitted ? "100%" : `${((step) / steps.length) * 100}%`,
+          background: "linear-gradient(90deg, #C89B63, #8B6540)",
+          transition: "width 0.5s cubic-bezier(0.4,0,0.2,1)",
+        }} />
+      </div>
+
+      {/* card body */}
+      <div style={{ padding: "2rem 2rem 1.75rem" }}>
+        {submitted ? (
+          <div style={{ textAlign: "center", padding: "2rem 0" }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: "50%",
+              background: "rgba(111,207,151,0.15)", border: "1px solid rgba(111,207,151,0.3)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              margin: "0 auto 1.25rem",
+            }}>
+              <CheckCircle2 style={{ width: 26, height: 26, color: "#6FCF97" }} />
+            </div>
+            <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: "1.5rem", fontWeight: 600, marginBottom: "8px", color: "var(--foreground)" }}>
+              Thanks for trying it out!
+            </h3>
+            <p style={{ fontSize: "13px", color: "var(--muted-foreground)", lineHeight: 1.7, marginBottom: "1.5rem" }}>
+              This was a live EdinForm form. You just experienced the respondent view — clean, fast, and distraction-free.
+            </p>
+            <button onClick={() => { setStep(0); setSubmitted(false); setSelected(null); setRating(null); setTyped(""); }}
+              style={{
+                borderRadius: "999px", padding: "9px 20px", fontSize: "13px",
+                background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
+                color: "var(--foreground)", cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+                transition: "background 0.2s",
+              }}>
+              Try again ↩
+            </button>
+          </div>
+        ) : (
+          <>
+            <div style={{ marginBottom: "1.5rem" }}>
+              <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.24em", color: "#C89B63", fontWeight: 700, marginBottom: "10px", fontFamily: "'DM Sans', sans-serif" }}>
+                Question {step + 1} of {steps.length}
+              </div>
+              <h3 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: "1.25rem", fontWeight: 600, lineHeight: 1.35, color: "var(--foreground)", marginBottom: "5px" }}>
+                {current.question}
+              </h3>
+              <p style={{ fontSize: "12px", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif" }}>
+                {current.sub}
+              </p>
+            </div>
+
+            {/* choice */}
+            {current.type === "choice" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "1.5rem" }}>
+                {current.options!.map(opt => (
+                  <button key={opt} onClick={() => setSelected(opt)}
+                    style={{
+                      textAlign: "left", padding: "10px 14px", borderRadius: "12px",
+                      border: "1px solid " + (selected === opt ? "rgba(200,155,99,0.5)" : "rgba(255,255,255,0.08)"),
+                      background: selected === opt ? "rgba(200,155,99,0.10)" : "rgba(255,255,255,0.02)",
+                      color: selected === opt ? "#C89B63" : "rgba(255,255,255,0.8)",
+                      fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: selected === opt ? 600 : 400,
+                      cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between",
+                      transition: "all 0.18s",
+                    }}>
+                    {opt}
+                    {selected === opt && <Check style={{ width: 14, height: 14 }} />}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* rating */}
+            {current.type === "rating" && (
+              <div style={{ marginBottom: "1.75rem" }}>
+                <div style={{ display: "flex", gap: "8px", justifyContent: "center", marginBottom: "8px" }}>
+                  {[1,2,3,4,5].map(n => (
+                    <button key={n} onClick={() => setRating(n)}
+                      style={{
+                        width: 48, height: 48, borderRadius: "14px",
+                        border: "1px solid " + (rating !== null && n <= rating ? "rgba(200,155,99,0.5)" : "rgba(255,255,255,0.08)"),
+                        background: rating !== null && n <= rating ? "rgba(200,155,99,0.15)" : "rgba(255,255,255,0.03)",
+                        color: rating !== null && n <= rating ? "#C89B63" : "rgba(255,255,255,0.5)",
+                        fontSize: "16px", fontFamily: "'Fraunces', serif", fontWeight: 700,
+                        cursor: "pointer", transition: "all 0.15s",
+                        transform: rating === n ? "scale(1.12)" : "scale(1)",
+                      }}>
+                      {n}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif", padding: "0 4px" }}>
+                  <span>Very unhappy</span><span>Completely satisfied</span>
+                </div>
+              </div>
+            )}
+
+            {/* text */}
+            {current.type === "text" && (
+              <textarea
+                value={typed}
+                onChange={e => setTyped(e.target.value)}
+                placeholder="Write your answer here…"
+                rows={3}
+                style={{
+                  width: "100%", borderRadius: "12px", padding: "12px 14px",
+                  border: "1px solid " + (typed ? "rgba(200,155,99,0.3)" : "rgba(255,255,255,0.08)"),
+                  background: "rgba(255,255,255,0.03)",
+                  color: "var(--foreground)", fontSize: "13px", fontFamily: "'DM Sans', sans-serif",
+                  resize: "none", lineHeight: 1.6, outline: "none",
+                  transition: "border-color 0.2s",
+                  marginBottom: "1.5rem", boxSizing: "border-box",
+                }}
+              />
+            )}
+
+            {/* footer row */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontFamily: "monospace", fontSize: "11px", color: "var(--muted-foreground)" }}>
+                {step + 1} / {steps.length}
+              </span>
+              <button
+                onClick={handleNext}
+                disabled={!canContinue}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: "6px",
+                  borderRadius: "999px", padding: "9px 20px", fontSize: "13px",
+                  background: canContinue
+                    ? "linear-gradient(135deg, #C89B63 0%, #8B6540 100%)"
+                    : "rgba(255,255,255,0.06)",
+                  color: canContinue ? "#0B0B0C" : "rgba(255,255,255,0.25)",
+                  border: "none", cursor: canContinue ? "pointer" : "default",
+                  fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                  transition: "all 0.2s",
+                  transform: canContinue ? "scale(1)" : "scale(0.97)",
+                }}>
+                {step === steps.length - 1 ? "Submit" : "Continue"}
+                <ArrowRight style={{ width: 13, height: 13 }} />
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* footer badge */}
+      <div style={{
+        padding: "10px 16px",
+        borderTop: "1px solid rgba(255,255,255,0.05)",
+        display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
+        fontSize: "11px", color: "var(--muted-foreground)", fontFamily: "'DM Sans', sans-serif",
+      }}>
+        <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#6FCF97", boxShadow: "0 0 6px #6FCF9788" }} />
+        Powered by EdinForm · Free to build
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main Component ─── */
 export default function LandingPage() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -537,119 +776,129 @@ export default function LandingPage() {
       </nav>
 
       {/* ══ HERO ══ */}
-      <section style={{ position: "relative", overflow: "hidden", padding: "6rem 1.5rem 5rem" }}>
-        {/* ambient background */}
+      <section style={{ position: "relative", overflow: "hidden", padding: "5rem 1.5rem 5rem" }}>
+        {/* ambient glow */}
         <div style={{
-          position: "absolute", inset: 0, zIndex: 0,
-          background: "radial-gradient(ellipse 80% 60% at 50% -10%, rgba(200,155,99,0.16) 0%, transparent 60%), radial-gradient(ellipse 50% 40% at 80% 60%, rgba(124,158,232,0.08) 0%, transparent 60%)",
-          pointerEvents: "none",
+          position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
+          background: "radial-gradient(ellipse 60% 55% at 30% 40%, rgba(200,155,99,0.13) 0%, transparent 65%), radial-gradient(ellipse 50% 50% at 80% 50%, rgba(124,158,232,0.07) 0%, transparent 60%)",
         }} />
 
         <div style={{ maxWidth: "1200px", margin: "0 auto", position: "relative", zIndex: 1 }}>
-          {/* eyebrow pill */}
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: "8px",
-            background: "rgba(200,155,99,0.10)", border: "1px solid rgba(200,155,99,0.25)",
-            borderRadius: "999px", padding: "5px 14px", marginBottom: "2rem",
-            fontSize: "12px", fontWeight: 600, color: "#C89B63",
-            animation: "fadeUp 0.6s ease both",
-          }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#C89B63", boxShadow: "0 0 8px #C89B6388" }} />
-            Introducing EdinForm 2.0 — with AI-powered logic
-            <ArrowRight style={{ width: 12, height: 12 }} />
-          </div>
+          {/* two-column layout */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "3.5rem", alignItems: "center" }}>
 
-          {/* headline */}
-          <h1 style={{
-            fontFamily: "'Fraunces', Georgia, serif",
-            fontSize: "clamp(3rem, 7vw, 6.5rem)",
-            lineHeight: 1.0,
-            letterSpacing: "-0.03em",
-            maxWidth: "14ch",
-            marginBottom: "1.75rem",
-            animation: "fadeUp 0.7s ease 0.1s both",
-            fontWeight: 700,
-          }}>
-            Forms that<br />
-            <em style={{ color: "#C89B63", fontStyle: "italic" }}>think</em> with you.
-          </h1>
+            {/* ── LEFT COLUMN ── */}
+            <div style={{ flex: "1 1 420px", minWidth: 0 }}>
+              {/* eyebrow pill */}
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: "8px",
+                background: "rgba(200,155,99,0.10)", border: "1px solid rgba(200,155,99,0.25)",
+                borderRadius: "999px", padding: "5px 14px", marginBottom: "1.75rem",
+                fontSize: "12px", fontWeight: 600, color: "#C89B63",
+                animation: "fadeUp 0.6s ease both",
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#C89B63", boxShadow: "0 0 8px #C89B6388" }} />
+                Introducing EdinForm 2.0 — with AI-powered logic
+                <ArrowRight style={{ width: 12, height: 12 }} />
+              </div>
 
-          <p style={{
-            maxWidth: "50ch",
-            fontSize: "clamp(15px, 1.8vw, 18px)",
-            lineHeight: 1.75,
-            color: "var(--muted-foreground)",
-            marginBottom: "2.5rem",
-            animation: "fadeUp 0.7s ease 0.2s both",
-          }}>
-            EdinForm is the form builder for teams who care about experience. Build branching surveys, collect structured data, and analyze responses — all from one clean, fast interface. No code. No friction. Just better conversations with your audience.
-          </p>
+              {/* headline — tighter, more readable size */}
+              <h1 style={{
+                fontFamily: "'Fraunces', Georgia, serif",
+                fontSize: "clamp(2.6rem, 5vw, 4.8rem)",
+                lineHeight: 1.08,
+                letterSpacing: "-0.025em",
+                marginBottom: "1.5rem",
+                animation: "fadeUp 0.7s ease 0.1s both",
+                fontWeight: 700,
+                color: "var(--foreground)",
+              }}>
+                Forms that{" "}
+                <em style={{ color: "#C89B63", fontStyle: "italic" }}>think</em>
+                <br />with you.
+              </h1>
 
-          <div style={{
-            display: "flex", flexWrap: "wrap", gap: "12px", alignItems: "center",
-            animation: "fadeUp 0.7s ease 0.3s both",
-          }}>
-            <Link href={ctaHref} style={{
-              display: "inline-flex", alignItems: "center", gap: "8px",
-              borderRadius: "999px", padding: "13px 28px", fontSize: "14px",
-              background: "linear-gradient(135deg, #C89B63 0%, #8B6540 100%)",
-              color: "#0B0B0C", textDecoration: "none", fontWeight: 700,
-              transition: "transform 0.2s, box-shadow 0.2s",
-              boxShadow: "0 4px 20px rgba(200,155,99,0.30)",
-            }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1.04)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 32px rgba(200,155,99,0.45)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ""; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 20px rgba(200,155,99,0.30)"; }}>
-              Build your first form — free
-              <ArrowRight style={{ width: 15, height: 15 }} />
-            </Link>
-            <Link href="/explore" style={{
-              display: "inline-flex", alignItems: "center", gap: "6px",
-              borderRadius: "999px", padding: "13px 24px", fontSize: "14px",
-              background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)",
-              color: "var(--foreground)", textDecoration: "none", fontWeight: 500,
-              transition: "background 0.2s",
-            }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.09)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; }}>
-              <Play style={{ width: 13, height: 13, fill: "currentColor" }} /> See a live demo
-            </Link>
-            <span style={{ fontSize: "12px", color: "var(--muted-foreground)", display: "flex", alignItems: "center", gap: "6px" }}>
-              <ShieldCheck style={{ width: 13, height: 13, color: "#6FCF97" }} />
-              Free forever · No credit card
-            </span>
-          </div>
+              <p style={{
+                maxWidth: "48ch",
+                fontSize: "clamp(14px, 1.4vw, 16px)",
+                lineHeight: 1.8,
+                color: "var(--muted-foreground)",
+                marginBottom: "2rem",
+                animation: "fadeUp 0.7s ease 0.2s both",
+              }}>
+                EdinForm is the form builder for teams who care about experience. Build branching surveys, collect structured data, and analyze responses — all from one clean, fast interface. No code. No friction. Just better conversations with your audience.
+              </p>
 
-          {/* social proof */}
-          <div style={{
-            marginTop: "3rem", display: "flex", flexWrap: "wrap", alignItems: "center", gap: "20px",
-            animation: "fadeUp 0.7s ease 0.4s both",
-          }}>
-            <div style={{ display: "flex" }}>
-              {[1,2,3,4,5].map(i => (
-                <div key={i} style={{
-                  width: 32, height: 32, borderRadius: "50%",
-                  border: "2px solid var(--background)",
-                  background: `hsl(${i * 47 + 30}, 55%, 45%)`,
-                  marginLeft: i > 1 ? "-10px" : "0",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "11px", fontWeight: 700, color: "white",
-                }}>
-                  {String.fromCharCode(65 + i - 1)}
+              <div style={{
+                display: "flex", flexWrap: "wrap", gap: "10px", alignItems: "center",
+                animation: "fadeUp 0.7s ease 0.3s both",
+              }}>
+                <Link href={ctaHref} style={{
+                  display: "inline-flex", alignItems: "center", gap: "8px",
+                  borderRadius: "999px", padding: "12px 26px", fontSize: "14px",
+                  background: "linear-gradient(135deg, #C89B63 0%, #8B6540 100%)",
+                  color: "#0B0B0C", textDecoration: "none", fontWeight: 700,
+                  transition: "transform 0.2s, box-shadow 0.2s",
+                  boxShadow: "0 4px 20px rgba(200,155,99,0.30)",
+                }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1.04)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 32px rgba(200,155,99,0.45)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ""; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 20px rgba(200,155,99,0.30)"; }}>
+                  Build your first form — free
+                  <ArrowRight style={{ width: 15, height: 15 }} />
+                </Link>
+                <Link href="/explore" style={{
+                  display: "inline-flex", alignItems: "center", gap: "6px",
+                  borderRadius: "999px", padding: "12px 22px", fontSize: "14px",
+                  background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)",
+                  color: "var(--foreground)", textDecoration: "none", fontWeight: 500,
+                  transition: "background 0.2s",
+                }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.09)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; }}>
+                  <Play style={{ width: 13, height: 13, fill: "currentColor" }} /> See a live demo
+                </Link>
+              </div>
+
+              {/* trust row */}
+              <div style={{
+                marginTop: "2.25rem", display: "flex", flexWrap: "wrap", alignItems: "center", gap: "18px",
+                animation: "fadeUp 0.7s ease 0.4s both",
+              }}>
+                <div style={{ display: "flex" }}>
+                  {[1,2,3,4,5].map(i => (
+                    <div key={i} style={{
+                      width: 30, height: 30, borderRadius: "50%",
+                      border: "2px solid var(--background)",
+                      background: `hsl(${i * 47 + 30}, 55%, 45%)`,
+                      marginLeft: i > 1 ? "-9px" : "0",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: "10px", fontWeight: 700, color: "white",
+                    }}>
+                      {String.fromCharCode(65 + i - 1)}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div>
-              <div style={{ display: "flex", gap: "2px", marginBottom: "2px" }}>
-                {[1,2,3,4,5].map(i => <Star key={i} style={{ width: 12, height: 12, fill: "#C89B63", color: "#C89B63" }} />)}
+                <div>
+                  <div style={{ display: "flex", gap: "2px", marginBottom: "2px" }}>
+                    {[1,2,3,4,5].map(i => <Star key={i} style={{ width: 11, height: 11, fill: "#C89B63", color: "#C89B63" }} />)}
+                  </div>
+                  <div style={{ fontSize: "12px", color: "var(--muted-foreground)" }}>
+                    Trusted by <strong style={{ color: "var(--foreground)" }}>8,400+</strong> teams
+                  </div>
+                </div>
+                <div style={{ height: 28, width: 1, background: "rgba(255,255,255,0.08)" }} />
+                <div style={{ fontSize: "12px", color: "var(--muted-foreground)", display: "flex", alignItems: "center", gap: "5px" }}>
+                  <ShieldCheck style={{ width: 13, height: 13, color: "#6FCF97" }} />
+                  Free forever · No credit card
+                </div>
               </div>
-              <div style={{ fontSize: "12px", color: "var(--muted-foreground)" }}>
-                Trusted by <strong style={{ color: "var(--foreground)" }}>8,400+</strong> teams worldwide
-              </div>
             </div>
-            <div style={{ height: 32, width: 1, background: "rgba(255,255,255,0.08)" }} />
-            <div style={{ fontSize: "12px", color: "var(--muted-foreground)" }}>
-              <strong style={{ color: "var(--foreground)" }}>1.2M+</strong> responses collected
+
+            {/* ── RIGHT COLUMN — interactive hero card ── */}
+            <div style={{ flex: "1 1 380px", minWidth: 0, animation: "fadeUp 0.8s ease 0.25s both" }}>
+              <HeroFormCard />
             </div>
+
           </div>
         </div>
       </section>
