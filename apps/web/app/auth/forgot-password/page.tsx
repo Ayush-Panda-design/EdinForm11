@@ -1,8 +1,14 @@
 "use client";
+
 import { useState } from "react";
 import Link from "next/link";
 import { trpc } from "~/trpc/client";
-import { Mail, ArrowLeft, Loader2, CheckCircle } from "lucide-react";
+import {
+  Mail,
+  ArrowLeft,
+  Loader2,
+  CheckCircle,
+} from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -14,15 +20,41 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-4">
-        <div className="w-full max-w-md text-center">
-          <div className="w-14 h-14 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-7 h-7 text-green-600" />
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4">
+        {/* Atmosphere */}
+        <div className="pointer-events-none absolute inset-0 z-0">
+          <div className="absolute left-[-10%] top-[-10%] h-[520px] w-[520px] rounded-full bg-[rgba(200,155,99,0.10)] blur-3xl" />
+
+          <div className="absolute bottom-[-15%] right-[-10%] h-[620px] w-[620px] rounded-full bg-[rgba(139,115,85,0.08)] blur-3xl" />
+
+          <div className="absolute inset-0 opacity-[0.03] [background-image:linear-gradient(to_right,var(--border)_1px,transparent_1px)] [background-size:80px_100%]" />
+        </div>
+
+        <div className="relative z-10 w-full max-w-md text-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-[rgba(200,155,99,0.20)] bg-[rgba(200,155,99,0.08)]">
+            <CheckCircle className="h-8 w-8 text-[var(--accent-amber)]" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Check your email</h1>
-          <p className="text-gray-500 mb-6">If an account with <strong>{email}</strong> exists, we sent a password reset link. Check your inbox.</p>
-          <Link href="/auth/login" className="text-stone-900 hover:text-stone-900 font-medium text-sm">
-            ← Back to sign in
+
+          <div className="mx-auto mb-6 h-px w-24 ef-divider" />
+
+          <h1 className="font-display text-5xl tracking-[-0.05em] text-foreground">
+            Check your email
+          </h1>
+
+          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+            If an account with{" "}
+            <span className="font-medium text-foreground">
+              {email}
+            </span>{" "}
+            exists, we've sent password reset instructions.
+          </p>
+
+          <Link
+            href="/auth/login"
+            className="mt-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to sign in
           </Link>
         </div>
       </div>
@@ -30,39 +62,96 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 shadow-sm">
-          <Link href="/auth/login" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 mb-6">
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to sign in
-          </Link>
-          <div className="w-10 h-10 rounded-xl bg-stone-100 dark:bg-stone-900/30 flex items-center justify-center mb-4">
-            <Mail className="w-5 h-5 text-stone-900" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Forgot password?</h1>
-          <p className="text-gray-500 text-sm mb-6">No worries — we'll send you reset instructions.</p>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4">
+      {/* Ambient cinematic layers */}
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <div className="absolute left-[-10%] top-[-10%] h-[520px] w-[520px] rounded-full bg-[rgba(200,155,99,0.10)] blur-3xl" />
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && mutation.mutate({ email })}
-                placeholder="you@example.com"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-transparent text-sm"
-              />
-            </div>
-            <button
-              onClick={() => mutation.mutate({ email })}
-              disabled={mutation.isPending || !email}
-              className="w-full py-3 rounded-xl bg-stone-900 text-white font-semibold hover:bg-stone-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-            >
-              {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              Send reset link
-            </button>
+        <div className="absolute bottom-[-15%] right-[-10%] h-[620px] w-[620px] rounded-full bg-[rgba(139,115,85,0.08)] blur-3xl" />
+
+        <div className="absolute inset-0 opacity-[0.03] [background-image:linear-gradient(to_right,var(--border)_1px,transparent_1px)] [background-size:80px_100%]" />
+      </div>
+
+      <div className="relative z-10 w-full max-w-md">
+        {/* Back */}
+        <Link
+          href="/auth/login"
+          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to sign in
+        </Link>
+
+        {/* Card */}
+        <div className="ef-card relative overflow-hidden rounded-[30px] p-8 md:p-10">
+          {/* Warm glow */}
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 rounded-full bg-[rgba(200,155,99,0.08)] blur-3xl" />
           </div>
+
+          <div className="relative z-10">
+            {/* Icon */}
+            <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-[rgba(200,155,99,0.16)] bg-[rgba(200,155,99,0.08)]">
+              <Mail className="h-6 w-6 text-[var(--accent-amber)]" />
+            </div>
+
+            <div className="mb-6 h-px w-20 ef-divider" />
+
+            {/* Heading */}
+            <h1 className="font-display text-5xl leading-none tracking-[-0.045em] text-foreground">
+              Forgot password?
+            </h1>
+
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+              No worries — we'll send you a secure password reset link.
+            </p>
+
+            {/* Form */}
+            <div className="mt-8 space-y-5">
+              <div className="space-y-2">
+                <label className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                  Email Address
+                </label>
+
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" &&
+                    mutation.mutate({ email })
+                  }
+                  placeholder="you@example.com"
+                  className="ef-input w-full rounded-2xl px-4 py-3.5 text-sm"
+                />
+              </div>
+
+              <button
+                onClick={() =>
+                  mutation.mutate({
+                    email,
+                  })
+                }
+                disabled={mutation.isPending || !email}
+                className="ef-btn-primary flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {mutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : null}
+
+                Send reset link
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer detail */}
+        <div className="mt-8 flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <span>Encrypted email recovery</span>
+
+          <span className="h-1 w-1 rounded-full bg-[var(--accent-amber)]" />
+
+          <span>Secure access flow</span>
         </div>
       </div>
     </div>
