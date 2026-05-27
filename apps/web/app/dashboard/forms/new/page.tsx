@@ -106,8 +106,8 @@ export default function NewFormPage() {
     defaultValues: { allowMultipleResponses: true, showProgressBar: true },
   });
 
-  const allowMultiple = watch("allowMultipleResponses");
-  const showProgress = watch("showProgressBar");
+ const allowMultiple = watch("allowMultipleResponses") ?? true;
+const showProgress = watch("showProgressBar") ?? true;
 
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
