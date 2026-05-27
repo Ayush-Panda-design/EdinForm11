@@ -17,23 +17,32 @@ const schema = z.object({
   email: z.string().email("Invalid email"),
   password: z.string().min(8, "At least 8 characters"),
 });
+
 type FormData = z.infer<typeof schema>;
 
 const GOOGLE_AUTH_URL =
   (env.NEXT_PUBLIC_API_BASE_URL ??
-   (env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace("/trpc", "")) +
+    (env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace("/trpc", "")) +
   "/auth/google";
 
 export default function RegisterPage() {
   const [showPass, setShowPass] = useState(false);
+
   const router = useRouter();
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
   // Already logged in → dashboard
   useEffect(() => {
-    if (isAuthenticated()) router.replace("/dashboard");
+    if (isAuthenticated()) {
+      router.replace("/dashboard");
+    }
   }, [router]);
 
   const signUp = trpc.auth.signUp.useMutation({
@@ -42,98 +51,202 @@ export default function RegisterPage() {
       toast.success("Account created! Welcome, " + data.user.fullName + "!");
       window.location.href = "/dashboard";
     },
-    onError: (err) => toast.error(err.message || "Registration failed"),
+
+    onError: (err) => {
+      toast.error(err.message || "Registration failed");
+    },
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-50 to-stone-50 dark:from-gray-950 dark:to-gray-900 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-stone-900 to-stone-900 flex items-center justify-center">
-              <span className="text-white font-bold">F</span>
-            </div>
-            <span className="font-bold text-xl text-gray-900 dark:text-white">EdinForm</span>
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create your account</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Start building forms for free</p>
-        </div>
+    <div className="relative min-h-screen overflow-hidden bg-background px-4">
+      {/* Atmospheric layers */}
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <div className="absolute left-[-10%] top-[-10%] h-[520px] w-[520px] rounded-full bg-[rgba(200,155,99,0.10)] blur-3xl" />
 
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-800 space-y-5">
-          {/* Google Sign Up */}
-          <a
-            href={GOOGLE_AUTH_URL}
-            className="flex items-center justify-center gap-3 w-full border border-gray-200 dark:border-gray-700 rounded-lg py-3 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            <GoogleIcon />
-            Sign up with Google
-          </a>
+        <div className="absolute bottom-[-15%] right-[-10%] h-[620px] w-[620px] rounded-full bg-[rgba(139,115,85,0.08)] blur-3xl" />
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200 dark:border-gray-700" />
+        <div className="absolute inset-0 opacity-[0.03] [background-image:linear-gradient(to_right,var(--border)_1px,transparent_1px)] [background-size:80px_100%]" />
+      </div>
+
+      <div className="relative z-10 flex min-h-screen items-center justify-center">
+        <div className="w-full max-w-md">
+          {/* Brand */}
+          <div className="mb-10 text-center">
+            <Link
+              href="/"
+              className="group inline-flex items-center gap-3"
+            >
+              <div className="ef-btn-primary flex h-11 w-11 items-center justify-center rounded-2xl">
+                <span className="font-display text-lg font-semibold">
+                  E
+                </span>
+              </div>
+
+              <div className="text-left">
+                <p className="font-display text-2xl tracking-tight text-foreground">
+                  EdinForm
+                </p>
+
+                <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                  Build with atmosphere
+                </p>
+              </div>
+            </Link>
+
+            <div className="mx-auto mt-8 mb-6 h-px w-24 ef-divider" />
+
+            <h1 className="font-display text-5xl leading-none tracking-[-0.045em] text-foreground">
+              Create your account
+            </h1>
+
+            <p className="mt-3 text-sm text-muted-foreground">
+              Start crafting cinematic forms and elegant workflows.
+            </p>
+          </div>
+
+          {/* Card */}
+          <div className="ef-card relative overflow-hidden rounded-[30px] p-8 md:p-10">
+            {/* Warm cinematic glow */}
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 rounded-full bg-[rgba(200,155,99,0.08)] blur-3xl" />
             </div>
-            <div className="relative flex justify-center">
-              <span className="bg-white dark:bg-gray-900 px-3 text-xs text-gray-400">or</span>
+
+            <div className="relative z-10 space-y-6">
+              {/* Google */}
+              <a
+                href={GOOGLE_AUTH_URL}
+                className="ef-btn-ghost flex w-full items-center justify-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium"
+              >
+                <GoogleIcon />
+                Continue with Google
+              </a>
+
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full ef-divider" />
+                </div>
+
+                <div className="relative flex justify-center">
+                  <span className="bg-card px-4 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+                    or continue
+                  </span>
+                </div>
+              </div>
+
+              {/* Form */}
+              <form
+                onSubmit={handleSubmit((d) => signUp.mutate(d))}
+                className="space-y-5"
+              >
+                {/* Full Name */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                    Full Name
+                  </label>
+
+                  <input
+                    {...register("fullName")}
+                    placeholder="John Doe"
+                    className="ef-input w-full rounded-2xl px-4 py-3.5 text-sm"
+                  />
+
+                  {errors.fullName && (
+                    <p className="text-xs text-[#C97B7B]">
+                      {errors.fullName.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Email */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                    Email Address
+                  </label>
+
+                  <input
+                    {...register("email")}
+                    type="email"
+                    placeholder="you@example.com"
+                    className="ef-input w-full rounded-2xl px-4 py-3.5 text-sm"
+                  />
+
+                  {errors.email && (
+                    <p className="text-xs text-[#C97B7B]">
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                    Password
+                  </label>
+
+                  <div className="relative">
+                    <input
+                      {...register("password")}
+                      type={showPass ? "text" : "password"}
+                      placeholder="Minimum 8 characters"
+                      className="ef-input w-full rounded-2xl px-4 py-3.5 pr-12 text-sm"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowPass(!showPass)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {showPass ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+
+                  {errors.password && (
+                    <p className="text-xs text-[#C97B7B]">
+                      {errors.password.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={signUp.isPending}
+                  className="ef-btn-primary flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-medium disabled:opacity-50"
+                >
+                  {signUp.isPending && (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  )}
+
+                  Create account
+                </button>
+              </form>
+
+              {/* Footer */}
+              <div className="pt-2 text-center text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <Link
+                  href="/auth/login"
+                  className="font-medium text-[var(--accent-amber)] transition-opacity hover:opacity-80"
+                >
+                  Sign in
+                </Link>
+              </div>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit((d) => signUp.mutate(d))} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Full Name</label>
-              <input
-                {...register("fullName")}
-                placeholder="John Doe"
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-stone-500"
-              />
-              {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName.message}</p>}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
-              <input
-                {...register("email")}
-                type="email"
-                placeholder="you@example.com"
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-stone-500"
-              />
-              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
-              <div className="relative">
-                <input
-                  {...register("password")}
-                  type={showPass ? "text" : "password"}
-                  placeholder="Min 8 characters"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-stone-500 pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
-                >
-                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
-            </div>
+          {/* Bottom meta */}
+          <div className="mt-8 flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <span>Private by default</span>
 
-            <button
-              type="submit"
-              disabled={signUp.isPending}
-              className="w-full bg-gradient-to-r from-stone-900 to-stone-900 text-white py-3 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2 transition-opacity"
-            >
-              {signUp.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              Create account
-            </button>
-          </form>
+            <span className="h-1 w-1 rounded-full bg-[var(--accent-amber)]" />
 
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-            Already have an account?{" "}
-            <Link href="/auth/login" className="text-stone-900 dark:text-stone-400 font-medium hover:underline">
-              Sign in
-            </Link>
-          </p>
+            <span>Designed for creators</span>
+          </div>
         </div>
       </div>
     </div>
@@ -142,11 +255,33 @@ export default function RegisterPage() {
 
 function GoogleIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
-      <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
-      <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A9 9 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-      <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 18 18"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="opacity-90"
+    >
+      <path
+        d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"
+        fill="#4285F4"
+      />
+
+      <path
+        d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"
+        fill="#34A853"
+      />
+
+      <path
+        d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A9 9 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"
+        fill="#FBBC05"
+      />
+
+      <path
+        d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"
+        fill="#EA4335"
+      />
     </svg>
   );
 }
