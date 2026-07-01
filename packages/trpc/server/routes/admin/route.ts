@@ -3,6 +3,8 @@ import { z } from "zod";
 import { router, adminProcedure } from "../../trpc";
 import { generatePath } from "../../utils/path-generator";
 import { formsService } from "@repo/services/forms";
+import { authService } from "@repo/services/auth";
+import { analyticsService } from "@repo/services/analytics";
 
 const TAGS = ["Admin"];
 const getPath = generatePath("/admin");
@@ -111,5 +113,76 @@ export const adminRouter = router({
       // Admin can delete any form — use a system-level delete
       await formsService.adminDeleteForm(input.id);
       return { success: true };
+    }),
+
+  /** GET /admin/sessions */
+  listActiveSessions: adminProcedure
+    .meta({ openapi: { method: "GET", path: getPath("/sessions"), tags: TAGS } })
+    .input(z.object({
+      page: z.number().int().min(1).default(1),
+      limit: z.number().int().min(1).max(100).default(20),
+      search: z.string().optional(),
+    }))
+    .output(z.object({
+      data: z.array(z.object({
+        sessionId: z.string(),
+        userId: z.string(),
+        fullName: z.string(),
+        email: z.string(),
+        role: z.string(),
+        ipAddress: z.string().nullable(),
+        userAgent: z.string().nullable(),
+        createdAt: z.date().nullable(),
+        expiresAt: z.date(),
+      })),
+      total: z.number(),
+      uniqueUsers: z.number(),
+      page: z.number(),
+      totalPages: z.number(),
+    }))
+    .query(async ({ input }) => {
+      const result = await authService.listActiveSessions(input);
+      return {
+        ...result,
+        page: input.page,
+        totalPages: Math.ceil(result.total / input.limit),
+      };
+    }),
+
+  /** GET /admin/analytics */
+  getPlatformAnalytics: adminProcedure
+    .meta({ openapi: { method: "GET", path: getPath("/analytics"), tags: TAGS } })
+    .input(z.void())
+    .output(z.object({
+      totalUsers: z.number(),
+      activeSessions: z.number(),
+      totalForms: z.number(),
+      totalResponses: z.number(),
+      totalViews: z.number(),
+      avgConversionRate: z.number(),
+      dailyTrend: z.array(z.object({
+        date: z.string(),
+        views: z.number(),
+        submissions: z.number(),
+      })),
+      formBreakdown: z.array(z.object({
+        id: z.string(),
+        title: z.string(),
+        slug: z.string(),
+        ownerName: z.string(),
+        views: z.number(),
+        responses: z.number(),
+        conversionRate: z.number(),
+      })),
+      topCreators: z.array(z.object({
+        id: z.string(),
+        fullName: z.string(),
+        email: z.string(),
+        formCount: z.number(),
+        totalResponses: z.number(),
+      })),
+    }))
+    .query(async () => {
+      return analyticsService.getPlatformAnalytics();
     }),
 });

@@ -1,4 +1,4 @@
-import { eq, and, gte, lte, sql, desc, inArray } from "@repo/database";
+import { eq, and, gte, lte, sql, desc, inArray, gt } from "@repo/database";
 import db, {
   formsTable,
   formViewsTable,
@@ -6,6 +6,8 @@ import db, {
   analyticsTable,
   formFieldsTable,
   responseAnswersTable,
+  usersTable,
+  sessionsTable,
 } from "@repo/database";
 import type { AnalyticsQueryInput } from "@repo/validators/analytics";
 import type { FormAnalyticsSummary, DailyAnalytics } from "@repo/types/analytics";
@@ -593,6 +595,194 @@ export class AnalyticsService {
       respondentName: r.respondentName ?? null,
       submittedAt: r.submittedAt ? r.submittedAt.toISOString() : new Date().toISOString(),
     }));
+  }
+
+  /**
+   * Platform-wide analytics for admin — all forms across all creators
+   */
+  async getPlatformAnalytics(): Promise<{
+    totalUsers: number;
+    activeSessions: number;
+    totalForms: number;
+    totalResponses: number;
+    totalViews: number;
+    avgConversionRate: number;
+    dailyTrend: Array<{ date: string; views: number; submissions: number }>;
+    formBreakdown: Array<{
+      id: string;
+      title: string;
+      slug: string;
+      ownerName: string;
+      views: number;
+      responses: number;
+      conversionRate: number;
+    }>;
+    topCreators: Array<{
+      id: string;
+      fullName: string;
+      email: string;
+      formCount: number;
+      totalResponses: number;
+    }>;
+  }> {
+    const now = new Date();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const allForms = await db
+      .select({
+        id: formsTable.id,
+        title: formsTable.title,
+        slug: formsTable.slug,
+        creatorId: formsTable.creatorId,
+      })
+      .from(formsTable)
+      .where(and(eq(formsTable.isArchived, false), sql`${formsTable.deletedAt} IS NULL`));
+
+    const [
+      userCount,
+      sessionCount,
+      respResult,
+      viewResult,
+    ] = await Promise.all([
+      db.select({ total: sql<number>`count(*)::int` }).from(usersTable).then((r) => r[0]?.total ?? 0),
+      db
+        .select({ total: sql<number>`count(*)::int` })
+        .from(sessionsTable)
+        .where(gt(sessionsTable.expiresAt, now))
+        .then((r) => r[0]?.total ?? 0),
+      db.select({ total: sql<number>`count(*)::int` }).from(formResponsesTable).then((r) => r[0]?.total ?? 0),
+      db.select({ total: sql<number>`count(*)::int` }).from(formViewsTable).then((r) => r[0]?.total ?? 0),
+    ]);
+
+    const totalViews = viewResult;
+    const totalResponses = respResult;
+    const avgConversionRate =
+      totalViews > 0 ? Math.round((totalResponses / totalViews) * 1000) / 10 : 0;
+
+    if (allForms.length === 0) {
+      return {
+        totalUsers: userCount,
+        activeSessions: sessionCount,
+        totalForms: 0,
+        totalResponses,
+        totalViews,
+        avgConversionRate,
+        dailyTrend: [],
+        formBreakdown: [],
+        topCreators: [],
+      };
+    }
+
+    const formIds = allForms.map((f) => f.id);
+    const creatorIds = [...new Set(allForms.map((f) => f.creatorId))];
+
+    const [creators, formViews, formResponses, dailyViews, dailySubmissions, creatorFormCounts, creatorResponseCounts] =
+      await Promise.all([
+        db
+          .select({ id: usersTable.id, fullName: usersTable.fullName, email: usersTable.email })
+          .from(usersTable)
+          .where(inArray(usersTable.id, creatorIds)),
+        db
+          .select({ formId: formViewsTable.formId, count: sql<number>`count(*)::int` })
+          .from(formViewsTable)
+          .where(inArray(formViewsTable.formId, formIds))
+          .groupBy(formViewsTable.formId),
+        db
+          .select({ formId: formResponsesTable.formId, count: sql<number>`count(*)::int` })
+          .from(formResponsesTable)
+          .where(inArray(formResponsesTable.formId, formIds))
+          .groupBy(formResponsesTable.formId),
+        db
+          .select({
+            date: sql<string>`date_trunc('day', ${formViewsTable.viewedAt})::date`,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(formViewsTable)
+          .where(and(inArray(formViewsTable.formId, formIds), gte(formViewsTable.viewedAt, thirtyDaysAgo)))
+          .groupBy(sql`date_trunc('day', ${formViewsTable.viewedAt})::date`),
+        db
+          .select({
+            date: sql<string>`date_trunc('day', ${formResponsesTable.submittedAt})::date`,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(formResponsesTable)
+          .where(and(inArray(formResponsesTable.formId, formIds), gte(formResponsesTable.submittedAt, thirtyDaysAgo)))
+          .groupBy(sql`date_trunc('day', ${formResponsesTable.submittedAt})::date`),
+        db
+          .select({ creatorId: formsTable.creatorId, count: sql<number>`count(*)::int` })
+          .from(formsTable)
+          .where(and(eq(formsTable.isArchived, false), sql`${formsTable.deletedAt} IS NULL`))
+          .groupBy(formsTable.creatorId),
+        db
+          .select({
+            creatorId: formsTable.creatorId,
+            count: sql<number>`count(${formResponsesTable.id})::int`,
+          })
+          .from(formResponsesTable)
+          .innerJoin(formsTable, eq(formResponsesTable.formId, formsTable.id))
+          .where(sql`${formsTable.deletedAt} IS NULL`)
+          .groupBy(formsTable.creatorId),
+      ]);
+
+    const creatorMap = new Map(creators.map((c) => [c.id, c]));
+    const viewsMap = new Map(formViews.map((v) => [v.formId, v.count]));
+    const responsesMap = new Map(formResponses.map((r) => [r.formId, r.count]));
+
+    const formBreakdown = allForms.map((f) => {
+      const views = viewsMap.get(f.id) ?? 0;
+      const responses = responsesMap.get(f.id) ?? 0;
+      const owner = creatorMap.get(f.creatorId);
+      return {
+        id: f.id,
+        title: f.title,
+        slug: f.slug,
+        ownerName: owner?.fullName ?? "Unknown",
+        views,
+        responses,
+        conversionRate: views > 0 ? Math.round((responses / views) * 1000) / 10 : 0,
+      };
+    });
+
+    const formCountMap = new Map(creatorFormCounts.map((r) => [r.creatorId, r.count]));
+    const responseCountMap = new Map(creatorResponseCounts.map((r) => [r.creatorId, r.count]));
+
+    const topCreators = creators
+      .map((c) => ({
+        id: c.id,
+        fullName: c.fullName,
+        email: c.email,
+        formCount: formCountMap.get(c.id) ?? 0,
+        totalResponses: responseCountMap.get(c.id) ?? 0,
+      }))
+      .sort((a, b) => b.totalResponses - a.totalResponses)
+      .slice(0, 10);
+
+    const trendMap = new Map<string, { views: number; submissions: number }>();
+    for (const row of dailyViews) {
+      trendMap.set(String(row.date), { views: row.count, submissions: 0 });
+    }
+    for (const row of dailySubmissions) {
+      const d = String(row.date);
+      const existing = trendMap.get(d) ?? { views: 0, submissions: 0 };
+      trendMap.set(d, { views: existing.views, submissions: row.count });
+    }
+
+    const dailyTrend = Array.from(trendMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, data]) => ({ date, views: data.views, submissions: data.submissions }));
+
+    return {
+      totalUsers: userCount,
+      activeSessions: sessionCount,
+      totalForms: allForms.length,
+      totalResponses,
+      totalViews,
+      avgConversionRate,
+      dailyTrend,
+      formBreakdown,
+      topCreators,
+    };
   }
 
   private defaultFromDate(): Date {

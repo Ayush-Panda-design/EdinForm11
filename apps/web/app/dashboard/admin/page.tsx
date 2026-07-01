@@ -6,12 +6,19 @@ import { toast } from "sonner";
 import {
   Loader2, Users, FileText, BarChart3, Globe, Trash2,
   Search, ShieldCheck, ShieldOff, ChevronLeft, ChevronRight,
-  RefreshCw,
+  RefreshCw, Monitor, Eye, TrendingUp,
 } from "lucide-react";
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer,
+} from "recharts";
+import { format, parseISO, subDays } from "date-fns";
 import { useAuth } from "~/providers/auth-provider";
 import { useRouter } from "next/navigation";
 
-type AdminTab = "overview" | "users" | "forms";
+type AdminTab = "overview" | "users" | "forms" | "sessions" | "analytics";
+
+const AMBER = "#C89B63";
 
 /* ── shared inline style tokens ── */
 const T = {
@@ -125,6 +132,10 @@ export default function AdminDashboardPage() {
   const [userPage, setUserPage] = useState(1);
   const [formSearch, setFormSearch] = useState("");
   const [formPage, setFormPage] = useState(1);
+  const [sessionSearch, setSessionSearch] = useState("");
+  const [sessionPage, setSessionPage] = useState(1);
+  const [analyticsDays, setAnalyticsDays] = useState<7 | 30 | 90>(30);
+  const [formAnalyticsSearch, setFormAnalyticsSearch] = useState("");
 
   useEffect(() => {
     if (user && user.role !== "admin") router.push("/dashboard");
@@ -142,6 +153,16 @@ export default function AdminDashboardPage() {
       { page: formPage, limit: 20, search: formSearch || undefined },
       { enabled: tab === "forms" }
     );
+  const { data: sessionsData, isLoading: sessionsLoading, refetch: refetchSessions } =
+    trpc.admin.listActiveSessions.useQuery(
+      { page: sessionPage, limit: 20, search: sessionSearch || undefined },
+      { enabled: tab === "sessions", refetchInterval: 10000 }
+    );
+  const { data: platformAnalytics, isLoading: analyticsLoading, refetch: refetchAnalytics } =
+    trpc.admin.getPlatformAnalytics.useQuery(undefined, {
+      enabled: tab === "analytics" || tab === "overview",
+      refetchInterval: tab === "analytics" ? 5000 : false,
+    });
 
   const setRoleMutation = trpc.admin.setUserRole.useMutation({
     onSuccess: () => { toast.success("Role updated"); refetchUsers(); },
@@ -168,12 +189,23 @@ export default function AdminDashboardPage() {
 
   const tabs = [
     { id: "overview" as AdminTab, label: "Overview", icon: BarChart3 },
+    { id: "sessions" as AdminTab, label: "Logged In", icon: Monitor },
+    { id: "analytics" as AdminTab, label: "Analytics", icon: TrendingUp },
     { id: "users"    as AdminTab, label: "Users",    icon: Users },
     { id: "forms"    as AdminTab, label: "All Forms", icon: FileText },
   ];
 
+  const filteredTrend = (platformAnalytics?.dailyTrend ?? []).filter((t) => {
+    const date = parseISO(t.date);
+    return date >= subDays(new Date(), analyticsDays);
+  });
+
+  const filteredFormBreakdown = (platformAnalytics?.formBreakdown ?? [])
+    .filter((f) => f.title.toLowerCase().includes(formAnalyticsSearch.toLowerCase()))
+    .sort((a, b) => b.responses - a.responses);
+
   return (
-    <div style={{ maxWidth: "900px", margin: "0 auto", fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ maxWidth: "1100px", margin: "0 auto", fontFamily: "'Inter', sans-serif" }}>
 
       {/* ── Header ── */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "2.5rem" }}>
@@ -194,11 +226,11 @@ export default function AdminDashboardPage() {
             Admin <em style={{ color: "#C89B63" }}>Dashboard</em>
           </h1>
           <p style={{ marginTop: "6px", fontSize: "13px", color: "var(--muted-foreground)" }}>
-            Manage all users and forms platform-wide.
+            Manage users, sessions, forms, and platform-wide analytics.
           </p>
         </div>
         <button
-          onClick={() => { refetchStats(); refetchUsers(); refetchForms(); }}
+          onClick={() => { refetchStats(); refetchUsers(); refetchForms(); refetchSessions(); refetchAnalytics(); }}
           className="ef-btn-ghost"
           style={{ padding: "8px", borderRadius: "10px", display: "flex", marginTop: "4px" }}
           title="Refresh"
@@ -216,6 +248,7 @@ export default function AdminDashboardPage() {
         borderRadius: "12px",
         padding: "4px",
         marginBottom: "2rem",
+        overflowX: "auto",
       }}>
         {tabs.map(({ id, label, icon: Icon }) => {
           const active = tab === id;
@@ -224,19 +257,20 @@ export default function AdminDashboardPage() {
               key={id}
               onClick={() => setTab(id)}
               style={{
-                flex: 1,
+                flex: "1 0 auto",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "8px",
-                padding: "8px 16px",
+                padding: "8px 14px",
                 borderRadius: "9px",
-                fontSize: "13px",
+                fontSize: "12px",
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 500,
                 border: "none",
                 cursor: "pointer",
                 transition: "all 0.2s",
+                whiteSpace: "nowrap",
                 background: active ? "rgba(200,155,99,0.12)" : "transparent",
                 color: active ? "#C89B63" : "var(--muted-foreground)",
                 boxShadow: active ? "inset 0 0 0 1px rgba(200,155,99,0.2)" : "none",
@@ -258,9 +292,11 @@ export default function AdminDashboardPage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem" }}>
               {[
                 { label: "Total Users",      value: stats.totalUsers,      icon: Users },
+                { label: "Logged In Now",    value: platformAnalytics?.activeSessions ?? "—", icon: Monitor },
                 { label: "Total Forms",      value: stats.totalForms,      icon: FileText },
                 { label: "Published Forms",  value: stats.publishedForms,  icon: Globe },
                 { label: "Total Responses",  value: stats.totalResponses,  icon: BarChart3 },
+                { label: "Total Views",      value: platformAnalytics?.totalViews ?? "—", icon: Eye },
               ].map(({ label, value, icon: Icon }, i) => (
                 <div
                   key={label}
@@ -278,7 +314,7 @@ export default function AdminDashboardPage() {
                     color: "var(--foreground)",
                     lineHeight: 1,
                   }}>
-                    {value.toLocaleString()}
+                    {typeof value === "number" ? value.toLocaleString() : value}
                   </p>
                 </div>
               ))}
@@ -296,8 +332,252 @@ export default function AdminDashboardPage() {
             lineHeight: 1.6,
           }}>
             <span style={{ color: "#C89B63", fontWeight: 600 }}>Tip — </span>
-            Use the Users tab to promote or demote admins, and the Forms tab to view or delete any form on the platform.
+            Use Logged In to see active sessions, Analytics for platform-wide metrics, Users to manage roles, and All Forms to moderate content.
           </div>
+        </div>
+      )}
+
+      {/* ══════ LOGGED IN (SESSIONS) ══════ */}
+      {tab === "sessions" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          {sessionsData && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "1rem" }}>
+              {[
+                { label: "Active Sessions", value: sessionsData.total, icon: Monitor },
+                { label: "Unique Users", value: sessionsData.uniqueUsers, icon: Users },
+              ].map(({ label, value, icon: Icon }) => (
+                <div key={label} className="ef-card" style={{ padding: "1rem 1.25rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem" }}>
+                    <span style={T.label}>{label}</span>
+                    <Icon style={{ width: 13, height: 13, color: AMBER, opacity: 0.7 }} />
+                  </div>
+                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.75rem", color: "var(--foreground)" }}>
+                    {value.toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <SearchInput
+            value={sessionSearch}
+            onChange={(v) => { setSessionSearch(v); setSessionPage(1); }}
+            placeholder="Search by name or email…"
+          />
+
+          {sessionsLoading ? <Spinner /> : sessionsData ? (
+            <>
+              <div className="ef-card" style={{ overflow: "hidden", borderRadius: "1rem" }}>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr>
+                        {["User", "Role", "IP Address", "Device", "Logged In", "Expires"].map((h) => (
+                          <th key={h} style={T.th}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sessionsData.data.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} style={{ ...T.cell, textAlign: "center", color: "var(--muted-foreground)" }}>
+                            No active sessions found.
+                          </td>
+                        </tr>
+                      ) : sessionsData.data.map((s) => (
+                        <tr key={s.sessionId}
+                          style={{ transition: "background 0.15s" }}
+                          onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.025)"}
+                          onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                        >
+                          <td style={T.cell}>
+                            <p style={{ marginBottom: "1px" }}>{s.fullName}</p>
+                            <p style={T.mono}>{s.email}</p>
+                          </td>
+                          <td style={T.cell}><RoleBadge role={s.role} /></td>
+                          <td style={{ ...T.cell, ...T.mono }}>{s.ipAddress ?? "—"}</td>
+                          <td style={{ ...T.cell, ...T.mono, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {parseUserAgent(s.userAgent)}
+                          </td>
+                          <td style={{ ...T.cell, ...T.mono }}>
+                            {s.createdAt ? format(new Date(s.createdAt), "MMM d, HH:mm") : "—"}
+                          </td>
+                          <td style={{ ...T.cell, ...T.mono }}>
+                            {format(new Date(s.expiresAt), "MMM d, yyyy")}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <Pagination
+                total={sessionsData.total}
+                label="sessions"
+                page={sessionPage}
+                totalPages={sessionsData.totalPages}
+                onPrev={() => setSessionPage(p => Math.max(1, p - 1))}
+                onNext={() => setSessionPage(p => Math.min(sessionsData.totalPages, p + 1))}
+              />
+            </>
+          ) : null}
+        </div>
+      )}
+
+      {/* ══════ PLATFORM ANALYTICS ══════ */}
+      {tab === "analytics" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+          {analyticsLoading ? <Spinner /> : platformAnalytics ? (
+            <>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "1rem" }}>
+                {[
+                  { label: "Total Views", value: platformAnalytics.totalViews, icon: Eye },
+                  { label: "Submissions", value: platformAnalytics.totalResponses, icon: BarChart3 },
+                  { label: "Avg Conversion", value: `${platformAnalytics.avgConversionRate}%`, icon: TrendingUp },
+                  { label: "Active Forms", value: platformAnalytics.totalForms, icon: FileText },
+                ].map(({ label, value, icon: Icon }, i) => (
+                  <div key={label} className="ef-card" style={{ padding: "1.25rem", animation: `ef-fade-up .6s ease ${i * 60}ms both` }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+                      <span style={T.label}>{label}</span>
+                      <Icon style={{ width: 13, height: 13, color: AMBER, opacity: 0.7 }} />
+                    </div>
+                    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", color: "var(--foreground)" }}>
+                      {typeof value === "number" ? value.toLocaleString() : value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Trend chart */}
+              <div className="ef-card" style={{ padding: "1.5rem" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem", flexWrap: "wrap", gap: "0.75rem" }}>
+                  <div>
+                    <p style={T.label}>Platform Trend</p>
+                    <p style={{ fontSize: "13px", color: "var(--muted-foreground)", marginTop: "4px" }}>Views & submissions over time</p>
+                  </div>
+                  <div style={{ display: "flex", gap: "4px" }}>
+                    {([7, 30, 90] as const).map((d) => (
+                      <button
+                        key={d}
+                        onClick={() => setAnalyticsDays(d)}
+                        style={{
+                          padding: "4px 12px", borderRadius: "8px", fontSize: "12px", cursor: "pointer",
+                          border: analyticsDays === d ? "1px solid rgba(200,155,99,0.3)" : "1px solid var(--border)",
+                          background: analyticsDays === d ? "rgba(200,155,99,0.12)" : "transparent",
+                          color: analyticsDays === d ? AMBER : "var(--muted-foreground)",
+                        }}
+                      >
+                        {d}d
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ height: 240 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={filteredTrend}>
+                      <defs>
+                        <linearGradient id="adminViews" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={AMBER} stopOpacity={0.3} />
+                          <stop offset="95%" stopColor={AMBER} stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="adminSubs" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#58745C" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#58745C" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                      <XAxis dataKey="date" tickFormatter={(d) => format(parseISO(d), "MMM d")} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
+                      <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
+                      <Tooltip
+                        contentStyle={{ background: "#1a1612", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
+                        labelFormatter={(d) => format(parseISO(String(d)), "MMM d, yyyy")}
+                      />
+                      <Area type="monotone" dataKey="views" stroke={AMBER} fill="url(#adminViews)" name="Views" />
+                      <Area type="monotone" dataKey="submissions" stroke="#58745C" fill="url(#adminSubs)" name="Submissions" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Top creators */}
+              <div className="ef-card" style={{ overflow: "hidden" }}>
+                <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--border)" }}>
+                  <p style={T.label}>Top Creators</p>
+                  <p style={{ fontSize: "13px", color: "var(--muted-foreground)", marginTop: "4px" }}>By total submissions</p>
+                </div>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr>
+                        {["Creator", "Forms", "Submissions"].map((h) => (
+                          <th key={h} style={T.th}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {platformAnalytics.topCreators.length === 0 ? (
+                        <tr>
+                          <td colSpan={3} style={{ ...T.cell, textAlign: "center", color: "var(--muted-foreground)" }}>No creators yet.</td>
+                        </tr>
+                      ) : platformAnalytics.topCreators.map((c) => (
+                        <tr key={c.id}>
+                          <td style={T.cell}>
+                            <p>{c.fullName}</p>
+                            <p style={T.mono}>{c.email}</p>
+                          </td>
+                          <td style={{ ...T.cell, ...T.mono }}>{c.formCount}</td>
+                          <td style={{ ...T.cell, ...T.mono }}>{c.totalResponses.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* All forms breakdown */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <SearchInput
+                  value={formAnalyticsSearch}
+                  onChange={setFormAnalyticsSearch}
+                  placeholder="Search forms by title…"
+                />
+                <div className="ef-card" style={{ overflow: "hidden" }}>
+                  <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--border)" }}>
+                    <p style={T.label}>All Forms Performance</p>
+                  </div>
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                      <thead>
+                        <tr>
+                          {["Form", "Owner", "Views", "Responses", "Conversion"].map((h) => (
+                            <th key={h} style={T.th}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredFormBreakdown.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} style={{ ...T.cell, textAlign: "center", color: "var(--muted-foreground)" }}>No forms found.</td>
+                          </tr>
+                        ) : filteredFormBreakdown.map((f) => (
+                          <tr key={f.id}>
+                            <td style={T.cell}>
+                              <p>{f.title}</p>
+                              <p style={T.mono}>/{f.slug}</p>
+                            </td>
+                            <td style={{ ...T.cell, ...T.mono }}>{f.ownerName}</td>
+                            <td style={{ ...T.cell, ...T.mono }}>{f.views.toLocaleString()}</td>
+                            <td style={{ ...T.cell, ...T.mono }}>{f.responses.toLocaleString()}</td>
+                            <td style={{ ...T.cell, ...T.mono }}>{f.conversionRate}%</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : null}
         </div>
       )}
 
@@ -540,4 +820,13 @@ function Pagination({ total, label, page, totalPages, onPrev, onNext }: {
       </div>
     </div>
   );
+}
+
+function parseUserAgent(ua: string | null): string {
+  if (!ua) return "—";
+  if (ua.includes("Chrome")) return "Chrome";
+  if (ua.includes("Firefox")) return "Firefox";
+  if (ua.includes("Safari")) return "Safari";
+  if (ua.includes("Edge")) return "Edge";
+  return ua.slice(0, 40) + (ua.length > 40 ? "…" : "");
 }
