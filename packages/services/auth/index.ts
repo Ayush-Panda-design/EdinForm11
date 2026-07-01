@@ -1,4 +1,4 @@
-import { eq, and, gt } from "@repo/database";
+import { eq, and, gt, desc, sql } from "@repo/database";
 import db, {
   usersTable,
   sessionsTable,
@@ -177,6 +177,77 @@ export class AuthService {
   /** Invalidate a session (sign out) */
   async signOut(token: string): Promise<void> {
     await db.delete(sessionsTable).where(eq(sessionsTable.token, token));
+  }
+
+  /** Admin: list all non-expired sessions (currently logged-in users) */
+  async listActiveSessions(opts: {
+    page: number;
+    limit: number;
+    search?: string;
+  }): Promise<{
+    data: Array<{
+      sessionId: string;
+      userId: string;
+      fullName: string;
+      email: string;
+      role: string;
+      ipAddress: string | null;
+      userAgent: string | null;
+      createdAt: Date | null;
+      expiresAt: Date;
+    }>;
+    total: number;
+    uniqueUsers: number;
+  }> {
+    const offset = (opts.page - 1) * opts.limit;
+    const now = new Date();
+
+    const searchCondition = opts.search
+      ? sql`(${usersTable.email} ilike ${"%" + opts.search + "%"} OR ${usersTable.fullName} ilike ${"%" + opts.search + "%"})`
+      : undefined;
+
+    const whereClause = searchCondition
+      ? and(gt(sessionsTable.expiresAt, now), eq(usersTable.isActive, true), searchCondition)
+      : and(gt(sessionsTable.expiresAt, now), eq(usersTable.isActive, true));
+
+    const [totalRows, uniqueRows, rows] = await Promise.all([
+      db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(sessionsTable)
+        .innerJoin(usersTable, eq(sessionsTable.userId, usersTable.id))
+        .where(whereClause)
+        .then((r) => r[0]?.count ?? 0),
+      db
+        .select({ count: sql<number>`count(distinct ${sessionsTable.userId})::int` })
+        .from(sessionsTable)
+        .innerJoin(usersTable, eq(sessionsTable.userId, usersTable.id))
+        .where(whereClause)
+        .then((r) => r[0]?.count ?? 0),
+      db
+        .select({
+          sessionId: sessionsTable.id,
+          userId: usersTable.id,
+          fullName: usersTable.fullName,
+          email: usersTable.email,
+          role: usersTable.role,
+          ipAddress: sessionsTable.ipAddress,
+          userAgent: sessionsTable.userAgent,
+          createdAt: sessionsTable.createdAt,
+          expiresAt: sessionsTable.expiresAt,
+        })
+        .from(sessionsTable)
+        .innerJoin(usersTable, eq(sessionsTable.userId, usersTable.id))
+        .where(whereClause)
+        .orderBy(desc(sessionsTable.createdAt))
+        .limit(opts.limit)
+        .offset(offset),
+    ]);
+
+    return {
+      data: rows,
+      total: totalRows,
+      uniqueUsers: uniqueRows,
+    };
   }
 
   /** Get user profile by id */
