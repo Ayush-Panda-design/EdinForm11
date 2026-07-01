@@ -7,12 +7,10 @@ import { Download, Loader2, User, Clock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import {
   DashboardPage,
-  DashboardHeader,
   DashboardBackLink,
   DashboardEmpty,
   DashboardRow,
   DashboardBadge,
-  DashboardCard,
 } from "~/components/dashboard/primitives";
 
 export default function ResponsesPage({

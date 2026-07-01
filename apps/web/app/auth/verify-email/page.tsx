@@ -41,7 +41,7 @@ function VerifyEmailContent() {
       setStatus("error");
       setMessage("No verification token found.");
     }
-  }, [token]);
+  }, [token, mutation]);
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4">

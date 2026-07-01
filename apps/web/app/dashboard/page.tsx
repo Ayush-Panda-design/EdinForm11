@@ -210,7 +210,7 @@ export default function DashboardPage() {
             <BookOpen className="w-5 h-5 shrink-0 mt-0.5" style={{ color: ACCENT }} />
             <div>
               <h2 className="font-display text-lg text-[var(--foreground)]">Dashboard quick reference</h2>
-              <p className="text-xs text-[var(--muted-foreground)] mt-1 leading-relaxed">Terms you'll see on this page and what they mean.</p>
+              <p className="text-xs text-[var(--muted-foreground)] mt-1 leading-relaxed">Terms you&apos;ll see on this page and what they mean.</p>
             </div>
           </div>
           <dl className="space-y-4">

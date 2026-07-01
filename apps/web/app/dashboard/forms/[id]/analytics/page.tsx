@@ -444,9 +444,9 @@ export default function FormAnalyticsPage({
                                   ))}
                                 </Pie>
                                 <Tooltip
-                                  formatter={(value: number, _name, props) => [
-                                    `${value} (${props.payload.percentage}%)`,
-                                    props.payload.label,
+                                  formatter={(value: number, _name, props: { payload?: { percentage?: number; label?: string } }) => [
+                                    `${value} (${props.payload?.percentage ?? 0}%)`,
+                                    props.payload?.label ?? "",
                                   ]}
                                   contentStyle={{
                                     background: "#121214",

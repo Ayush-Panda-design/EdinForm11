@@ -5,7 +5,7 @@ import Link from "next/link";
 import { trpc } from "~/trpc/client";
 import { toast } from "sonner";
 import {
-  Loader2, Plus, Trash2, GripVertical, ArrowLeft, Globe, Lock, Eye,
+  Loader2, Plus, Trash2, ArrowLeft, Globe, Lock, Eye,
   Save, Settings, GitBranch, QrCode, ChevronDown, ChevronUp, Layers,
   CalendarClock, Hash, Pencil, Check, Shield, BookOpen, FolderPlus
 } from "lucide-react";
@@ -13,6 +13,7 @@ import { FormPreviewModal } from "~/components/forms/form-preview-modal";
 import { QRShareModal } from "~/components/forms/qr-share-modal";
 import { ConditionalLogicEditor, type ConditionalLogic } from "~/components/forms/conditional-logic-editor";
 import { DndFieldList } from "~/components/forms/dnd-field-list";
+import type { FormField as PreviewFormField } from "~/components/forms/field-renderer";
 import { Lock as LockIcon } from "lucide-react";
 
 type FieldType = "short_text"|"long_text"|"email"|"number"|"single_select"|"multi_select"|"checkbox"|"date"|"rating";
@@ -415,8 +416,8 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                   onReorder={handleReorder}
                   renderField={(field) => {
                     const isOpen = expandedField === field.id;
-                    const hasLogic = !!(field.conditionalLogic as any)?.showIf?.fieldId;
-                    const isFieldLocked = !!(field as any).isLocked;
+                    const hasLogic = !!field.conditionalLogic?.showIf?.fieldId;
+                    const isFieldLocked = !!field.isLocked;
                     return (
                       <div key={field.id} className="rounded-lg transition-colors" style={{
                         border: `1px solid ${isOpen ? "rgba(200,155,99,0.25)" : "transparent"}`,
@@ -574,7 +575,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                   currentLogic={newFieldLogic}
                   availableFields={sortedFields.map(f => ({
                     id: f.id, label: f.label, type: f.type, order: f.order,
-                    options: f.options as any,
+                    options: f.options,
                   }))}
                   onChange={setNewFieldLogic}
                 />
@@ -866,7 +867,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
             <h2 className="font-semibold" style={{ color: "var(--foreground)" }}>Password Protection</h2>
           </div>
 
-          {(form as any).isPasswordProtected ? (
+          {(form.isPasswordProtected) ? (
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm"
               style={{ background: "rgba(88,116,92,0.15)", border: "1px solid rgba(88,116,92,0.3)", color: "#7ab882" }}>
               <Shield className="w-4 h-4" /> This form is currently password-protected
@@ -927,7 +928,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
         form={{
           title: form.title,
           description: form.description,
-          fields: sortedFields as any,
+          fields: sortedFields as PreviewFormField[],
           showProgressBar: form.showProgressBar,
           submitButtonText: form.submitButtonText,
           successMessage: form.successMessage,
@@ -950,12 +951,33 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
 }
 
 // ─── Inline field expander ────────────────────────────────────────────────────
+type EditableField = {
+  id: string;
+  label: string;
+  placeholder?: string | null;
+  helpText?: string | null;
+  required: boolean;
+  order: number;
+  type: string;
+  options?: { value: string; label: string }[] | null;
+  conditionalLogic?: ConditionalLogic | null;
+};
+
+type FieldSaveUpdates = {
+  label: string;
+  placeholder?: string;
+  helpText?: string;
+  required: boolean;
+  options?: { value: string; label: string }[];
+  conditionalLogic: ConditionalLogic | null;
+};
+
 function FieldExpander({
   field, allFields, onSave, isSaving
 }: {
-  field: any;
-  allFields: any[];
-  onSave: (updates: any) => void;
+  field: EditableField;
+  allFields: EditableField[];
+  onSave: (updates: FieldSaveUpdates) => void;
   isSaving: boolean;
 }) {
   const [label, setLabel] = useState(field.label);
@@ -1006,7 +1028,7 @@ function FieldExpander({
         currentLogic={logic}
         availableFields={fieldsBeforeThis.map(f => ({
           id: f.id, label: f.label, type: f.type, order: f.order,
-          options: f.options as any,
+          options: f.options,
         }))}
         onChange={setLogic}
       />

@@ -9,16 +9,18 @@ export function DashboardAnimatedSection({
   className,
   animation = "fade-up",
   delay = 0,
+  style,
 }: {
   children: React.ReactNode;
   className?: string;
   animation?: "fade-up" | "fade-in" | "slide-in" | "scale-in";
   delay?: number;
+  style?: React.CSSProperties;
 }) {
   return (
     <div
       className={cn(`dt-anim-${animation}`, className)}
-      style={{ animationDelay: `${delay}ms` }}
+      style={{ animationDelay: `${delay}ms`, ...style }}
     >
       {children}
     </div>

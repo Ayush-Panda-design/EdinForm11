@@ -46,7 +46,7 @@ export default function ForgotPasswordPage() {
             <span className="font-medium text-foreground">
               {email}
             </span>{" "}
-            exists, we've sent password reset instructions.
+            exists, we&apos;ve sent password reset instructions.
           </p>
 
           <Link
@@ -103,7 +103,7 @@ export default function ForgotPasswordPage() {
             </h1>
 
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              No worries — we'll send you a secure password reset link.
+              No worries — we&apos;ll send you a secure password reset link.
             </p>
 
             {/* Form */}

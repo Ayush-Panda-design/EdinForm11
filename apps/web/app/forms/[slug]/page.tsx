@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useState, useEffect } from "react";
+import Link from "next/link";
 import { trpc } from "~/trpc/client";
 import { toast } from "sonner";
 import {
@@ -168,13 +169,13 @@ export default function PublicFormPage({
               "This form doesn't exist or is no longer accepting responses."}
           </p>
 
-          <a
+          <Link
             href="/"
             className="inline-flex items-center gap-2 mt-10 text-sm text-slate-500 hover:text-slate-300 transition-colors"
           >
             <Sparkles className="w-4 h-4" />
             Powered by EdinForm
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -427,13 +428,13 @@ export default function PublicFormPage({
             Your response has been recorded.
           </p>
 
-          <a
+          <Link
             href="/"
             className="inline-flex items-center gap-2 mt-12 text-sm text-slate-500 hover:text-slate-300 transition-colors"
           >
             <Sparkles className="w-4 h-4" />
             Powered by EdinForm
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -484,12 +485,12 @@ export default function PublicFormPage({
         </div>
 
         <footer className="relative z-10 text-center py-6">
-          <a
+          <Link
             href="/"
             className="text-sm text-slate-600 hover:text-slate-400 transition-colors"
           >
             Powered by EdinForm
-          </a>
+          </Link>
         </footer>
       </div>
     );
