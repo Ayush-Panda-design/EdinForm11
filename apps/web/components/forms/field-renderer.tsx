@@ -123,7 +123,10 @@ export function FieldRenderer({ field, value, onChange, readOnly }: FieldRendere
   }
 
   if (field.type === "rating") {
-    const maxStars = (field.validationRules as any)?.maxRating ?? 5;
+    const maxStars =
+      typeof field.validationRules?.maxRating === "number"
+        ? field.validationRules.maxRating
+        : 5;
     return (
       <div className="flex gap-2">
         {Array.from({ length: maxStars }, (_, i) => i + 1).map((n) => (

@@ -28,6 +28,35 @@ const dropoffFunnelOutput = z.object({
   dropoffRate: z.number(),
 });
 
+const fieldOptionDistributionOutput = z.object({
+  value: z.string(),
+  label: z.string(),
+  count: z.number(),
+  percentage: z.number(),
+});
+
+const fieldSummaryOutput = z.object({
+  fieldId: z.string(),
+  label: z.string(),
+  type: z.string(),
+  totalResponses: z.number(),
+  answeredCount: z.number(),
+  skipRate: z.number(),
+  optionDistribution: z.array(fieldOptionDistributionOutput).optional(),
+  numericStats: z.object({
+    min: z.number(),
+    max: z.number(),
+    avg: z.number(),
+    median: z.number(),
+    distribution: z.array(z.object({ value: z.string(), count: z.number() })),
+  }).optional(),
+  textStats: z.object({
+    avgLength: z.number(),
+    minLength: z.number(),
+    maxLength: z.number(),
+  }).optional(),
+});
+
 export const analyticsRouter = router({
   /** GET /analytics/form — get analytics for a specific form */
   getFormAnalytics: protectedProcedure
@@ -42,6 +71,7 @@ export const analyticsRouter = router({
       dailyData: z.array(dailyDataOutput),
       hourlyVelocity: z.array(hourlyVelocityOutput),
       dropoffFunnel: z.array(dropoffFunnelOutput),
+      fieldSummaries: z.array(fieldSummaryOutput),
       healthScore: z.number().min(0).max(100),
       uniqueResponseRatio: z.number(),
     }))

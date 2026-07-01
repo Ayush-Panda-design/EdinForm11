@@ -6,7 +6,7 @@ import db, {
   formResponsesTable,
   responseAnswersTable,
 } from "@repo/database";
-import type { SubmitResponseInput, ListResponsesInput } from "@repo/validators/responses";
+import { isHoneypotTriggered, type SubmitResponseInput, type ListResponsesInput } from "@repo/validators/responses";
 import type { FormResponse, PaginatedResponses } from "@repo/types/responses";
 
 // Injected Redis client (optional)
@@ -107,6 +107,10 @@ export class ResponsesService {
     input: SubmitResponseInput,
     meta?: { ipAddress?: string; userAgent?: string; referrer?: string }
   ): Promise<{ responseId: string; successMessage: string }> {
+    if (isHoneypotTriggered(input.honeypot)) {
+      throw new Error("HONEYPOT_TRIGGERED");
+    }
+
     // Compute browser fingerprint
     const fingerprint = computeFingerprint({
       formId: input.formId,

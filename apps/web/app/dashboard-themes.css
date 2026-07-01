@@ -1,0 +1,663 @@
+/*
+ * Dashboard inner-page template tokens.
+ * Scoped to .dt-shell — remaps core surface vars so backgrounds & cards change per theme.
+ */
+
+/* ── Shell base ── */
+.dt-shell[data-dashboard-template] {
+  --dt-accent: #C89B63;
+  --dt-accent-soft: rgba(200, 155, 99, 0.12);
+  --dt-accent-border: rgba(200, 155, 99, 0.22);
+  --dt-success: #7EB884;
+  --dt-card-radius: 1rem;
+  --dt-shell-bg: var(--background);
+  --dt-sidebar-bg: var(--sidebar);
+  --dt-main-bg: var(--background);
+  --dt-main-gradient: none;
+  --dt-card-bg: var(--surface-0);
+  --dt-card-border: var(--border);
+  --dt-stat-glow: rgba(200, 155, 99, 0.08);
+  --dt-header-font: var(--font-display);
+  --dt-sidebar-accent: rgba(200, 155, 99, 0.10);
+  --dt-btn-primary-fg: #14110C;
+
+  background: var(--dt-shell-bg);
+  color: var(--foreground);
+}
+
+.dt-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: var(--dt-main-gradient);
+}
+
+.dt-shell > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Themed cards & legacy ef-card inside dashboard */
+.dt-shell[data-dashboard-template] .ef-card,
+.dt-shell[data-dashboard-template] .ef-card-featured {
+  background: var(--dt-card-bg);
+  border-color: var(--dt-card-border);
+  border-radius: var(--dt-card-radius);
+}
+
+.dt-shell[data-dashboard-template] .ef-card:hover {
+  border-color: var(--dt-accent-border);
+}
+
+/* ── EdinForm Classic ── */
+.dt-shell[data-dashboard-template="edinform"] {
+  --dt-accent: #C89B63;
+  --dt-accent-soft: rgba(200, 155, 99, 0.12);
+  --dt-accent-border: rgba(200, 155, 99, 0.22);
+  --dt-success: #7EB884;
+  --dt-shell-bg: #080808;
+  --dt-sidebar-bg: #080808;
+  --dt-main-bg: #080808;
+  --dt-card-bg: #0E0E0E;
+  --dt-card-border: rgba(200, 155, 99, 0.08);
+  --background: #080808;
+  --sidebar: #080808;
+  --surface-0: #0E0E0E;
+  --surface-1: #141414;
+  --surface-2: #1C1C1C;
+  --card: #0E0E0E;
+  --border: rgba(200, 155, 99, 0.08);
+  --border-soft: rgba(200, 155, 99, 0.04);
+  --input: rgba(200, 155, 99, 0.06);
+  --dt-main-gradient:
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(200, 155, 99, 0.09) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 90% 80%, rgba(126, 184, 132, 0.06) 0%, transparent 50%);
+}
+
+/* ── Creative Studio ── */
+.dt-shell[data-dashboard-template="studio"] {
+  --dt-accent: #F0F0F0;
+  --dt-accent-soft: rgba(255, 255, 255, 0.06);
+  --dt-accent-border: rgba(255, 255, 255, 0.18);
+  --dt-success: #A8A8A8;
+  --dt-card-radius: 1.25rem;
+  --dt-shell-bg: #030303;
+  --dt-sidebar-bg: #050505;
+  --dt-main-bg: #030303;
+  --dt-card-bg: #111111;
+  --dt-card-border: rgba(255, 255, 255, 0.08);
+  --dt-stat-glow: rgba(255, 255, 255, 0.04);
+  --dt-sidebar-accent: rgba(255, 255, 255, 0.08);
+  --background: #030303;
+  --sidebar: #050505;
+  --surface-0: #111111;
+  --surface-1: #161616;
+  --surface-2: #1E1E1E;
+  --card: #111111;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-soft: rgba(255, 255, 255, 0.04);
+  --input: rgba(255, 255, 255, 0.05);
+  --dt-main-gradient: radial-gradient(ellipse 70% 45% at 50% 0%, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
+}
+
+/* ── Vintage Sage ── */
+.dt-shell[data-dashboard-template="vintage"] {
+  --dt-accent: #8B7355;
+  --dt-accent-soft: rgba(139, 115, 85, 0.14);
+  --dt-accent-border: rgba(92, 107, 82, 0.35);
+  --dt-success: #5C6B52;
+  --dt-card-radius: 0.75rem;
+  --dt-shell-bg: #1A1610;
+  --dt-sidebar-bg: #141008;
+  --dt-main-bg: #1A1610;
+  --dt-card-bg: rgba(61, 43, 31, 0.55);
+  --dt-card-border: rgba(92, 107, 82, 0.28);
+  --dt-stat-glow: rgba(92, 107, 82, 0.15);
+  --dt-sidebar-accent: rgba(92, 107, 82, 0.18);
+  --background: #1A1610;
+  --sidebar: #141008;
+  --surface-0: rgba(61, 43, 31, 0.55);
+  --surface-1: rgba(72, 52, 38, 0.65);
+  --surface-2: rgba(92, 107, 82, 0.2);
+  --card: rgba(61, 43, 31, 0.55);
+  --border: rgba(92, 107, 82, 0.25);
+  --border-soft: rgba(92, 107, 82, 0.12);
+  --input: rgba(139, 115, 85, 0.12);
+  --dt-main-gradient: linear-gradient(180deg, rgba(92, 107, 82, 0.12) 0%, transparent 45%);
+}
+
+/* ── Web3 Pulse ── */
+.dt-shell[data-dashboard-template="web3"] {
+  --dt-accent: #5B8CFF;
+  --dt-accent-soft: rgba(91, 140, 255, 0.14);
+  --dt-accent-border: rgba(91, 140, 255, 0.3);
+  --dt-success: #34D399;
+  --dt-card-radius: 1.5rem;
+  --dt-shell-bg: #050510;
+  --dt-sidebar-bg: #080818;
+  --dt-main-bg: #050510;
+  --dt-card-bg: rgba(16, 16, 40, 0.75);
+  --dt-card-border: rgba(91, 140, 255, 0.18);
+  --dt-stat-glow: rgba(168, 85, 247, 0.14);
+  --dt-sidebar-accent: rgba(91, 140, 255, 0.15);
+  --background: #050510;
+  --sidebar: #080818;
+  --surface-0: rgba(16, 16, 40, 0.75);
+  --surface-1: rgba(22, 22, 52, 0.85);
+  --surface-2: rgba(30, 30, 64, 0.7);
+  --card: rgba(16, 16, 40, 0.75);
+  --border: rgba(91, 140, 255, 0.15);
+  --border-soft: rgba(91, 140, 255, 0.08);
+  --input: rgba(91, 140, 255, 0.1);
+  --dt-main-gradient:
+    radial-gradient(ellipse 80% 60% at 0% 0%, rgba(91, 140, 255, 0.16) 0%, transparent 50%),
+    radial-gradient(ellipse 70% 50% at 100% 100%, rgba(168, 85, 247, 0.14) 0%, transparent 50%);
+}
+
+/* ── Restaurant Coral ── */
+.dt-shell[data-dashboard-template="restaurant"] {
+  --dt-accent: #FF7F5C;
+  --dt-accent-soft: rgba(255, 127, 92, 0.12);
+  --dt-accent-border: rgba(255, 127, 92, 0.28);
+  --dt-success: #22C55E;
+  --dt-card-radius: 1rem;
+  --dt-shell-bg: #1A1210;
+  --dt-sidebar-bg: #14100E;
+  --dt-main-bg: #1A1210;
+  --dt-card-bg: #221816;
+  --dt-card-border: rgba(255, 127, 92, 0.14);
+  --dt-stat-glow: rgba(255, 127, 92, 0.1);
+  --dt-sidebar-accent: rgba(255, 127, 92, 0.14);
+  --background: #1A1210;
+  --sidebar: #14100E;
+  --surface-0: #221816;
+  --surface-1: #2A1E1A;
+  --surface-2: #342420;
+  --card: #221816;
+  --border: rgba(255, 127, 92, 0.12);
+  --border-soft: rgba(255, 127, 92, 0.06);
+  --input: rgba(255, 127, 92, 0.08);
+  --dt-main-gradient: linear-gradient(135deg, rgba(255, 127, 92, 0.08) 0%, transparent 55%);
+}
+
+/* ── Analytics Neon ── */
+.dt-shell[data-dashboard-template="analytics"] {
+  --dt-accent: #FF4D8D;
+  --dt-accent-soft: rgba(255, 77, 141, 0.12);
+  --dt-accent-border: rgba(255, 77, 141, 0.28);
+  --dt-success: #7C5CFF;
+  --dt-card-radius: 1.25rem;
+  --dt-shell-bg: #0A0810;
+  --dt-sidebar-bg: #0D0B14;
+  --dt-main-bg: #0A0810;
+  --dt-card-bg: rgba(18, 16, 28, 0.92);
+  --dt-card-border: rgba(255, 77, 141, 0.14);
+  --dt-stat-glow: rgba(124, 92, 255, 0.16);
+  --dt-sidebar-accent: rgba(255, 77, 141, 0.14);
+  --background: #0A0810;
+  --sidebar: #0D0B14;
+  --surface-0: rgba(18, 16, 28, 0.92);
+  --surface-1: rgba(24, 20, 36, 0.96);
+  --surface-2: rgba(32, 26, 48, 0.88);
+  --card: rgba(18, 16, 28, 0.92);
+  --border: rgba(255, 77, 141, 0.12);
+  --border-soft: rgba(255, 77, 141, 0.06);
+  --input: rgba(255, 77, 141, 0.08);
+  --dt-main-gradient:
+    radial-gradient(ellipse 80% 60% at 90% -5%, rgba(255, 77, 141, 0.16) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 5% 100%, rgba(124, 92, 255, 0.12) 0%, transparent 50%);
+}
+
+/* ════════════════════════════════════════════════════════════
+   LIGHT MODE — per dashboard template (sidebar toggle)
+   html.light is set by ThemeProvider when user picks Light mode
+   ════════════════════════════════════════════════════════════ */
+
+/* ── EdinForm Classic (light) ── */
+html.light .dt-shell[data-dashboard-template="edinform"] {
+  --dt-accent: #A67C3D;
+  --dt-accent-soft: rgba(166, 124, 61, 0.12);
+  --dt-accent-border: rgba(166, 124, 61, 0.28);
+  --dt-success: #4A7C59;
+  --dt-shell-bg: #F8F5F0;
+  --dt-sidebar-bg: #F0EBE3;
+  --dt-main-bg: #F8F5F0;
+  --dt-card-bg: #FFFFFF;
+  --dt-card-border: rgba(166, 124, 61, 0.15);
+  --dt-stat-glow: rgba(166, 124, 61, 0.1);
+  --dt-sidebar-accent: rgba(166, 124, 61, 0.1);
+  --background: #F8F5F0;
+  --sidebar: #F0EBE3;
+  --surface-0: #FFFFFF;
+  --surface-1: #F5F0E8;
+  --surface-2: #EDE6DA;
+  --card: #FFFFFF;
+  --foreground: #1C1814;
+  --muted-foreground: #6B5E52;
+  --border: rgba(166, 124, 61, 0.14);
+  --border-soft: rgba(166, 124, 61, 0.08);
+  --input: rgba(166, 124, 61, 0.06);
+  --dt-main-gradient:
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(166, 124, 61, 0.08) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 90% 80%, rgba(74, 124, 89, 0.06) 0%, transparent 50%);
+}
+
+/* ── Creative Studio (light) ── */
+html.light .dt-shell[data-dashboard-template="studio"] {
+  --dt-accent: #1A1A1A;
+  --dt-accent-soft: rgba(0, 0, 0, 0.05);
+  --dt-accent-border: rgba(0, 0, 0, 0.12);
+  --dt-success: #525252;
+  --dt-shell-bg: #FAFAFA;
+  --dt-sidebar-bg: #F5F5F5;
+  --dt-main-bg: #FAFAFA;
+  --dt-card-bg: #FFFFFF;
+  --dt-card-border: rgba(0, 0, 0, 0.08);
+  --dt-stat-glow: rgba(0, 0, 0, 0.04);
+  --dt-sidebar-accent: rgba(0, 0, 0, 0.05);
+  --background: #FAFAFA;
+  --sidebar: #F5F5F5;
+  --surface-0: #FFFFFF;
+  --surface-1: #F5F5F5;
+  --surface-2: #EBEBEB;
+  --card: #FFFFFF;
+  --foreground: #0A0A0A;
+  --muted-foreground: #666666;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-soft: rgba(0, 0, 0, 0.04);
+  --input: rgba(0, 0, 0, 0.04);
+  --dt-main-gradient: radial-gradient(ellipse 70% 45% at 50% 0%, rgba(0, 0, 0, 0.03) 0%, transparent 60%);
+}
+
+/* ── Vintage Sage (light) ── */
+html.light .dt-shell[data-dashboard-template="vintage"] {
+  --dt-accent: #6B5344;
+  --dt-accent-soft: rgba(92, 107, 82, 0.12);
+  --dt-accent-border: rgba(92, 107, 82, 0.25);
+  --dt-success: #4A5E42;
+  --dt-shell-bg: #F5F0E6;
+  --dt-sidebar-bg: #EDE6D8;
+  --dt-main-bg: #F5F0E6;
+  --dt-card-bg: #FFFCF6;
+  --dt-card-border: rgba(92, 107, 82, 0.2);
+  --dt-stat-glow: rgba(92, 107, 82, 0.1);
+  --dt-sidebar-accent: rgba(92, 107, 82, 0.12);
+  --background: #F5F0E6;
+  --sidebar: #EDE6D8;
+  --surface-0: #FFFCF6;
+  --surface-1: #F8F2E8;
+  --surface-2: #EDE4D4;
+  --card: #FFFCF6;
+  --foreground: #3D2B1F;
+  --muted-foreground: #6B5A4A;
+  --border: rgba(92, 107, 82, 0.18);
+  --border-soft: rgba(92, 107, 82, 0.1);
+  --input: rgba(107, 83, 68, 0.08);
+  --dt-main-gradient: linear-gradient(180deg, rgba(92, 107, 82, 0.08) 0%, transparent 45%);
+}
+
+/* ── Web3 Pulse (light) ── */
+html.light .dt-shell[data-dashboard-template="web3"] {
+  --dt-accent: #3B6FE8;
+  --dt-accent-soft: rgba(59, 111, 232, 0.1);
+  --dt-accent-border: rgba(59, 111, 232, 0.22);
+  --dt-success: #059669;
+  --dt-shell-bg: #F4F6FC;
+  --dt-sidebar-bg: #ECEEF8;
+  --dt-main-bg: #F4F6FC;
+  --dt-card-bg: #FFFFFF;
+  --dt-card-border: rgba(59, 111, 232, 0.14);
+  --dt-stat-glow: rgba(124, 58, 237, 0.08);
+  --dt-sidebar-accent: rgba(59, 111, 232, 0.1);
+  --background: #F4F6FC;
+  --sidebar: #ECEEF8;
+  --surface-0: #FFFFFF;
+  --surface-1: #F0F2FA;
+  --surface-2: #E4E8F4;
+  --card: #FFFFFF;
+  --foreground: #12122A;
+  --muted-foreground: #5A5A7A;
+  --border: rgba(59, 111, 232, 0.12);
+  --border-soft: rgba(59, 111, 232, 0.06);
+  --input: rgba(59, 111, 232, 0.06);
+  --dt-main-gradient:
+    radial-gradient(ellipse 80% 60% at 0% 0%, rgba(59, 111, 232, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse 70% 50% at 100% 100%, rgba(124, 58, 237, 0.08) 0%, transparent 50%);
+}
+
+/* ── Restaurant Coral (light) ── */
+html.light .dt-shell[data-dashboard-template="restaurant"] {
+  --dt-accent: #E85A30;
+  --dt-accent-soft: rgba(232, 90, 48, 0.1);
+  --dt-accent-border: rgba(232, 90, 48, 0.22);
+  --dt-success: #16A34A;
+  --dt-shell-bg: #FFF8F5;
+  --dt-sidebar-bg: #FFF0EA;
+  --dt-main-bg: #FFF8F5;
+  --dt-card-bg: #FFFFFF;
+  --dt-card-border: rgba(232, 90, 48, 0.12);
+  --dt-stat-glow: rgba(232, 90, 48, 0.08);
+  --dt-sidebar-accent: rgba(232, 90, 48, 0.1);
+  --background: #FFF8F5;
+  --sidebar: #FFF0EA;
+  --surface-0: #FFFFFF;
+  --surface-1: #FFF5F0;
+  --surface-2: #FFE8DE;
+  --card: #FFFFFF;
+  --foreground: #2D1F1A;
+  --muted-foreground: #7A5E54;
+  --border: rgba(232, 90, 48, 0.12);
+  --border-soft: rgba(232, 90, 48, 0.06);
+  --input: rgba(232, 90, 48, 0.06);
+  --dt-main-gradient: linear-gradient(135deg, rgba(232, 90, 48, 0.06) 0%, transparent 55%);
+}
+
+/* ── Analytics Neon (light) ── */
+html.light .dt-shell[data-dashboard-template="analytics"] {
+  --dt-accent: #E0357A;
+  --dt-accent-soft: rgba(224, 53, 122, 0.1);
+  --dt-accent-border: rgba(224, 53, 122, 0.22);
+  --dt-success: #6D4AFF;
+  --dt-shell-bg: #FAF8FC;
+  --dt-sidebar-bg: #F3EFF8;
+  --dt-main-bg: #FAF8FC;
+  --dt-card-bg: #FFFFFF;
+  --dt-card-border: rgba(224, 53, 122, 0.12);
+  --dt-stat-glow: rgba(109, 74, 255, 0.08);
+  --dt-sidebar-accent: rgba(224, 53, 122, 0.1);
+  --background: #FAF8FC;
+  --sidebar: #F3EFF8;
+  --surface-0: #FFFFFF;
+  --surface-1: #F8F4FA;
+  --surface-2: #F0EAF4;
+  --card: #FFFFFF;
+  --foreground: #1A1424;
+  --muted-foreground: #6B5A72;
+  --border: rgba(224, 53, 122, 0.1);
+  --border-soft: rgba(224, 53, 122, 0.05);
+  --input: rgba(224, 53, 122, 0.05);
+  --dt-main-gradient:
+    radial-gradient(ellipse 80% 60% at 90% -5%, rgba(224, 53, 122, 0.08) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 5% 100%, rgba(109, 74, 255, 0.06) 0%, transparent 50%);
+}
+
+/* Light mode button contrast */
+html.light .dt-shell[data-dashboard-template] {
+  --dt-btn-primary-fg: #FFFFFF;
+}
+
+/* Sidebar nav hover in light mode */
+html.light .dt-shell aside nav a:hover {
+  background: var(--dt-accent-soft) !important;
+}
+
+html.light .dt-shell .dt-btn-ghost {
+  color: var(--foreground);
+}
+
+/* ── Primitive classes ── */
+.dt-page {
+  position: relative;
+  z-index: 1;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.dt-page-wide {
+  max-width: 80rem;
+}
+
+.dt-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.dt-eyebrow {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  color: var(--muted-foreground);
+  margin-bottom: 0.375rem;
+}
+
+.dt-title {
+  font-family: var(--dt-header-font);
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--foreground);
+}
+
+.dt-title em {
+  color: var(--dt-accent);
+  font-style: italic;
+}
+
+.dt-subtitle {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin-top: 0.375rem;
+  max-width: 36rem;
+  line-height: 1.6;
+}
+
+.dt-card {
+  background: var(--dt-card-bg);
+  border: 1px solid var(--dt-card-border);
+  border-radius: var(--dt-card-radius);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.dt-card:hover {
+  border-color: var(--dt-accent-border);
+}
+
+.dt-stat-card {
+  background: var(--dt-card-bg);
+  border: 1px solid var(--dt-card-border);
+  border-radius: var(--dt-card-radius);
+  padding: 1.25rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.dt-stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 5rem;
+  height: 5rem;
+  background: var(--dt-stat-glow);
+  border-radius: 50%;
+  filter: blur(24px);
+  pointer-events: none;
+}
+
+.dt-stat-label {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  color: var(--muted-foreground);
+}
+
+.dt-stat-value {
+  font-family: var(--dt-header-font);
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--foreground);
+  margin-top: 0.75rem;
+}
+
+.dt-stat-desc {
+  font-size: 0.6875rem;
+  color: var(--muted-foreground);
+  margin-top: 0.25rem;
+}
+
+.dt-section-title {
+  font-family: var(--dt-header-font);
+  font-size: 1.25rem;
+  color: var(--foreground);
+}
+
+.dt-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: var(--dt-accent);
+  color: #0a0a0a;
+  border: 1px solid var(--dt-accent-border);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.dt-shell[data-dashboard-template="studio"] .dt-btn-primary,
+.dt-shell[data-dashboard-template="edinform"] .dt-btn-primary {
+  color: #14110C;
+}
+
+.dt-btn-primary:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.dt-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  background: var(--dt-accent-soft);
+  color: var(--foreground);
+  border: 1px solid var(--dt-accent-border);
+  transition: background 0.15s ease;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.dt-btn-ghost:hover {
+  background: var(--dt-accent-border);
+}
+
+.dt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  background: var(--dt-accent-soft);
+  color: var(--dt-accent);
+  border: 1px solid var(--dt-accent-border);
+}
+
+.dt-badge-success {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--dt-success);
+  border-color: rgba(34, 197, 94, 0.25);
+}
+
+.dt-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--dt-card-radius);
+  border: 1px solid var(--dt-card-border);
+}
+
+.dt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.dt-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--muted-foreground);
+  background: var(--dt-accent-soft);
+  border-bottom: 1px solid var(--dt-card-border);
+}
+
+.dt-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--dt-card-border);
+  color: var(--foreground);
+}
+
+.dt-table tr:last-child td {
+  border-bottom: none;
+}
+
+.dt-table tr:hover td {
+  background: var(--dt-accent-soft);
+}
+
+.dt-empty {
+  text-align: center;
+  padding: 3.5rem 2rem;
+}
+
+.dt-filter-chip {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--muted-foreground);
+  transition: all 0.15s ease;
+}
+
+.dt-filter-chip.active {
+  background: var(--dt-accent-soft);
+  color: var(--dt-accent);
+  box-shadow: inset 0 0 0 1px var(--dt-accent-border);
+  font-weight: 600;
+}
+
+.dt-chart-card {
+  background: var(--dt-card-bg);
+  border: 1px solid var(--dt-card-border);
+  border-radius: var(--dt-card-radius);
+  padding: 1.5rem;
+}
+
+.dt-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--dt-card-radius);
+  background: var(--dt-accent-soft);
+  border: 1px solid var(--dt-accent-border);
+  color: var(--foreground);
+  transition: background 0.15s ease;
+  text-decoration: none;
+}
+
+.dt-back-btn:hover {
+  background: var(--dt-accent-border);
+}
+
+.dt-accent-icon {
+  color: var(--dt-accent);
+}

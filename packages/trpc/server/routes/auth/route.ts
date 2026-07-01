@@ -9,7 +9,9 @@ import {
   signInSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  emailPreferencesSchema,
 } from "@repo/validators/auth";
+import { emailPreferencesService } from "@repo/services/email-preferences";
 
 const TAGS = ["Auth"];
 const getPath = generatePath("/auth");
@@ -172,5 +174,33 @@ export const authRouter = router({
         }
         throw err;
       }
+    }),
+
+  getEmailPreferences: protectedProcedure
+    .meta({ openapi: { method: "GET", path: getPath("/email-preferences"), tags: TAGS } })
+    .input(z.undefined())
+    .output(emailPreferencesSchema)
+    .query(async ({ ctx }) => {
+      const prefs = await emailPreferencesService.getByUserId(ctx.user.id);
+      return {
+        marketingEmails: prefs.marketingEmails,
+        productUpdates: prefs.productUpdates,
+        responseNotifications: prefs.responseNotifications,
+        weeklyDigest: prefs.weeklyDigest,
+      };
+    }),
+
+  updateEmailPreferences: protectedProcedure
+    .meta({ openapi: { method: "PUT", path: getPath("/email-preferences"), tags: TAGS } })
+    .input(emailPreferencesSchema)
+    .output(emailPreferencesSchema)
+    .mutation(async ({ input, ctx }) => {
+      const prefs = await emailPreferencesService.update(ctx.user.id, input);
+      return {
+        marketingEmails: prefs.marketingEmails,
+        productUpdates: prefs.productUpdates,
+        responseNotifications: prefs.responseNotifications,
+        weeklyDigest: prefs.weeklyDigest,
+      };
     }),
 });

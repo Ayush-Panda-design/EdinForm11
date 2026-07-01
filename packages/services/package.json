@@ -5,6 +5,7 @@
   "exports": {
     ".": "./index.ts",
     "./auth": "./auth/index.ts",
+    "./email-preferences": "./email-preferences/index.ts",
     "./forms": "./forms/index.ts",
     "./responses": "./responses/index.ts",
     "./analytics": "./analytics/index.ts",

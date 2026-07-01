@@ -5,7 +5,7 @@ import { generatePath } from "../../utils/path-generator";
 import { responsesService } from "@repo/services/responses";
 import { analyticsService } from "@repo/services/analytics";
 import { emailService } from "@repo/services/email";
-import { submitResponseSchema, listResponsesSchema } from "@repo/validators/responses";
+import { isHoneypotTriggered, submitResponseSchema, listResponsesSchema } from "@repo/validators/responses";
 import db, { formsTable, usersTable } from "@repo/database";
 import { eq, and } from "@repo/database";
 
@@ -38,6 +38,14 @@ export const responsesRouter = router({
     .input(submitResponseSchema)
     .output(z.object({ responseId: z.string(), successMessage: z.string() }))
     .mutation(async ({ input, ctx }) => {
+      // Silently accept honeypot spam without persisting (don't tip off bots)
+      if (isHoneypotTriggered(input.honeypot)) {
+        return {
+          responseId: "00000000-0000-0000-0000-000000000000",
+          successMessage: "Thank you for your response!",
+        };
+      }
+
       const ipAddress =
         (ctx.req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ??
         ctx.req.socket.remoteAddress;

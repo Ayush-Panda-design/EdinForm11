@@ -1,0 +1,65 @@
+---
+# EdinForm Landing Page — Cursor Rules
+
+## Project
+EdinForm is a form-builder SaaS (like Typeform/Tally but premium).
+Built with: Next.js 14 App Router, TypeScript, Tailwind CSS (or inline styles).
+Landing page lives at: app/(marketing)/page.tsx or app/page.tsx
+
+## Design system
+CSS variables on :root and [data-theme="dark"]:
+  --bg, --surface, --text, --muted, --border (see top of page.tsx)
+  --green: #2D6A4F (primary accent, Edinburgh nature)
+  --yellow: #F4C430 (highlight, Scottish thistle)
+  --red: #D62828 (error/warning states)
+Font: Inter (Google Fonts). No Cormorant Garamond.
+All colors MUST use CSS variables. No hardcoded hex values in components.
+
+## Component map
+- EdinburghSkylineHero: SVG panorama, hover tooltips, draw-in animation
+- HeroFormCard: 3-step mini form demo (top of hero)
+- FormFlowDiagram: 5-step lifecycle, vertical stepper, auto-cycles
+- BranchingVisualiser: click Yes/No trace diagram (conditional logic section)
+- ResponseWave: animated bar chart with date labels (analytics section)
+- LiveDemoForm: 6-question full demo + sidebar (demo section)
+- Counter: count-up animation component
+- Reveal: IntersectionObserver fade-up wrapper
+
+## Animation rules
+- ALL animations wrapped in @media (prefers-reduced-motion: reduce)
+- IntersectionObserver threshold: 0.15 for most sections
+- Stagger delays: 80ms between siblings
+- Duration standard: 0.6s ease-out for reveals, 0.3s for hover states
+- NO CSS animations on server-render — use useEffect + useState
+
+## Edinburgh theme
+Illustrations reference: Arthur's Seat, Edinburgh Castle, Scott Monument,
+Calton Hill, Scottish thistle, Forth Bridge, Hogmanay.
+SVG style: flat, minimal, 2-color max per illustration.
+Colors in illustrations: var(--green) for nature, #111 for architecture,
+var(--yellow) for highlights.
+
+## Empty space rule
+NO section may have more than 80px of vertical whitespace without content.
+Every left/right column in a two-column layout must have ≥ 3 content blocks.
+If a column only has text, add one of: stat card / illustration / quote / 
+feature list / integration row.
+
+## Accessibility
+- All interactive elements: focus-visible ring 2px var(--green)
+- Color contrast: min 4.5:1 for body text, 3:1 for large text
+- All SVG illustrations: role="img" aria-label="..."
+- All form inputs: associated <label> elements
+- Keyboard navigation: tab order logical, Enter activates buttons
+
+## File structure
+app/
+  page.tsx          ← main landing page (all sections)
+  layout.tsx        ← fonts, theme provider
+components/
+  brand/logo.tsx    ← EdinFormLogo, EdinFormMark
+  ui/               ← shared UI primitives
+lib/
+  auth.ts           ← isAuthenticated()
+.cursorrules        ← this file
+---

@@ -9,6 +9,7 @@ import { env } from "~/env.js";
 import { getToken } from "~/lib/auth";
 import { AuthProvider } from "./auth-provider";
 import { ThemeProvider } from "./theme-provider";
+import { DashboardTemplateProvider } from "./dashboard-template-provider";
 
 function makeTrpcClient() {
   return trpc.createClient({
@@ -41,12 +42,14 @@ export const GlobalProviders: React.FC<{ children: React.ReactNode }> = ({
     <QueryClientProvider client={queryClient}>
       {/* Our own ThemeProvider — persists to localStorage, applies .dark class */}
       <ThemeProvider>
-        <trpc.Provider queryClient={queryClient} client={trpcClient}>
-          <AuthProvider>
-            {children}
-            <Toaster position="top-right" richColors />
-          </AuthProvider>
-        </trpc.Provider>
+        <DashboardTemplateProvider>
+          <trpc.Provider queryClient={queryClient} client={trpcClient}>
+            <AuthProvider>
+              {children}
+              <Toaster position="top-right" richColors />
+            </AuthProvider>
+          </trpc.Provider>
+        </DashboardTemplateProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

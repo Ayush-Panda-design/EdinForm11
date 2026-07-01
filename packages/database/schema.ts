@@ -7,3 +7,4 @@ export * from "./models/analytics";
 export * from "./models/themes";
 export * from "./models/templates";
 export * from "./models/audit";
+export * from "./models/email-preferences";

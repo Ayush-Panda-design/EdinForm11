@@ -10,12 +10,58 @@ import {
   MoreHorizontal, Trash2, Copy, ExternalLink,
   Loader2, QrCode, Layers, TrendingUp, Zap,
   Shield, GitBranch, MousePointer2,
-  ArrowUpRight, ChevronRight, Sparkles, Users,
-  CheckCircle2, Activity, Calendar, Download,
+  ChevronRight, Activity, Calendar, Download, Users,
+  BookOpen, ListOrdered, Lightbulb, HelpCircle, Radio,
 } from "lucide-react";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
 import { QRShareModal } from "~/components/forms/qr-share-modal";
+import {
+  DashboardPage as DashboardPageShell,
+  DashboardStatGrid,
+  DashboardStatCard,
+  DashboardCard,
+  DashboardBtnLink,
+  DashboardAnimatedSection,
+  dtBtnGhostClass,
+} from "~/components/dashboard/primitives";
+import { DashboardHomeIllustration } from "~/components/dashboard/dashboard-home-visuals";
+
+const ACCENT = "var(--dt-accent)";
+
+const WORKSPACE_STEPS = [
+  { step: 1, title: "Create a form", body: "Start from + New Form, add a title, then build questions in the editor with branching and layout options." },
+  { step: 2, title: "Publish & share", body: "Set visibility to Public or Unlisted, then copy the link or download a QR code for print and events." },
+  { step: 3, title: "Collect responses", body: "Submissions appear in your forms list and the live feed on Analytics — no manual refresh needed." },
+  { step: 4, title: "Review insights", body: "Open workspace Analytics for trends, or per-form analytics for field-level charts and option breakdowns." },
+  { step: 5, title: "Iterate & improve", body: "Duplicate top performers, shorten low-converting forms, and export responses to spreadsheet when needed." },
+] as const;
+
+const QUICK_GUIDE = [
+  { term: "Draft forms", definition: "Saved but not public. Only you can see and edit them until you publish." },
+  { term: "Views vs replies", definition: "Views count link opens; replies count completed submissions. Conversion = replies ÷ views." },
+  { term: "Quick actions", definition: "Shortcuts in the sidebar column for common tasks — new form, analytics, explore, settings." },
+  { term: "Form menu (⋯)", definition: "Publish, duplicate, copy link, open live form, or delete — available on each form row." },
+] as const;
+
+function getDashboardInsights(opts: {
+  formCount: number;
+  views: number;
+  responses: number;
+  conversion: number;
+}) {
+  const items: { title: string; body: string; href?: string; label?: string }[] = [];
+  if (opts.formCount === 0) {
+    items.push({ title: "Start your first form", body: "Your dashboard is ready — create a draft, add a few questions, and publish when you're happy with the preview.", href: "/dashboard/forms/new", label: "Create form" });
+  } else if (opts.responses === 0 && opts.views === 0) {
+    items.push({ title: "Share to collect data", body: "You have forms but no traffic yet. Publish if still in draft, then share the link or QR code.", href: "/dashboard", label: "View forms below" });
+  } else if (opts.conversion < 15 && opts.views >= 5) {
+    items.push({ title: "Boost completion rate", body: "Conversion is below typical benchmarks. Try fewer questions, enable the progress bar, or use one-question-at-a-time layout.", href: "/dashboard/analytics", label: "Open analytics" });
+  } else if (opts.responses > 0) {
+    items.push({ title: "Check live analytics", body: `You've collected ${opts.responses} submission${opts.responses === 1 ? "" : "s"}. Review trends and your live feed for real-time activity.`, href: "/dashboard/analytics", label: "View analytics" });
+  }
+  items.push({ title: "Explore templates", body: "Browse public forms for inspiration on structure, tone, and question types before building your next one.", href: "/explore", label: "Explore forms" });
+  return items.slice(0, 3);
+}
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -46,437 +92,346 @@ export default function DashboardPage() {
     onError: (e) => toast.error(e.message),
   });
 
+  const conversion = dashboard?.avgConversionRate ?? 0;
+  const insights = getDashboardInsights({
+    formCount: dashboard?.totalForms ?? 0,
+    views: dashboard?.totalViews ?? 0,
+    responses: dashboard?.totalResponses ?? 0,
+    conversion,
+  });
+
   const stats = [
-    { label: "Total Forms",    value: dashboard?.totalForms ?? 0,                               icon: FileText,   suffix: "",  delta: "+2 this week",        deltaUp: true  },
-    { label: "Total Views",    value: dashboard?.totalViews ?? 0,                               icon: Eye,        suffix: "",  delta: "+12% vs last week",   deltaUp: true  },
-    { label: "Responses",      value: dashboard?.totalResponses ?? 0,                           icon: BarChart3,  suffix: "",  delta: "+8 today",            deltaUp: true  },
-    { label: "Avg Completion", value: dashboard ? dashboard.avgConversionRate.toFixed(1) : "0", icon: TrendingUp, suffix: "%", delta: "Average is 3.2%",     deltaUp: false },
+    { label: "Total Forms", value: dashboard?.totalForms ?? 0, icon: FileText, desc: "In your workspace" },
+    { label: "Total Views", value: dashboard?.totalViews ?? 0, icon: Eye, desc: "All-time opens" },
+    { label: "Responses", value: dashboard?.totalResponses ?? 0, icon: BarChart3, desc: "Completed subs" },
+    { label: "Avg Conversion", value: `${conversion.toFixed(1)}%`, icon: TrendingUp, desc: "Views → replies" },
   ];
 
   const features = [
-    { icon: GitBranch,     title: "Smart Branching",          desc: "Show or hide questions based on previous answers. Build forms that feel like a natural conversation and keep people engaged to the end." },
-    { icon: MousePointer2, title: "One Question at a Time",   desc: "Present each question on its own screen with smooth transitions and keyboard support. Designed to keep people focused and boost completion rates." },
-    { icon: QrCode,        title: "QR Code Sharing",          desc: "Every published form gets a downloadable QR code. Perfect for printed materials, events, and bringing people online from the physical world." },
-    { icon: Shield,        title: "Response Limits & Closing Dates", desc: "Set a maximum number of responses or a close date. EdinForm enforces both automatically so you never over-collect." },
-    { icon: Eye,           title: "Live Preview",             desc: "See exactly how your form will look before you share it — in both single-question and classic layouts. No surprises." },
-    { icon: Download,      title: "Export to Spreadsheet",    desc: "Download all your responses as a spreadsheet file with one click. Open it straight in Excel, Google Sheets, or any other tool you use." },
+    { icon: GitBranch, title: "Smart Branching", desc: "Show or hide questions based on answers — forms that feel like a conversation." },
+    { icon: MousePointer2, title: "One Question at a Time", desc: "Focused single-question layout with smooth transitions and keyboard support." },
+    { icon: QrCode, title: "QR Code Sharing", desc: "Downloadable QR for every published form — ideal for print and events." },
+    { icon: Shield, title: "Limits & Close Dates", desc: "Cap responses or set an expiry — enforced automatically." },
+    { icon: Eye, title: "Live Preview", desc: "See exactly what respondents see before you share." },
+    { icon: Download, title: "Export to Spreadsheet", desc: "One-click export for Excel, Sheets, or any CSV tool." },
   ];
 
   const visibilityBadge = (v: string) => {
     if (v === "public")
-      return (
-        <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium uppercase"
-          style={{ background: "rgba(88,116,92,0.18)", color: "#7EB884", border: "1px solid rgba(88,116,92,0.3)", letterSpacing: "0.1em" }}>
-          <Globe className="w-2.5 h-2.5" /> Public
-        </span>
-      );
+      return <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium uppercase" style={{ background: "color-mix(in srgb, var(--dt-success) 18%, transparent)", color: "var(--dt-success)", border: "1px solid color-mix(in srgb, var(--dt-success) 30%, transparent)" }}><Globe className="w-2.5 h-2.5" /> Public</span>;
     if (v === "unlisted")
-      return (
-        <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium uppercase"
-          style={{ background: "rgba(200,155,99,0.12)", color: "#C89B63", border: "1px solid rgba(200,155,99,0.25)", letterSpacing: "0.1em" }}>
-          <Lock className="w-2.5 h-2.5" /> Unlisted
-        </span>
-      );
-    return (
-      <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium uppercase"
-        style={{ background: "rgba(255,255,255,0.04)", color: "var(--muted-foreground)", border: "1px solid rgba(255,255,255,0.07)", letterSpacing: "0.1em" }}>
-        Draft
-      </span>
-    );
+      return <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium uppercase" style={{ background: "var(--dt-accent-soft)", color: ACCENT, border: "1px solid var(--dt-accent-border)" }}><Lock className="w-2.5 h-2.5" /> Unlisted</span>;
+    return <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium uppercase text-[var(--muted-foreground)]" style={{ background: "var(--dt-accent-soft)", border: "1px solid var(--border)" }}>Draft</span>;
   };
 
+  const firstName = user?.fullName?.split(" ")[0] ?? "there";
+
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif" }}>
-
-      {/* ── Mobile-responsive styles ── */}
-      <style>{`
-        @media (max-width: 768px) {
-          .dashboard-header { flex-direction: column !important; gap: 1rem !important; }
-          .dashboard-header-actions { margin-top: 0 !important; width: 100%; }
-          .dashboard-header-actions a { flex: 1; justify-content: center; }
-          .stats-grid { grid-template-columns: 1fr 1fr !important; }
-          .banner-inner { flex-direction: column !important; gap: 1rem !important; }
-          .banner-links { width: 100%; }
-          .banner-links a { flex: 1; justify-content: center; }
-          .two-col { grid-template-columns: 1fr !important; }
-          .feature-grid { grid-template-columns: 1fr 1fr !important; }
-          .status-strip { flex-direction: column !important; gap: 0.75rem !important; align-items: flex-start !important; }
-        }
-        @media (max-width: 480px) {
-          .stats-grid { grid-template-columns: 1fr !important; }
-          .feature-grid { grid-template-columns: 1fr !important; }
-          .form-row-meta { flex-wrap: wrap; gap: 0.5rem !important; }
-          .form-row-actions { gap: 0 !important; }
-        }
-      `}</style>
-
-      {/* ── Page header ── */}
-      <div className="dashboard-header" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "2.5rem" }}>
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
-            <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)" }}>EdinForm</p>
-            <span style={{ fontSize: "11px", color: "var(--muted-foreground)", opacity: 0.4 }}>/</span>
-            <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)", opacity: 0.6 }}>Dashboard</p>
-          </div>
-          <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem, 3vw, 2.5rem)", fontWeight: 400, color: "var(--foreground)", lineHeight: 1.1 }}>
-            Welcome back, <em style={{ color: "#C89B63" }}>{user?.fullName?.split(" ")[0]}</em>.
-          </h1>
-          <p style={{ marginTop: "6px", fontSize: "14px", color: "var(--muted-foreground)", maxWidth: "420px", lineHeight: 1.6 }}>
-            Your forms are live and collecting responses. Here's everything happening in your workspace today.
-          </p>
-        </div>
-        <div className="dashboard-header-actions" style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0, marginTop: "4px" }}>
-          <Link href="/dashboard/analytics" className="ef-btn-ghost inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm">
-            <Activity className="w-4 h-4" /> Analytics
-          </Link>
-          <Link href="/dashboard/forms/new" className="ef-btn-primary inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm">
-            <Plus className="w-4 h-4" /> New Form
-          </Link>
-        </div>
-      </div>
-
-      {/* ── Stats ── */}
-      <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1rem", marginBottom: "2.5rem" }}>
-        {stats.map((s, i) => (
-          <div key={s.label} className="ef-card p-5"
-            style={{ animationDelay: `${i * 60}ms`, animation: "ef-fade-up .6s cubic-bezier(.2,.7,.2,1) both" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
-              <span style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)" }}>{s.label}</span>
-              <s.icon style={{ width: 14, height: 14, color: "#C89B63", opacity: 0.7 }} />
+    <DashboardPageShell wide className="space-y-8">
+      {/* Hero */}
+      <DashboardAnimatedSection animation="fade-up">
+        <section
+          className="relative overflow-hidden rounded-3xl border dt-anim-shimmer"
+          style={{
+            borderColor: "var(--dt-card-border)",
+            background: "linear-gradient(135deg, var(--dt-card-bg) 0%, color-mix(in srgb, var(--dt-accent) 10%, var(--dt-main-bg)) 50%, var(--dt-card-bg) 100%)",
+            backgroundImage: "linear-gradient(90deg, transparent, color-mix(in srgb, var(--dt-accent) 6%, transparent), transparent)",
+          }}
+        >
+          <div className="absolute inset-0 opacity-40 pointer-events-none" style={{ background: "var(--dt-main-gradient)" }} />
+          <div className="relative grid lg:grid-cols-[1fr_auto] gap-6 p-6 sm:p-8 lg:p-10">
+            <div className="z-[1]">
+              <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest px-3 py-1 rounded-full mb-4 dt-anim-pulse-glow" style={{ background: "var(--dt-accent-soft)", color: ACCENT, border: "1px solid var(--dt-accent-border)" }}>
+                <Radio className="w-3 h-3 animate-pulse" /> Workspace live
+              </span>
+              <h1 className="font-display text-[clamp(2rem,4vw,2.75rem)] leading-tight text-[var(--foreground)] mb-2">
+                Welcome back, <em className="not-italic" style={{ color: ACCENT }}>{firstName}</em>
+              </h1>
+              <p className="text-sm text-[var(--muted-foreground)] max-w-lg leading-relaxed mb-2">
+                Your command centre for forms, responses, and insights. Everything below updates as your workspace activity grows.
+              </p>
+              <p className="text-xs text-[var(--muted-foreground)] max-w-lg leading-relaxed mb-6">
+                {(dashboard?.totalResponses ?? 0) > 0 ? (
+                  <>You have <strong className="text-[var(--foreground)]">{dashboard?.totalForms}</strong> form{(dashboard?.totalForms ?? 0) === 1 ? "" : "s"} and <strong className="text-[var(--foreground)]">{dashboard?.totalResponses}</strong> total responses. Open Analytics for trends or manage forms in the list below.</>
+                ) : (
+                  <>Create your first form, publish it, and share the link — stats and the live feed will populate automatically.</>
+                )}
+              </p>
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+                <DashboardBtnLink href="/dashboard/forms/new" variant="primary" className="w-full sm:w-auto justify-center">
+                  <Plus className="w-4 h-4" /> New Form
+                </DashboardBtnLink>
+                <DashboardBtnLink href="/dashboard/analytics" variant="ghost" className="w-full sm:w-auto justify-center">
+                  <Activity className="w-4 h-4" /> Analytics
+                </DashboardBtnLink>
+              </div>
             </div>
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", fontWeight: 400, color: "var(--foreground)", lineHeight: 1 }}>
-              {s.value}<span style={{ fontSize: "1rem", color: "#C89B63" }}>{s.suffix}</span>
-            </p>
-            <p style={{ marginTop: "8px", fontSize: "11px", color: s.deltaUp ? "#7EB884" : "var(--muted-foreground)", display: "flex", alignItems: "center", gap: "3px" }}>
-              {s.deltaUp && <ArrowUpRight style={{ width: 11, height: 11 }} />}{s.delta}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Platform callout banner ── */}
-      <div className="ef-card" style={{ marginBottom: "2.5rem", borderRadius: "1rem", overflow: "hidden", position: "relative" }}>
-        <div style={{ position: "absolute", inset: 0, opacity: 0.04, backgroundImage: "radial-gradient(circle at 20% 50%, #C89B63 0%, transparent 60%), radial-gradient(circle at 80% 50%, #7EB884 0%, transparent 60%)", pointerEvents: "none" }} />
-        <div className="banner-inner" style={{ padding: "1.5rem 2rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "2rem", flexWrap: "wrap" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <div style={{ width: 44, height: 44, borderRadius: "12px", background: "rgba(200,155,99,0.1)", border: "1px solid rgba(200,155,99,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Sparkles style={{ width: 20, height: 20, color: "#C89B63" }} />
+            <div className="hidden lg:flex items-center dt-anim-float">
+              <DashboardHomeIllustration className="w-full max-w-[340px] opacity-90" />
             </div>
+          </div>
+        </section>
+      </DashboardAnimatedSection>
+
+      {/* Stats */}
+      <DashboardAnimatedSection animation="scale-in" delay={100}>
+        <DashboardStatGrid>
+          {stats.map((s) => (
+            <DashboardStatCard key={s.label} label={s.label} value={s.value} desc={s.desc} icon={s.icon} />
+          ))}
+        </DashboardStatGrid>
+      </DashboardAnimatedSection>
+
+      {/* Guide + glossary */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <DashboardAnimatedSection animation="slide-in" delay={150} className="rounded-3xl border p-6 sm:p-7 dt-hover-lift" style={{ background: "var(--dt-card-bg)", borderColor: "var(--dt-card-border)" }}>
+          <div className="flex items-start gap-3 mb-5">
+            <ListOrdered className="w-5 h-5 shrink-0 mt-0.5" style={{ color: ACCENT }} />
             <div>
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.15rem", color: "var(--foreground)", marginBottom: "3px" }}>
-                EdinForm is your complete form-building and insights platform.
-              </p>
-              <p style={{ fontSize: "13px", color: "var(--muted-foreground)", lineHeight: 1.5 }}>
-                Build smart multi-step forms with branching questions, share via QR code, cap responses, and review every submission — all from one place.
-              </p>
+              <h2 className="font-display text-lg text-[var(--foreground)]">Your workflow in 5 steps</h2>
+              <p className="text-xs text-[var(--muted-foreground)] mt-1 leading-relaxed">From blank draft to actionable insights — the typical EdinForm journey.</p>
             </div>
           </div>
-          <div className="banner-links" style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-            <Link href="/explore" className="ef-btn-ghost inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm">
-              Browse public forms <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-            <Link href="/docs" className="ef-btn-ghost inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm">
-              How it works <ExternalLink className="w-3 h-3" />
-            </Link>
+          <ol className="space-y-4">
+            {WORKSPACE_STEPS.map(({ step, title, body }) => (
+              <li key={step} className="flex gap-3">
+                <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "var(--dt-accent-soft)", color: ACCENT, border: "1px solid var(--dt-accent-border)" }}>{step}</span>
+                <div>
+                  <p className="text-sm font-medium text-[var(--foreground)]">{title}</p>
+                  <p className="text-xs text-[var(--muted-foreground)] leading-relaxed mt-0.5">{body}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </DashboardAnimatedSection>
+
+        <DashboardAnimatedSection animation="slide-in" delay={220} className="rounded-3xl border p-6 sm:p-7 dt-hover-lift" style={{ background: "var(--dt-card-bg)", borderColor: "var(--dt-card-border)" }}>
+          <div className="flex items-start gap-3 mb-5">
+            <BookOpen className="w-5 h-5 shrink-0 mt-0.5" style={{ color: ACCENT }} />
+            <div>
+              <h2 className="font-display text-lg text-[var(--foreground)]">Dashboard quick reference</h2>
+              <p className="text-xs text-[var(--muted-foreground)] mt-1 leading-relaxed">Terms you&apos;ll see on this page and what they mean.</p>
+            </div>
           </div>
-        </div>
+          <dl className="space-y-4">
+            {QUICK_GUIDE.map(({ term, definition }) => (
+              <div key={term}>
+                <dt className="text-sm font-medium text-[var(--foreground)]">{term}</dt>
+                <dd className="text-xs text-[var(--muted-foreground)] leading-relaxed mt-1">{definition}</dd>
+              </div>
+            ))}
+          </dl>
+        </DashboardAnimatedSection>
       </div>
 
-      {/* ── Two-column layout ── */}
-      <div className="two-col" style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "1.5rem", alignItems: "start" }}>
-
-        {/* LEFT — Forms list */}
-        <div>
-          <div className="ef-card" style={{ borderRadius: "1rem", overflow: "hidden" }}>
-            <div style={{ padding: "1rem 1.5rem", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div>
-                <span style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)" }}>Your Forms</span>
-                {forms && forms.length > 0 && (
-                  <span style={{ marginLeft: "10px", fontSize: "11px", background: "rgba(200,155,99,0.12)", color: "#C89B63", border: "1px solid rgba(200,155,99,0.2)", borderRadius: "20px", padding: "1px 8px" }}>
-                    {forms.length}
-                  </span>
+      {/* Insights */}
+      <DashboardAnimatedSection animation="fade-in" delay={280}>
+        <section className="rounded-3xl border p-6 sm:p-7" style={{ background: "linear-gradient(135deg, var(--dt-accent-soft), var(--dt-card-bg) 55%)", borderColor: "var(--dt-accent-border)" }}>
+          <div className="flex items-start gap-3 mb-5">
+            <Lightbulb className="w-5 h-5" style={{ color: ACCENT }} />
+            <div>
+              <h2 className="font-display text-lg text-[var(--foreground)]">Suggested next steps</h2>
+              <p className="text-xs text-[var(--muted-foreground)] mt-1">Personalised tips based on your current workspace activity.</p>
+            </div>
+          </div>
+          <div className="grid md:grid-cols-3 gap-4 dt-stagger">
+            {insights.map((item) => (
+              <div key={item.title} className="rounded-2xl p-5 dt-anim-scale-in dt-hover-lift" style={{ background: "var(--dt-card-bg)", border: "1px solid var(--dt-card-border)" }}>
+                <p className="text-sm font-medium text-[var(--foreground)] mb-2">{item.title}</p>
+                <p className="text-xs text-[var(--muted-foreground)] leading-relaxed mb-3">{item.body}</p>
+                {item.href && item.label && (
+                  <Link href={item.href} className="text-xs font-medium inline-flex items-center gap-1" style={{ color: ACCENT }}>
+                    {item.label} <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
                 )}
               </div>
-              <Link href="/dashboard/forms/new" className="ef-btn-ghost inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs">
-                <Plus className="w-3 h-3" /> New
-              </Link>
+            ))}
+          </div>
+        </section>
+      </DashboardAnimatedSection>
+
+      {/* Forms + sidebar */}
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-6">
+        <DashboardAnimatedSection animation="fade-up" delay={320}>
+          <DashboardCard className="overflow-hidden p-0">
+            <div className="p-4 sm:p-5 border-b flex flex-wrap items-center justify-between gap-3" style={{ borderColor: "var(--border)" }}>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.25em] text-[var(--muted-foreground)]">Your forms</p>
+                <p className="text-xs text-[var(--muted-foreground)] mt-1">Click a title to edit · use ⋯ for publish, share, duplicate</p>
+              </div>
+              <DashboardBtnLink href="/dashboard/forms/new" variant="primary" className="text-xs w-full sm:w-auto justify-center">
+                <Plus className="w-4 h-4" /> New form
+              </DashboardBtnLink>
             </div>
 
             {isLoading && (
-              <div style={{ padding: "4rem", display: "flex", justifyContent: "center" }}>
-                <Loader2 className="animate-spin" style={{ width: 20, height: 20, color: "#C89B63" }} />
-              </div>
+              <div className="py-16 flex justify-center"><Loader2 className="w-6 h-6 animate-spin" style={{ color: ACCENT }} /></div>
             )}
 
             {!isLoading && forms?.length === 0 && (
-              <div style={{ padding: "4rem 2rem", textAlign: "center" }}>
-                <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(200,155,99,0.08)", border: "1px solid rgba(200,155,99,0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1.25rem" }}>
-                  <FileText style={{ width: 22, height: 22, color: "#C89B63" }} />
-                </div>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.4rem", color: "var(--foreground)", marginBottom: "0.5rem" }}>No forms yet.</p>
-                <p style={{ fontSize: "13px", color: "var(--muted-foreground)", marginBottom: "1.5rem" }}>Write your first question. It only takes a minute.</p>
-                <Link href="/dashboard/forms/new" className="ef-btn-primary inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm">
+              <div className="py-14 px-6 text-center">
+                <FileText className="w-10 h-10 mx-auto mb-3 opacity-40" style={{ color: ACCENT }} />
+                <p className="font-display text-xl text-[var(--foreground)] mb-2">No forms yet</p>
+                <p className="text-sm text-[var(--muted-foreground)] mb-6 max-w-sm mx-auto leading-relaxed">Draft your first form in under a minute — add questions and publish when ready.</p>
+                <DashboardBtnLink href="/dashboard/forms/new" variant="primary" className="justify-center">
                   <Plus className="w-4 h-4" /> Create a form
-                </Link>
+                </DashboardBtnLink>
               </div>
             )}
 
-            {!isLoading && forms && forms.length > 0 && (
-              <div>
-                {forms.map((form, idx) => (
-                  <div key={form.id}
-                    style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1rem 1.5rem", borderBottom: idx < forms.length - 1 ? "1px solid var(--border)" : "none", transition: "background 0.2s" }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.025)"; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-
-                    <div style={{ width: 36, height: 36, borderRadius: "10px", background: "rgba(200,155,99,0.08)", border: "1px solid rgba(200,155,99,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <FileText style={{ width: 15, height: 15, color: "#C89B63" }} />
-                    </div>
-
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", marginBottom: "3px" }}>
-                        <Link href={`/dashboard/forms/${form.id}/edit`}
-                          style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.05rem", color: "var(--foreground)", textDecoration: "none", transition: "color 0.2s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "240px" }}
-                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#C89B63"; }}
-                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--foreground)"; }}>
-                          {form.title}
-                        </Link>
-                        {visibilityBadge(form.visibility)}
-                      </div>
-                      <div className="form-row-meta" style={{ display: "flex", alignItems: "center", gap: "1rem", fontSize: "11px", color: "var(--muted-foreground)", fontFamily: "monospace", letterSpacing: "0.04em" }}>
-                        <span>{form.responseCount} replies</span>
-                        <span>{form.viewCount} views</span>
-                        {form.conversionRate > 0 && <span>{form.conversionRate.toFixed(0)}% completed</span>}
-                        {form.createdAt && <span>{formatDistanceToNow(new Date(form.createdAt))} ago</span>}
-                      </div>
-                    </div>
-
-                    <div className="form-row-actions" style={{ display: "flex", alignItems: "center", gap: "2px", flexShrink: 0 }}>
-                      {form.visibility !== "unpublished" && (
-                        <button onClick={() => setQrForm({ title: form.title, slug: form.slug })}
-                          title="Share QR" className="ef-btn-ghost"
-                          style={{ padding: "7px", borderRadius: "8px", display: "flex" }}>
-                          <QrCode style={{ width: 15, height: 15 }} />
-                        </button>
-                      )}
-                      <Link href={`/dashboard/forms/${form.id}/responses`} title="Responses"
-                        className="ef-btn-ghost" style={{ padding: "7px", borderRadius: "8px", display: "flex" }}>
-                        <BarChart3 style={{ width: 15, height: 15 }} />
-                      </Link>
-
-                      {/* ── Dropdown trigger ── */}
-                      <button
-                        onClick={(e) => {
-                          if (openMenu === form.id) { closeMenu(); return; }
-                          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                          const right = window.innerWidth - rect.right;
-                          const spaceBelow = window.innerHeight - rect.bottom;
-                          setMenuPos(
-                            spaceBelow < 270
-                              ? { bottom: window.innerHeight - rect.top + 6, right }
-                              : { top: rect.bottom + 6, right }
-                          );
-                          setOpenMenu(form.id);
-                        }}
-                        className="ef-btn-ghost"
-                        style={{ padding: "7px", borderRadius: "8px", display: "flex" }}>
-                        <MoreHorizontal style={{ width: 15, height: 15 }} />
-                      </button>
-                    </div>
+            {forms && forms.length > 0 && forms.map((form) => (
+              <div
+                key={form.id}
+                className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 sm:px-5 border-b last:border-b-0 transition-colors"
+                style={{ borderColor: "var(--border)" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "var(--dt-accent-soft)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+              >
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--dt-accent-soft)", border: "1px solid var(--dt-accent-border)" }}>
+                    <FileText className="w-4 h-4" style={{ color: ACCENT }} />
                   </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Link href={`/dashboard/forms/${form.id}/edit`} className="font-display text-lg text-[var(--foreground)] hover:underline truncate max-w-[200px] sm:max-w-none">{form.title}</Link>
+                      {visibilityBadge(form.visibility)}
+                    </div>
+                    <p className="text-[11px] font-mono text-[var(--muted-foreground)] mt-1">
+                      {form.responseCount} replies · {form.viewCount} views
+                      {form.conversionRate > 0 && ` · ${form.conversionRate.toFixed(0)}% CR`}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                  {form.visibility !== "unpublished" && (
+                    <button type="button" onClick={() => setQrForm({ title: form.title, slug: form.slug })} title="Share QR" className={`${dtBtnGhostClass()} !min-w-[44px] !min-h-[44px] !p-0`} style={{ background: "var(--dt-accent-soft)", border: "1px solid var(--dt-accent-border)" }}>
+                      <QrCode className="w-4 h-4" />
+                    </button>
+                  )}
+                  <Link href={`/dashboard/forms/${form.id}/responses`} title="Responses" className={`${dtBtnGhostClass()} !min-w-[44px] !min-h-[44px] !p-0`} style={{ background: "var(--dt-accent-soft)", border: "1px solid var(--dt-accent-border)" }}>
+                    <BarChart3 className="w-4 h-4" />
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      if (openMenu === form.id) { closeMenu(); return; }
+                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                      const right = window.innerWidth - rect.right;
+                      const spaceBelow = window.innerHeight - rect.bottom;
+                      setMenuPos(spaceBelow < 270 ? { bottom: window.innerHeight - rect.top + 6, right } : { top: rect.bottom + 6, right });
+                      setOpenMenu(form.id);
+                    }}
+                    className={`${dtBtnGhostClass()} !min-w-[44px] !min-h-[44px] !p-0`}
+                    style={{ background: "var(--dt-accent-soft)", border: "1px solid var(--dt-accent-border)" }}
+                  >
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </DashboardCard>
+        </DashboardAnimatedSection>
+
+        <div className="space-y-5">
+          <DashboardAnimatedSection animation="scale-in" delay={380}>
+            <DashboardCard className="p-0 overflow-hidden">
+              <div className="p-4 border-b" style={{ borderColor: "var(--border)" }}>
+                <p className="text-[10px] uppercase tracking-[0.25em] text-[var(--muted-foreground)]">Quick actions</p>
+                <p className="text-[11px] text-[var(--muted-foreground)] mt-1">Jump to common tasks</p>
+              </div>
+              <div className="p-2">
+                {[
+                  { icon: Plus, label: "New form", sub: "Start from scratch", href: "/dashboard/forms/new" },
+                  { icon: Users, label: "Analytics", sub: "Workspace insights", href: "/dashboard/analytics" },
+                  { icon: Globe, label: "Explore forms", sub: "Public library", href: "/explore" },
+                  { icon: Calendar, label: "Settings", sub: "Themes & account", href: "/dashboard/settings" },
+                ].map(({ icon: Icon, label, sub, href }) => (
+                  <Link key={label} href={href} className="flex items-center gap-3 p-3 rounded-xl transition-colors dt-touch-target min-h-[52px]" onMouseEnter={(e) => { e.currentTarget.style.background = "var(--dt-accent-soft)"; }} onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: "var(--dt-accent-soft)", border: "1px solid var(--dt-accent-border)" }}>
+                      <Icon className="w-4 h-4" style={{ color: ACCENT }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[var(--foreground)]">{label}</p>
+                      <p className="text-[11px] text-[var(--muted-foreground)]">{sub}</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-[var(--muted-foreground)]" />
+                  </Link>
                 ))}
               </div>
-            )}
-          </div>
-        </div>
+            </DashboardCard>
+          </DashboardAnimatedSection>
 
-        {/* RIGHT — Sidebar */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <div className="ef-card" style={{ borderRadius: "1rem", overflow: "hidden" }}>
-            <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid var(--border)" }}>
-              <span style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)" }}>Quick Actions</span>
-            </div>
-            <div style={{ padding: "0.5rem" }}>
-              {[
-                { icon: Plus,     label: "New form",         sub: "Start from scratch",        href: "/dashboard/forms/new" },
-                { icon: Users,    label: "View responses",   sub: "All recent submissions",    href: "/dashboard/analytics" },
-                { icon: Globe,    label: "Browse forms",     sub: "Explore the public library", href: "/explore" },
-                { icon: Calendar, label: "Set a close date", sub: "Manage limits & expiry",    href: "/dashboard/settings" },
-              ].map(({ icon: Icon, label, sub, href }) => (
-                <Link key={label} href={href}
-                  style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "8px", textDecoration: "none", transition: "background 0.15s" }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                  <div style={{ width: 30, height: 30, borderRadius: "8px", background: "rgba(200,155,99,0.08)", border: "1px solid rgba(200,155,99,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Icon style={{ width: 13, height: 13, color: "#C89B63" }} />
-                  </div>
-                  <div>
-                    <p style={{ fontSize: "13px", color: "var(--foreground)", marginBottom: "1px", fontWeight: 500 }}>{label}</p>
-                    <p style={{ fontSize: "11px", color: "var(--muted-foreground)" }}>{sub}</p>
-                  </div>
-                  <ChevronRight style={{ width: 13, height: 13, color: "var(--muted-foreground)", marginLeft: "auto" }} />
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div className="ef-card" style={{ borderRadius: "1rem", overflow: "hidden" }}>
-            <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid var(--border)" }}>
-              <span style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)" }}>What's Included</span>
-            </div>
-            <div style={{ padding: "0.75rem 1.25rem 1rem" }}>
-              {[
-                "One-question-at-a-time form layout",
-                "Branching questions based on answers",
-                "QR code sharing & image download",
-                "Response caps & closing dates",
-                "Live preview before publishing",
-                "Export all responses to spreadsheet",
-                "Charts and insights dashboard",
-                "Full developer documentation",
-                "Spam & abuse protection built in",
-                "Secure login with access tokens",
-              ].map((feat) => (
-                <div key={feat} style={{ display: "flex", alignItems: "flex-start", gap: "8px", padding: "5px 0" }}>
-                  <CheckCircle2 style={{ width: 13, height: 13, color: "#7EB884", marginTop: "2px", flexShrink: 0 }} />
-                  <span style={{ fontSize: "12px", color: "var(--muted-foreground)", lineHeight: 1.4 }}>{feat}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="ef-card" style={{ borderRadius: "1rem", padding: "1.25rem", background: "rgba(200,155,99,0.04)", border: "1px solid rgba(200,155,99,0.12)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-              <Zap style={{ width: 14, height: 14, color: "#C89B63" }} />
-              <span style={{ fontSize: "12px", fontWeight: 600, color: "#C89B63", textTransform: "uppercase", letterSpacing: "0.1em" }}>Developer Access</span>
-            </div>
-            <p style={{ fontSize: "12px", color: "var(--muted-foreground)", lineHeight: 1.6, marginBottom: "12px" }}>
-              Connect EdinForm directly to your own apps and tools. Full documentation with live examples is available online.
-            </p>
-
-            <a href="https://edinform11-2.onrender.com/docs" target="_blank" rel="noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#C89B63", textDecoration: "none" }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "underline"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "none"; }}>
-              Open documentation <ExternalLink style={{ width: 11, height: 11 }} />
-            </a>
-
-            <a href="https://edinform11-2.onrender.com/openapi.json" target="_blank" rel="noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "var(--muted-foreground)", textDecoration: "none", marginLeft: "12px" }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "underline"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "none"; }}>
-              API reference <ExternalLink style={{ width: 11, height: 11 }} />
-            </a>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Divider ── */}
-      <div className="ef-divider my-10" />
-
-      {/* ── Feature grid ── */}
-      <div style={{ marginBottom: "3rem" }}>
-        <div style={{ marginBottom: "1.5rem" }}>
-          <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)", marginBottom: "6px" }}>Features</p>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(1.4rem, 2.5vw, 2rem)", fontWeight: 400, color: "var(--foreground)" }}>
-            Everything you need to build great forms.
-          </h2>
-          <p style={{ marginTop: "6px", fontSize: "14px", color: "var(--muted-foreground)", maxWidth: "480px", lineHeight: 1.6 }}>
-            EdinForm pairs a beautiful experience for your respondents with a solid set of tools on your end — spam protection, automatic closing, branching logic, and a full insights suite.
-          </p>
-        </div>
-        <div className="feature-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
-          {features.map((f, i) => (
-            <div key={f.title} className="ef-card p-5"
-              style={{ borderRadius: "1rem", animationDelay: `${i * 50}ms`, animation: "ef-fade-up .6s cubic-bezier(.2,.7,.2,1) both" }}>
-              <div style={{ width: 36, height: 36, borderRadius: "10px", background: "rgba(200,155,99,0.08)", border: "1px solid rgba(200,155,99,0.12)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1rem" }}>
-                <f.icon style={{ width: 16, height: 16, color: "#C89B63" }} />
+          <DashboardAnimatedSection animation="fade-in" delay={440}>
+            <DashboardCard className="p-5" style={{ background: "var(--dt-accent-soft)", borderColor: "var(--dt-accent-border)" }}>
+              <div className="flex items-center gap-2 mb-2">
+                <Zap className="w-4 h-4" style={{ color: ACCENT }} />
+                <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: ACCENT }}>Pro tip</span>
               </div>
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.05rem", color: "var(--foreground)", marginBottom: "6px" }}>{f.title}</p>
-              <p style={{ fontSize: "12px", color: "var(--muted-foreground)", lineHeight: 1.6 }}>{f.desc}</p>
-            </div>
-          ))}
+              <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                Pin this dashboard in your browser during a launch. The forms list and Analytics live feed update automatically as responses arrive.
+              </p>
+            </DashboardCard>
+          </DashboardAnimatedSection>
         </div>
       </div>
 
-      {/* ── Status strip ── */}
-      <div className="ef-card status-strip" style={{ borderRadius: "1rem", padding: "1.25rem 1.75rem", display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap", justifyContent: "space-between" }}>
-        <div>
-          <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.28em", color: "var(--muted-foreground)", marginBottom: "4px" }}>EdinForm</p>
-          <p style={{ fontSize: "13px", color: "var(--foreground)", lineHeight: 1.5 }}>Build, share, and understand your forms — all in one place.</p>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#7EB884" }} />
-          <span style={{ fontSize: "12px", color: "var(--muted-foreground)" }}>All systems running normally</span>
-        </div>
-      </div>
+      {/* Features */}
+      <DashboardAnimatedSection animation="fade-up" delay={500}>
+        <section>
+          <h2 className="font-display text-2xl text-[var(--foreground)] mb-2">Everything in EdinForm</h2>
+          <p className="text-sm text-[var(--muted-foreground)] max-w-xl leading-relaxed mb-6">
+            Built-in tools so you can create, share, and understand forms without switching apps.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 dt-stagger">
+            {features.map((f) => (
+              <div key={f.title} className="rounded-2xl border p-5 dt-anim-scale-in dt-hover-lift" style={{ background: "var(--dt-card-bg)", borderColor: "var(--dt-card-border)" }}>
+                <f.icon className="w-5 h-5 mb-3" style={{ color: ACCENT }} />
+                <p className="font-display text-lg text-[var(--foreground)] mb-1">{f.title}</p>
+                <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </DashboardAnimatedSection>
 
-      {/* ── Portal dropdown — rendered directly into document.body ── */}
+      <p className="text-[11px] text-[var(--muted-foreground)] flex items-start gap-2 dt-anim-fade-in" style={{ animationDelay: "560ms" }}>
+        <HelpCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: ACCENT }} />
+        <span>Need help? Visit <Link href="/docs" className="underline" style={{ color: ACCENT }}>documentation</Link> or open Settings to change your dashboard theme.</span>
+      </p>
+
       {openMenu && menuPos && typeof document !== "undefined" && createPortal(
         <>
-          {/* Backdrop: closes menu on outside click */}
+          <div className="fixed inset-0 z-[9990]" onClick={closeMenu} />
           <div
-            style={{ position: "fixed", inset: 0, zIndex: 9990 }}
-            onClick={closeMenu}
-          />
-          {/* Menu panel */}
-          <div
+            className="fixed z-[9999] rounded-xl p-1 w-[210px] shadow-2xl"
             style={{
-              position: "fixed",
-              ...(menuPos.top    !== undefined ? { top:    menuPos.top    } : {}),
+              ...(menuPos.top !== undefined ? { top: menuPos.top } : {}),
               ...(menuPos.bottom !== undefined ? { bottom: menuPos.bottom } : {}),
               right: menuPos.right,
-              width: 210,
-              zIndex: 9999,
-              borderRadius: "12px",
-              padding: "4px",
-              background: "var(--card, #1c1c1c)",
-              border: "1px solid rgba(255,255,255,0.09)",
-              boxShadow: "0 16px 48px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4)",
+              background: "var(--dt-card-bg)",
+              border: "1px solid var(--dt-card-border)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {forms?.filter(f => f.id === openMenu).map(form => (
+            {forms?.filter((f) => f.id === openMenu).map((form) => (
               <div key={form.id}>
-                <Link href={`/dashboard/forms/${form.id}/edit`}
-                  onClick={closeMenu}
-                  style={{ display: "flex", alignItems: "center", gap: "10px", padding: "9px 14px", borderRadius: "8px", fontSize: "13px", color: "var(--foreground)", textDecoration: "none" }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.07)"; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                  <Layers style={{ width: 14, height: 14, color: "#C89B63", flexShrink: 0 }} />
-                  Edit &amp; Preview
+                <Link href={`/dashboard/forms/${form.id}/edit`} onClick={closeMenu} className="dt-touch-target flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm min-h-[44px] no-underline" style={{ color: "var(--foreground)" }} onMouseEnter={(e) => { e.currentTarget.style.background = "var(--dt-accent-soft)"; }} onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
+                  <Layers className="w-4 h-4 shrink-0" style={{ color: ACCENT }} /> Edit &amp; Preview
                 </Link>
-
                 {form.visibility !== "unpublished" ? (
-                  <MenuBtn icon={Lock} label="Unpublish"
-                    onClick={() => unpublishMutation.mutate({ id: form.id })} />
+                  <MenuBtn icon={Lock} label="Unpublish" onClick={() => unpublishMutation.mutate({ id: form.id })} />
                 ) : (
-                  <MenuBtn icon={Globe} label="Publish"
-                    onClick={() => publishMutation.mutate({ id: form.id, visibility: "public" })} />
+                  <MenuBtn icon={Globe} label="Publish" onClick={() => publishMutation.mutate({ id: form.id, visibility: "public" })} />
                 )}
-
-                <MenuBtn icon={Copy} label="Duplicate"
-                  onClick={() => duplicateMutation.mutate({ id: form.id })} />
-
-                {form.visibility !== "unpublished" && (<>
-                  <MenuBtn icon={Copy} label="Copy Link"
-                    onClick={() => {
-                      navigator.clipboard.writeText(window.location.origin + "/forms/" + form.slug);
-                      toast.success("Link copied!");
-                      closeMenu();
-                    }} />
-                  <MenuAnchor icon={ExternalLink} label="Open Form"
-                    href={`/forms/${form.slug}`} onNavigate={closeMenu} />
-                </>)}
-
-                <div style={{ margin: "4px 8px", borderTop: "1px solid rgba(255,255,255,0.07)" }} />
-
-                <MenuBtn icon={Trash2} label="Delete" danger
-                  onClick={() => {
-                    closeMenu();
-                    if (confirm("Delete this form and all its responses?"))
-                      deleteMutation.mutate({ id: form.id });
-                  }} />
+                <MenuBtn icon={Copy} label="Duplicate" onClick={() => duplicateMutation.mutate({ id: form.id })} />
+                {form.visibility !== "unpublished" && (
+                  <>
+                    <MenuBtn icon={Copy} label="Copy Link" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/forms/${form.slug}`); toast.success("Link copied!"); closeMenu(); }} />
+                    <MenuAnchor icon={ExternalLink} label="Open Form" href={`/forms/${form.slug}`} onNavigate={closeMenu} />
+                  </>
+                )}
+                <div className="my-1 mx-2 border-t" style={{ borderColor: "var(--border)" }} />
+                <MenuBtn icon={Trash2} label="Delete" danger onClick={() => { closeMenu(); if (confirm("Delete this form and all its responses?")) deleteMutation.mutate({ id: form.id }); }} />
               </div>
             ))}
           </div>
@@ -484,42 +439,23 @@ export default function DashboardPage() {
         document.body
       )}
 
-      {/* QR Modal */}
-      {qrForm && (
-        <QRShareModal open={!!qrForm} onClose={() => setQrForm(null)}
-          formTitle={qrForm.title} formSlug={qrForm.slug} />
-      )}
-    </div>
+      {qrForm && <QRShareModal open={!!qrForm} onClose={() => setQrForm(null)} formTitle={qrForm.title} formSlug={qrForm.slug} />}
+    </DashboardPageShell>
   );
 }
 
-/* ── helpers ── */
-function MenuBtn({ icon: Icon, label, onClick, danger = false }: {
-  icon: React.ElementType; label: string; onClick: () => void; danger?: boolean;
-}) {
+function MenuBtn({ icon: Icon, label, onClick, danger = false }: { icon: React.ElementType; label: string; onClick: () => void; danger?: boolean }) {
   return (
-    <button
-      onClick={onClick}
-      style={{ width: "100%", display: "flex", alignItems: "center", gap: "10px", padding: "9px 14px", borderRadius: "8px", fontSize: "13px", color: danger ? "#e05555" : "var(--foreground)", background: "transparent", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "inherit", transition: "background 0.12s" }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = danger ? "rgba(224,85,85,0.1)" : "rgba(255,255,255,0.07)"; }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-      <Icon style={{ width: 14, height: 14, color: danger ? "#e05555" : "#C89B63", flexShrink: 0 }} />
-      {label}
+    <button type="button" onClick={onClick} className="dt-touch-target w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left transition-colors min-h-[44px]" style={{ color: danger ? "#e05555" : "var(--foreground)" }} onMouseEnter={(e) => { e.currentTarget.style.background = "var(--dt-accent-soft)"; }} onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
+      <Icon className="w-4 h-4 shrink-0" style={{ color: danger ? "#e05555" : ACCENT }} /> {label}
     </button>
   );
 }
 
-function MenuAnchor({ icon: Icon, label, href, onNavigate }: {
-  icon: React.ElementType; label: string; href: string; onNavigate?: () => void;
-}) {
+function MenuAnchor({ icon: Icon, label, href, onNavigate }: { icon: React.ElementType; label: string; href: string; onNavigate?: () => void }) {
   return (
-    <a href={href} target="_blank" rel="noreferrer"
-      onClick={onNavigate}
-      style={{ display: "flex", alignItems: "center", gap: "10px", padding: "9px 14px", borderRadius: "8px", fontSize: "13px", color: "var(--foreground)", textDecoration: "none", transition: "background 0.12s", fontFamily: "inherit" }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.07)"; }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-      <Icon style={{ width: 14, height: 14, color: "#C89B63", flexShrink: 0 }} />
-      {label}
+    <a href={href} target="_blank" rel="noreferrer" onClick={onNavigate} className="dt-touch-target flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors min-h-[44px]" style={{ color: "var(--foreground)" }} onMouseEnter={(e) => { e.currentTarget.style.background = "var(--dt-accent-soft)"; }} onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
+      <Icon className="w-4 h-4 shrink-0" style={{ color: ACCENT }} /> {label}
     </a>
   );
 }

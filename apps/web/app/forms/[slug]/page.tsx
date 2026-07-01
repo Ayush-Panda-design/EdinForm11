@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useState, useEffect } from "react";
+import Link from "next/link";
 import { trpc } from "~/trpc/client";
 import { toast } from "sonner";
 import {
@@ -33,6 +34,7 @@ export default function PublicFormPage({
   const [currentStep, setCurrentStep] = useState(-1);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [startTime] = useState(Date.now());
+  const [honeypot, setHoneypot] = useState("");
 
   // Password gate
   const [passwordInput, setPasswordInput] = useState("");
@@ -167,13 +169,13 @@ export default function PublicFormPage({
               "This form doesn't exist or is no longer accepting responses."}
           </p>
 
-          <a
+          <Link
             href="/"
             className="inline-flex items-center gap-2 mt-10 text-sm text-slate-500 hover:text-slate-300 transition-colors"
           >
             <Sparkles className="w-4 h-4" />
             Powered by EdinForm
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -403,6 +405,7 @@ export default function PublicFormPage({
       formId: form.id,
       answers: formattedAnswers,
       completionTimeSeconds,
+      honeypot: honeypot || undefined,
     });
   };
 
@@ -425,13 +428,13 @@ export default function PublicFormPage({
             Your response has been recorded.
           </p>
 
-          <a
+          <Link
             href="/"
             className="inline-flex items-center gap-2 mt-12 text-sm text-slate-500 hover:text-slate-300 transition-colors"
           >
             <Sparkles className="w-4 h-4" />
             Powered by EdinForm
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -482,12 +485,12 @@ export default function PublicFormPage({
         </div>
 
         <footer className="relative z-10 text-center py-6">
-          <a
+          <Link
             href="/"
             className="text-sm text-slate-600 hover:text-slate-400 transition-colors"
           >
             Powered by EdinForm
-          </a>
+          </Link>
         </footer>
       </div>
     );
@@ -495,6 +498,19 @@ export default function PublicFormPage({
   // Question Screen
   return (
     <div className="min-h-screen bg-[#050816] flex flex-col relative overflow-hidden">
+      {/* Honeypot trap — hidden from humans, bots auto-fill and get silently rejected */}
+      <input
+        type="text"
+        name="_hp_website"
+        value={honeypot}
+        onChange={(e) => setHoneypot(e.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="absolute opacity-0 pointer-events-none"
+        style={{ left: "-9999px", height: 0, width: 0 }}
+      />
+
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(91,140,255,0.12),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(139,92,246,0.14),transparent_40%)]" />
 
       {/* Progress */}

@@ -7,7 +7,8 @@ import db, {
 import type { SignUpInput, SignInInput } from "@repo/validators/auth";
 import type { AuthUser, SignInResult } from "@repo/types/auth";
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from "crypto";
-import { emailService } from "../email"; 
+import { emailService } from "../email";
+import { emailPreferencesService } from "../email-preferences";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -81,6 +82,8 @@ export class AuthService {
       .returning();
 
     if (!user) throw new Error("FAILED_TO_CREATE_USER");
+
+    await emailPreferencesService.createDefaults(user.id);
 
     return this.createSession(user.id, {
       id: user.id,

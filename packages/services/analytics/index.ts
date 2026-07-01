@@ -8,7 +8,7 @@ import db, {
   responseAnswersTable,
 } from "@repo/database";
 import type { AnalyticsQueryInput } from "@repo/validators/analytics";
-import type { FormAnalyticsSummary, DailyAnalytics } from "@repo/types/analytics";
+import type { FormAnalyticsSummary, DailyAnalytics, FieldSummaryStatistics } from "@repo/types/analytics";
 
 // Redis cache helper (graceful fallback)
 let redisClient: { get: (k: string) => Promise<string | null>; set: (k: string, v: string, opts?: any) => Promise<void>; del: (k: string) => Promise<void> } | null = null;
@@ -27,6 +27,7 @@ export class AnalyticsService {
   ): Promise<FormAnalyticsSummary & {
     hourlyVelocity: Array<{ hour: string; count: number }>;
     dropoffFunnel: Array<{ fieldId: string; label: string; answeredCount: number; dropoffRate: number }>;
+    fieldSummaries: FieldSummaryStatistics[];
     healthScore: number;
     uniqueResponseRatio: number;
   }> {
@@ -126,6 +127,9 @@ export class AnalyticsService {
     // Per-question drop-off funnel
     const dropoffFunnel = await this.getDropoffFunnel(input.formId);
 
+    // Per-field value distributions and summary statistics
+    const fieldSummaries = await this.getFieldSummaries(input.formId, fromDate, toDate, totalSubmissions);
+
     // Health score computation (0-100)
     const healthScore = this.computeHealthScore({
       conversionRate,
@@ -143,9 +147,171 @@ export class AnalyticsService {
       dailyData,
       hourlyVelocity,
       dropoffFunnel,
+      fieldSummaries,
       healthScore,
       uniqueResponseRatio,
     };
+  }
+
+  /**
+   * Per-field summary statistics: option distributions, numeric aggregates, text lengths
+   */
+  private async getFieldSummaries(
+    formId: string,
+    from: Date,
+    to: Date,
+    totalResponses: number
+  ): Promise<FieldSummaryStatistics[]> {
+    const fields = await db
+      .select({
+        id: formFieldsTable.id,
+        label: formFieldsTable.label,
+        type: formFieldsTable.type,
+        order: formFieldsTable.order,
+        options: formFieldsTable.options,
+      })
+      .from(formFieldsTable)
+      .where(eq(formFieldsTable.formId, formId))
+      .orderBy(formFieldsTable.order);
+
+    if (fields.length === 0) return [];
+
+    const fieldIds = fields.map((f) => f.id);
+
+    const answers = await db
+      .select({
+        fieldId: responseAnswersTable.fieldId,
+        value: responseAnswersTable.value,
+        valueArray: responseAnswersTable.valueArray,
+      })
+      .from(responseAnswersTable)
+      .innerJoin(
+        formResponsesTable,
+        eq(responseAnswersTable.responseId, formResponsesTable.id)
+      )
+      .where(
+        and(
+          eq(responseAnswersTable.formId, formId),
+          inArray(responseAnswersTable.fieldId, fieldIds),
+          eq(formResponsesTable.status, "completed"),
+          gte(formResponsesTable.submittedAt, from),
+          lte(formResponsesTable.submittedAt, to)
+        )
+      );
+
+    const answersByField = new Map<string, typeof answers>();
+    for (const ans of answers) {
+      const list = answersByField.get(ans.fieldId) ?? [];
+      list.push(ans);
+      answersByField.set(ans.fieldId, list);
+    }
+
+    const choiceTypes = new Set(["single_select", "multi_select", "checkbox"]);
+    const numericTypes = new Set(["number", "rating"]);
+    const textTypes = new Set(["short_text", "long_text", "email", "date"]);
+
+    return fields.map((field) => {
+      const fieldAnswers = answersByField.get(field.id) ?? [];
+      const answeredCount = fieldAnswers.length;
+      const skipRate =
+        totalResponses > 0
+          ? Math.round(((totalResponses - answeredCount) / totalResponses) * 1000) / 10
+          : 0;
+
+      const base: FieldSummaryStatistics = {
+        fieldId: field.id,
+        label: field.label,
+        type: field.type,
+        totalResponses,
+        answeredCount,
+        skipRate,
+      };
+
+      if (choiceTypes.has(field.type)) {
+        const optionLabels = new Map<string, string>();
+        const fieldOptions = (field.options as Array<{ value: string; label: string }> | null) ?? [];
+        for (const opt of fieldOptions) {
+          optionLabels.set(opt.value, opt.label);
+        }
+
+        const counts = new Map<string, number>();
+        for (const ans of fieldAnswers) {
+          if (ans.valueArray && Array.isArray(ans.valueArray)) {
+            for (const v of ans.valueArray as string[]) {
+              counts.set(v, (counts.get(v) ?? 0) + 1);
+            }
+          } else if (ans.value) {
+            counts.set(ans.value, (counts.get(ans.value) ?? 0) + 1);
+          }
+        }
+
+        const totalSelections = Array.from(counts.values()).reduce((s, c) => s + c, 0);
+        const optionDistribution = Array.from(counts.entries())
+          .map(([value, count]) => ({
+            value,
+            label: optionLabels.get(value) ?? value,
+            count,
+            percentage:
+              totalSelections > 0
+                ? Math.round((count / totalSelections) * 1000) / 10
+                : 0,
+          }))
+          .sort((a, b) => b.count - a.count);
+
+        return { ...base, optionDistribution };
+      }
+
+      if (numericTypes.has(field.type)) {
+        const nums = fieldAnswers
+          .map((a) => parseFloat(a.value ?? ""))
+          .filter((n) => !Number.isNaN(n));
+
+        if (nums.length === 0) return base;
+
+        const sorted = [...nums].sort((a, b) => a - b);
+        const min = sorted[0]!;
+        const max = sorted[sorted.length - 1]!;
+        const avg = Math.round((nums.reduce((s, n) => s + n, 0) / nums.length) * 10) / 10;
+        const median =
+          sorted.length % 2 === 0
+            ? (sorted[sorted.length / 2 - 1]! + sorted[sorted.length / 2]!) / 2
+            : sorted[Math.floor(sorted.length / 2)]!;
+
+        const bucketCounts = new Map<string, number>();
+        for (const n of nums) {
+          const key = String(n);
+          bucketCounts.set(key, (bucketCounts.get(key) ?? 0) + 1);
+        }
+
+        const distribution = Array.from(bucketCounts.entries())
+          .map(([value, count]) => ({ value, count }))
+          .sort((a, b) => parseFloat(a.value) - parseFloat(b.value));
+
+        return {
+          ...base,
+          numericStats: { min, max, avg, median, distribution },
+        };
+      }
+
+      if (textTypes.has(field.type)) {
+        const lengths = fieldAnswers
+          .map((a) => (a.value ?? "").length)
+          .filter((l) => l > 0);
+
+        if (lengths.length === 0) return base;
+
+        return {
+          ...base,
+          textStats: {
+            avgLength: Math.round(lengths.reduce((s, l) => s + l, 0) / lengths.length),
+            minLength: Math.min(...lengths),
+            maxLength: Math.max(...lengths),
+          },
+        };
+      }
+
+      return base;
+    });
   }
 
   /**
