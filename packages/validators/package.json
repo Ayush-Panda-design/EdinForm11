@@ -1,0 +1,22 @@
+{
+  "name": "@repo/validators",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./auth": "./auth/index.ts",
+    "./forms": "./forms/index.ts",
+    "./responses": "./responses/index.ts",
+    "./analytics": "./analytics/index.ts",
+    "./shared": "./shared/index.ts"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "zod": "^4.3.5"
+  }
+}

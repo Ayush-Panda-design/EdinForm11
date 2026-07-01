@@ -1,0 +1,450 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "id": "formcraft-full-schema",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "public.users": {
+      "name": "users",
+      "schema": "public",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "full_name": {
+          "name": "full_name",
+          "type": "varchar(80)",
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "notNull": true
+        },
+        "email_verified": {
+          "name": "email_verified",
+          "type": "boolean",
+          "default": false
+        },
+        "password_hash": {
+          "name": "password_hash",
+          "type": "text"
+        },
+        "google_id": {
+          "name": "google_id",
+          "type": "varchar(255)"
+        },
+        "profile_image_url": {
+          "name": "profile_image_url",
+          "type": "text"
+        },
+        "role": {
+          "name": "role",
+          "type": "varchar(20)",
+          "notNull": true,
+          "default": "'creator'"
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        },
+        "users_google_id_unique": {
+          "name": "users_google_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "google_id"
+          ]
+        }
+      }
+    },
+    "public.sessions": {
+      "name": "sessions",
+      "schema": "public",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp",
+          "notNull": true
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text"
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "varchar(45)"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sessions_user_id_users_id_fk": {
+          "name": "sessions_user_id_users_id_fk",
+          "tableFrom": "sessions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "sessions_token_unique": {
+          "name": "sessions_token_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "token"
+          ]
+        }
+      }
+    },
+    "public.themes": {
+      "name": "themes",
+      "schema": "public",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(100)",
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text"
+        },
+        "config": {
+          "name": "config",
+          "type": "jsonb",
+          "notNull": true
+        },
+        "is_default": {
+          "name": "is_default",
+          "type": "boolean",
+          "notNull": true,
+          "default": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.forms": {
+      "name": "forms",
+      "schema": "public",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        "theme_id": {
+          "name": "theme_id",
+          "type": "uuid"
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(300)",
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(300)",
+          "notNull": true
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "form_visibility",
+          "notNull": true,
+          "default": "'unpublished'"
+        },
+        "is_archived": {
+          "name": "is_archived",
+          "type": "boolean",
+          "notNull": true,
+          "default": false
+        },
+        "allow_multiple_responses": {
+          "name": "allow_multiple_responses",
+          "type": "boolean",
+          "notNull": true,
+          "default": true
+        },
+        "show_progress_bar": {
+          "name": "show_progress_bar",
+          "type": "boolean",
+          "notNull": true,
+          "default": true
+        },
+        "shuffle_fields": {
+          "name": "shuffle_fields",
+          "type": "boolean",
+          "notNull": true,
+          "default": false
+        },
+        "close_after_date": {
+          "name": "close_after_date",
+          "type": "timestamp"
+        },
+        "max_responses": {
+          "name": "max_responses",
+          "type": "integer"
+        },
+        "submit_button_text": {
+          "name": "submit_button_text",
+          "type": "varchar(100)",
+          "default": "'Submit'"
+        },
+        "success_message": {
+          "name": "success_message",
+          "type": "text"
+        },
+        "redirect_url": {
+          "name": "redirect_url",
+          "type": "text"
+        },
+        "notify_creator_on_submission": {
+          "name": "notify_creator_on_submission",
+          "type": "boolean",
+          "notNull": true,
+          "default": true
+        },
+        "send_confirmation_email": {
+          "name": "send_confirmation_email",
+          "type": "boolean",
+          "notNull": true,
+          "default": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp"
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamp"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp"
+        }
+      },
+      "indexes": {
+        "idx_forms_creator_archived": {
+          "name": "idx_forms_creator_archived",
+          "columns": [
+            "creator_id",
+            "is_archived"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "forms_slug_unique": {
+          "name": "forms_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      }
+    },
+    "public.form_responses": {
+      "name": "form_responses",
+      "schema": "public",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "form_id": {
+          "name": "form_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "response_status",
+          "notNull": true,
+          "default": "'completed'"
+        },
+        "respondent_email": {
+          "name": "respondent_email",
+          "type": "varchar(255)"
+        },
+        "respondent_name": {
+          "name": "respondent_name",
+          "type": "varchar(200)"
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "varchar(45)"
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text"
+        },
+        "referrer": {
+          "name": "referrer",
+          "type": "text"
+        },
+        "completion_time_seconds": {
+          "name": "completion_time_seconds",
+          "type": "integer"
+        },
+        "browser_fingerprint": {
+          "name": "browser_fingerprint",
+          "type": "varchar(64)"
+        },
+        "submitted_at": {
+          "name": "submitted_at",
+          "type": "timestamp",
+          "default": "now()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {
+    "public.form_visibility": {
+      "name": "form_visibility",
+      "schema": "public",
+      "values": [
+        "public",
+        "unlisted",
+        "unpublished"
+      ]
+    },
+    "public.form_field_type": {
+      "name": "form_field_type",
+      "schema": "public",
+      "values": [
+        "short_text",
+        "long_text",
+        "email",
+        "number",
+        "single_select",
+        "multi_select",
+        "checkbox",
+        "date",
+        "rating"
+      ]
+    },
+    "public.response_status": {
+      "name": "response_status",
+      "schema": "public",
+      "values": [
+        "in_progress",
+        "completed",
+        "spam"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}

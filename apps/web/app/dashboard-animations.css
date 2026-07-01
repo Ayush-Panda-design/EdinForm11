@@ -1,0 +1,167 @@
+/*
+ * Dashboard page animations + touch-friendly controls.
+ * Import after dashboard-themes.css
+ */
+
+@keyframes dt-fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dt-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes dt-slide-in {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes dt-scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes dt-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes dt-shimmer {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+@keyframes dt-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--dt-accent) 0%, transparent); }
+  50% { box-shadow: 0 0 24px 4px color-mix(in srgb, var(--dt-accent) 25%, transparent); }
+}
+
+/* ── Animation utilities (use 5–6 per page with stagger delays) ── */
+.dt-anim-fade-up {
+  animation: dt-fade-up 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.dt-anim-fade-in {
+  animation: dt-fade-in 0.55s ease both;
+}
+
+.dt-anim-slide-in {
+  animation: dt-slide-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.dt-anim-scale-in {
+  animation: dt-scale-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.dt-anim-float {
+  animation: dt-float 5s ease-in-out infinite;
+}
+
+.dt-anim-shimmer {
+  background-size: 200% auto;
+  animation: dt-shimmer 4s linear infinite;
+}
+
+.dt-anim-pulse-glow {
+  animation: dt-pulse-glow 2.5s ease-in-out infinite;
+}
+
+.dt-hover-lift {
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.dt-hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--dt-accent) 12%, transparent);
+}
+
+.dt-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.dt-stagger > *:nth-child(2) { animation-delay: 80ms; }
+.dt-stagger > *:nth-child(3) { animation-delay: 160ms; }
+.dt-stagger > *:nth-child(4) { animation-delay: 240ms; }
+.dt-stagger > *:nth-child(5) { animation-delay: 320ms; }
+.dt-stagger > *:nth-child(6) { animation-delay: 400ms; }
+
+/* Page shell entrance */
+.dt-page-content {
+  animation: dt-fade-in 0.4s ease both;
+}
+
+/* ── Touch-friendly buttons & fields (visible on mobile) ── */
+.dt-shell .dt-btn-primary,
+.dt-shell .dt-btn-ghost,
+.dt-shell .dt-touch-target {
+  min-height: 44px;
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
+  font-weight: 500;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--dt-accent) 15%, transparent);
+}
+
+.dt-shell .dt-btn-primary:active,
+.dt-shell .dt-btn-ghost:active,
+.dt-shell .dt-touch-target:active {
+  transform: scale(0.97);
+}
+
+.dt-shell .dt-btn-primary:focus-visible,
+.dt-shell .dt-btn-ghost:focus-visible,
+.dt-shell .dt-touch-target:focus-visible {
+  outline: 2px solid var(--dt-accent);
+  outline-offset: 3px;
+}
+
+.dt-shell .dt-input,
+.dt-shell input.dt-input,
+.dt-shell textarea.dt-input,
+.dt-shell .ef-input {
+  min-height: 44px;
+  font-size: 16px;
+  border-width: 1.5px;
+  border-color: var(--dt-card-border, var(--border));
+  background: var(--input);
+  color: var(--foreground);
+}
+
+.dt-shell .dt-input:focus,
+.dt-shell input.dt-input:focus,
+.dt-shell textarea.dt-input:focus,
+.dt-shell .ef-input:focus {
+  outline: none;
+  border-color: var(--dt-accent);
+  box-shadow: 0 0 0 3px var(--dt-accent-soft);
+}
+
+@media (min-width: 640px) {
+  .dt-shell .dt-btn-primary,
+  .dt-shell .dt-btn-ghost,
+  .dt-shell .dt-touch-target {
+    min-height: 40px;
+  }
+
+  .dt-shell .dt-input,
+  .dt-shell input.dt-input,
+  .dt-shell .ef-input {
+    font-size: 14px;
+    min-height: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dt-anim-fade-up,
+  .dt-anim-fade-in,
+  .dt-anim-slide-in,
+  .dt-anim-scale-in,
+  .dt-anim-float,
+  .dt-anim-shimmer,
+  .dt-anim-pulse-glow,
+  .dt-page-content {
+    animation: none !important;
+  }
+
+  .dt-hover-lift:hover {
+    transform: none;
+  }
+}

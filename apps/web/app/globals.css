@@ -1,0 +1,913 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * EdinForm — Monochrome.
+ * Pure black canvas. Cool white type. Silver accents.
+ * No color. No warmth. Just contrast and space.
+ * Type: Cormorant Garamond (display) · Inter (body) · JetBrains Mono (code)
+ *
+ * Palette:
+ *   Black   — #080808  #0E0E0E  #141414
+ *   Grays   — #1C1C1C  #242424  #2E2E2E  #3A3A3A
+ *   Silver  — #6B6B6B  #888888  #A8A8A8  #C4C4C4
+ *   White   — #E8E8E8  #F0F0F0  #F8F8F8
+ */
+
+/* ─── Tailwind token bridge ──────────────────────────────── */
+@theme inline {
+  --radius-sm:  calc(var(--radius) - 4px);
+  --radius-md:  calc(var(--radius) - 2px);
+  --radius-lg:  var(--radius);
+  --radius-xl:  calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 16px);
+
+  --color-background:                 var(--background);
+  --color-foreground:                 var(--foreground);
+  --color-card:                       var(--card);
+  --color-card-foreground:            var(--card-foreground);
+  --color-popover:                    var(--popover);
+  --color-popover-foreground:         var(--popover-foreground);
+  --color-primary:                    var(--primary);
+  --color-primary-foreground:         var(--primary-foreground);
+  --color-secondary:                  var(--secondary);
+  --color-secondary-foreground:       var(--secondary-foreground);
+  --color-muted:                      var(--muted);
+  --color-muted-foreground:           var(--muted-foreground);
+  --color-accent:                     var(--accent);
+  --color-accent-foreground:          var(--accent-foreground);
+  --color-destructive:                var(--destructive);
+  --color-border:                     var(--border);
+  --color-input:                      var(--input);
+  --color-ring:                       var(--ring);
+  --color-chart-1:                    var(--chart-1);
+  --color-chart-2:                    var(--chart-2);
+  --color-chart-3:                    var(--chart-3);
+  --color-chart-4:                    var(--chart-4);
+  --color-chart-5:                    var(--chart-5);
+  --color-sidebar:                    var(--sidebar);
+  --color-sidebar-foreground:         var(--sidebar-foreground);
+  --color-sidebar-primary:            var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent:             var(--sidebar-accent);
+  --color-sidebar-accent-foreground:  var(--sidebar-accent-foreground);
+  --color-sidebar-border:             var(--sidebar-border);
+  --color-sidebar-ring:               var(--sidebar-ring);
+
+  --font-display: var(--font-cormorant), ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans:    var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    var(--font-jetbrains-mono), ui-monospace, "Fira Code", monospace;
+}
+
+/* ════════════════════════════════════════════════════════════
+   DARK THEME (default — primary canvas)
+   Pure black. Silver mid-tones. Crisp white text.
+   Zero color. Maximum contrast.
+   ════════════════════════════════════════════════════════════ */
+:root, .dark {
+  --radius: 0.625rem;
+
+  /* Monochrome scale — the only palette */
+  --mono-50:  #F8F8F8;
+  --mono-100: #F0F0F0;
+  --mono-200: #E8E8E8;
+  --mono-300: #C4C4C4;
+  --mono-400: #A8A8A8;
+  --mono-500: #888888;
+  --mono-600: #6B6B6B;
+  --mono-700: #3A3A3A;
+  --mono-800: #2E2E2E;
+  --mono-900: #242424;
+
+  /* Accent = pure white, used sparingly */
+  --accent-bright: #FFFFFF;
+  --accent-soft:   #C4C4C4;
+  --accent-muted:  #6B6B6B;
+
+  /* Backgrounds — true black, layered */
+  --background: #080808;
+  --surface-0:  #0E0E0E;   /* card base */
+  --surface-1:  #141414;   /* elevated */
+  --surface-2:  #1C1C1C;   /* hover / selection */
+  --surface-3:  #242424;   /* inset / code bg */
+
+  /* Text */
+  --foreground:     #F0F0F0;  /* near-white, not stark 255 */
+  --text-secondary: #888888;  /* silver mid */
+  --text-tertiary:  #444444;  /* very muted */
+
+  /* Semantic aliases */
+  --card:              var(--surface-0);
+  --card-foreground:   var(--foreground);
+  --popover:           var(--surface-1);
+  --popover-foreground: var(--foreground);
+
+  /* Primary action — pure white on black */
+  --primary:           #F0F0F0;
+  --primary-foreground: #080808;
+  --primary-hover:     #FFFFFF;
+
+  --secondary:            var(--surface-2);
+  --secondary-foreground: var(--foreground);
+
+  --muted:            var(--surface-2);
+  --muted-foreground: var(--text-secondary);
+
+  --accent:            var(--surface-1);
+  --accent-foreground: var(--foreground);
+
+  --destructive: #8B2020;
+
+  /* Borders — white at very low opacity */
+  --border:       rgba(255, 255, 255, 0.06);
+  --border-soft:  rgba(255, 255, 255, 0.035);
+  --border-hover: rgba(255, 255, 255, 0.14);
+  --border-focus: rgba(255, 255, 255, 0.40);
+  --input:        rgba(255, 255, 255, 0.045);
+  --ring:         rgba(255, 255, 255, 0.25);
+
+  /* Charts — grayscale only */
+  --chart-1: #C4C4C4;
+  --chart-2: #888888;
+  --chart-3: #555555;
+  --chart-4: #333333;
+  --chart-5: #1C1C1C;
+
+  /* Sidebar */
+  --sidebar:                    #080808;
+  --sidebar-foreground:         var(--foreground);
+  --sidebar-primary:            var(--mono-200);
+  --sidebar-primary-foreground: #080808;
+  --sidebar-accent:             var(--surface-2);
+  --sidebar-accent-foreground:  var(--foreground);
+  --sidebar-border:             var(--border);
+  --sidebar-ring:               var(--ring);
+}
+
+/* ════════════════════════════════════════════════════════════
+   LIGHT THEME — bright white, graphite type, silver borders.
+   Inverted monochrome. Same discipline.
+   ════════════════════════════════════════════════════════════ */
+.light {
+  --mono-50:  #141414;
+  --mono-100: #1C1C1C;
+  --mono-200: #2E2E2E;
+  --mono-300: #444444;
+  --mono-400: #606060;
+  --mono-500: #7A7A7A;
+  --mono-600: #A0A0A0;
+  --mono-700: #C8C8C8;
+  --mono-800: #E0E0E0;
+  --mono-900: #F4F4F4;
+
+  --accent-bright: #080808;
+  --accent-soft:   #444444;
+  --accent-muted:  #A0A0A0;
+
+  --background: #FAFAFA;
+  --surface-0:  #F2F2F2;
+  --surface-1:  #EAEAEA;
+  --surface-2:  #E0E0E0;
+  --surface-3:  #D4D4D4;
+
+  --foreground:     #111111;
+  --text-secondary: #606060;
+  --text-tertiary:  #A8A8A8;
+
+  --card:              var(--surface-0);
+  --card-foreground:   var(--foreground);
+  --popover:           var(--surface-1);
+  --popover-foreground: var(--foreground);
+
+  --primary:           #111111;
+  --primary-foreground: #FAFAFA;
+  --primary-hover:     #000000;
+
+  --secondary:            var(--surface-2);
+  --secondary-foreground: var(--foreground);
+
+  --muted:            var(--surface-2);
+  --muted-foreground: var(--text-secondary);
+
+  --accent:            var(--surface-1);
+  --accent-foreground: var(--foreground);
+
+  --destructive: #B02020;
+
+  --border:       rgba(0, 0, 0, 0.08);
+  --border-soft:  rgba(0, 0, 0, 0.04);
+  --border-hover: rgba(0, 0, 0, 0.16);
+  --border-focus: rgba(0, 0, 0, 0.40);
+  --input:        rgba(0, 0, 0, 0.04);
+  --ring:         rgba(0, 0, 0, 0.20);
+
+  --chart-1: #1C1C1C;
+  --chart-2: #555555;
+  --chart-3: #888888;
+  --chart-4: #B8B8B8;
+  --chart-5: #E0E0E0;
+
+  --sidebar:                    var(--surface-0);
+  --sidebar-foreground:         var(--foreground);
+  --sidebar-primary:            var(--mono-200);
+  --sidebar-primary-foreground: #FAFAFA;
+  --sidebar-accent:             var(--surface-2);
+  --sidebar-accent-foreground:  var(--foreground);
+  --sidebar-border:             var(--border);
+  --sidebar-ring:               var(--ring);
+}
+
+/* ════════════════════════════════════════════════════════════
+   BASE RESET & GLOBAL STYLES
+   ════════════════════════════════════════════════════════════ */
+*, *::before, *::after {
+  border-color: var(--border);
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+html, body {
+  background-color: var(--background);
+  color: var(--foreground);
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11", "kern";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ─── Ambient — pure monochrome radial depth ─────────────── */
+/* No color. Just black fading into slightly lighter black.   */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 70vw 60vh at 50% -10%, rgba(255, 255, 255, 0.025) 0%, transparent 60%),
+    radial-gradient(ellipse 50vw 40vh at -5% 50%,  rgba(255, 255, 255, 0.012) 0%, transparent 55%),
+    radial-gradient(ellipse 60vw 50vh at 105% 80%, rgba(255, 255, 255, 0.010) 0%, transparent 55%);
+}
+
+/* ─── Film grain ─────────────────────────────────────────── */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.80' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.65 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+
+/* Content above ambient layers */
+nav, main, footer, section, header, aside, [data-content] {
+  position: relative;
+  z-index: 2;
+}
+
+/* ─── Typography ─────────────────────────────────────────── */
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  font-variant-ligatures: common-ligatures;
+}
+
+.font-display-medium {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.12;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: "liga" 0, "calt" 1;
+}
+
+/* Text utilities */
+.text-primary   { color: var(--foreground); }
+.text-secondary { color: var(--text-secondary); }
+.text-tertiary  { color: var(--text-tertiary); }
+.text-white     { color: var(--mono-50); }
+.text-silver    { color: var(--mono-300); }
+.text-muted     { color: var(--mono-600); }
+
+/* Selection — white on dark, precise */
+::selection {
+  background: rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+}
+
+/* Focus — clean white ring */
+:focus-visible {
+  outline: 1.5px solid rgba(255, 255, 255, 0.55);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ════════════════════════════════════════════════════════════
+   GLASS SURFACES
+   ════════════════════════════════════════════════════════════ */
+
+/* Primary glass — nav, modals, panels */
+.dark .ef-glass, :root .ef-glass {
+  background: rgba(10, 10, 10, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(28px) saturate(1.1);
+  -webkit-backdrop-filter: blur(28px) saturate(1.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 0 1px rgba(0, 0, 0, 0.5),
+    0 8px 40px rgba(0, 0, 0, 0.55);
+}
+.light .ef-glass {
+  background: rgba(250, 250, 250, 0.82);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  backdrop-filter: blur(28px) saturate(1.1);
+  -webkit-backdrop-filter: blur(28px) saturate(1.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* Soft glass — tooltips, overlays */
+.dark .ef-glass-soft, :root .ef-glass-soft {
+  background: rgba(14, 14, 14, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+}
+.light .ef-glass-soft {
+  background: rgba(240, 240, 240, 0.80);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Inset glass — code blocks, data wells */
+.dark .ef-glass-inset, :root .ef-glass-inset {
+  background: rgba(4, 4, 4, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+.light .ef-glass-inset {
+  background: rgba(210, 210, 210, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow: inset 0 1px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ════════════════════════════════════════════════════════════
+   CARDS
+   ════════════════════════════════════════════════════════════ */
+.dark .ef-card, :root .ef-card {
+  background: var(--surface-0);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 2px 16px rgba(0, 0, 0, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.6);
+  transition:
+    transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.26s ease,
+    box-shadow 0.26s ease;
+}
+.dark .ef-card:hover, :root .ef-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 12px 48px rgba(0, 0, 0, 0.55),
+    0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.light .ef-card {
+  background: var(--surface-0);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 1px 8px rgba(0, 0, 0, 0.06);
+  transition:
+    transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.26s ease,
+    box-shadow 0.26s ease;
+}
+.light .ef-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 0, 0, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 8px 32px rgba(0, 0, 0, 0.09);
+}
+
+/* Featured / highlighted card — white border */
+.dark .ef-card-featured, :root .ef-card-featured {
+  background: var(--surface-0);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 12px 48px rgba(0, 0, 0, 0.5);
+}
+.light .ef-card-featured {
+  background: var(--surface-0);
+  border: 1px solid rgba(0, 0, 0, 0.22);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 4px 20px rgba(0, 0, 0, 0.10);
+}
+
+/* ════════════════════════════════════════════════════════════
+   FORM ELEMENTS
+   ════════════════════════════════════════════════════════════ */
+.ef-input,
+.ef-textarea,
+.ef-select {
+  background: var(--input);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  border-radius: var(--radius-md);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+.ef-input::placeholder,
+.ef-textarea::placeholder {
+  color: var(--text-tertiary);
+}
+.ef-input:hover,
+.ef-textarea:hover,
+.ef-select:hover {
+  border-color: var(--border-hover);
+}
+.ef-input:focus,
+.ef-input:focus-visible,
+.ef-textarea:focus,
+.ef-textarea:focus-visible,
+.ef-select:focus,
+.ef-select:focus-visible {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.07);
+}
+
+/* ════════════════════════════════════════════════════════════
+   BUTTONS
+   ════════════════════════════════════════════════════════════ */
+
+/* Primary — white fill on black */
+.ef-btn-primary {
+  background: var(--foreground);
+  color: #080808;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 2px 12px rgba(0, 0, 0, 0.6);
+  transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  cursor: pointer;
+}
+.ef-btn-primary:hover {
+  background: #FFFFFF;
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 4px 20px rgba(0, 0, 0, 0.5);
+}
+.ef-btn-primary:active {
+  transform: scale(0.98);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Secondary — bordered, transparent */
+.dark .ef-btn-secondary, :root .ef-btn-secondary {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: var(--foreground);
+  border-radius: var(--radius-md);
+  font-weight: 400;
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+  cursor: pointer;
+}
+.dark .ef-btn-secondary:hover, :root .ef-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.20);
+  transform: translateY(-1px);
+}
+.light .ef-btn-secondary {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  color: var(--foreground);
+  border-radius: var(--radius-md);
+  font-weight: 400;
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+  cursor: pointer;
+}
+.light .ef-btn-secondary:hover {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.20);
+  transform: translateY(-1px);
+}
+
+/* Ghost — fully transparent */
+.dark .ef-btn-ghost, :root .ef-btn-ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+  cursor: pointer;
+}
+.dark .ef-btn-ghost:hover, :root .ef-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+.light .ef-btn-ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+  cursor: pointer;
+}
+.light .ef-btn-ghost:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+/* Danger */
+.ef-btn-danger {
+  background: linear-gradient(170deg, #A82020 0%, #701515 100%);
+  color: #FFE8E8;
+  border: 1px solid rgba(180, 40, 40, 0.35);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  box-shadow: 0 2px 12px rgba(160, 30, 30, 0.35);
+  transition: filter 0.16s ease, transform 0.16s ease;
+  cursor: pointer;
+}
+.ef-btn-danger:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+
+/* Icon button */
+.ef-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+  cursor: pointer;
+}
+.ef-btn-icon:hover {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+/* Shared active */
+.dark .ef-btn-secondary:active,
+.light .ef-btn-secondary:active,
+.dark .ef-btn-ghost:active,
+.light .ef-btn-ghost:active {
+  transform: scale(0.98);
+}
+
+/* ════════════════════════════════════════════════════════════
+   BADGES & TAGS
+   ════════════════════════════════════════════════════════════ */
+.ef-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.2em 0.65em;
+  border-radius: 9999px;
+  border: 1px solid currentColor;
+}
+.ef-badge-white {
+  color: var(--mono-200);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.ef-badge-silver {
+  color: var(--mono-400);
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.ef-badge-dim {
+  color: var(--text-tertiary);
+  background: transparent;
+  border-color: var(--border);
+}
+
+/* ════════════════════════════════════════════════════════════
+   DIVIDERS & RULES
+   ════════════════════════════════════════════════════════════ */
+.ef-rule {
+  border: none;
+  height: 1px;
+  background: var(--border);
+}
+
+.ef-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--border) 25%, var(--border) 75%, transparent 100%);
+}
+
+/* White accent rule — for section headers */
+.ef-divider-white {
+  height: 1px;
+  width: 2.5rem;
+  background: linear-gradient(90deg, var(--mono-200) 0%, transparent 100%);
+  border-radius: 1px;
+}
+
+.ef-sep {
+  display: inline-block;
+  width: 1px;
+  height: 1em;
+  background: var(--border);
+  vertical-align: middle;
+  margin: 0 0.5em;
+}
+
+/* ════════════════════════════════════════════════════════════
+   NAVIGATION
+   ════════════════════════════════════════════════════════════ */
+.ef-nav {
+  background: rgba(8, 8, 8, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  backdrop-filter: blur(24px) saturate(1.05);
+  -webkit-backdrop-filter: blur(24px) saturate(1.05);
+}
+.light .ef-nav {
+  background: rgba(250, 250, 250, 0.90);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.ef-nav-link {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: color 0.14s ease;
+}
+.ef-nav-link:hover { color: var(--foreground); }
+.ef-nav-link[aria-current="page"],
+.ef-nav-link.active { color: var(--mono-50); }
+
+/* ════════════════════════════════════════════════════════════
+   HERO & LANDING
+   ════════════════════════════════════════════════════════════ */
+.ef-hero-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: var(--foreground);
+}
+
+/* Monochrome gradient text — white to silver */
+.ef-text-gradient {
+  background: linear-gradient(135deg, #FFFFFF 0%, #C4C4C4 50%, #888888 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.ef-lead {
+  color: var(--text-secondary);
+  font-size: 1.125rem;
+  line-height: 1.65;
+  font-weight: 300;
+  max-width: 52ch;
+}
+
+/* ════════════════════════════════════════════════════════════
+   DECORATIVE
+   ════════════════════════════════════════════════════════════ */
+.ef-fog-bottom {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(8, 8, 8, 0.6) 70%,
+    rgba(8, 8, 8, 0.98) 100%
+  );
+  pointer-events: none;
+}
+
+.dark .ef-spotlight, :root .ef-spotlight {
+  position: absolute;
+  width: 80vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.03) 0%,
+    transparent 65%
+  );
+  pointer-events: none;
+}
+
+/* Status dot — white pulse */
+.ef-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mono-200);
+  box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.3);
+}
+
+/* Grid lines */
+.ef-grid-lines {
+  background-image:
+    linear-gradient(to right,  rgba(255, 255, 255, 0.020) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.016) 1px, transparent 1px);
+  background-size: 8.333% 80px;
+}
+.light .ef-grid-lines {
+  background-image:
+    linear-gradient(to right,  rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+  background-size: 8.333% 80px;
+}
+
+/* ════════════════════════════════════════════════════════════
+   ANIMATIONS
+   ════════════════════════════════════════════════════════════ */
+@keyframes ef-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ef-fade-up { animation: ef-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes ef-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.ef-fade-in { animation: ef-fade-in 0.55s ease both; }
+
+@keyframes ef-scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.ef-scale-in { animation: ef-scale-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes ef-slide-down {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ef-slide-down { animation: ef-slide-down 0.22s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes ef-pulse-white {
+  0%, 100% { box-shadow: 0 0 0 0   rgba(255, 255, 255, 0.35); }
+  50%       { box-shadow: 0 0 0 7px rgba(255, 255, 255, 0);    }
+}
+.ef-pulse-white { animation: ef-pulse-white 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+@keyframes ef-shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position:  200% 0; }
+}
+.ef-shimmer {
+  background: linear-gradient(90deg, var(--surface-1) 0%, var(--surface-3) 45%, var(--surface-1) 100%);
+  background-size: 200% 100%;
+  animation: ef-shimmer 1.5s ease infinite;
+}
+
+.ef-delay-1 { animation-delay: 0.08s; }
+.ef-delay-2 { animation-delay: 0.16s; }
+.ef-delay-3 { animation-delay: 0.28s; }
+.ef-delay-4 { animation-delay: 0.42s; }
+.ef-delay-5 { animation-delay: 0.58s; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   UTILITIES
+   ════════════════════════════════════════════════════════════ */
+.ef-white      { color: var(--mono-100); }
+.ef-silver     { color: var(--mono-400); }
+.ef-dim        { color: var(--text-tertiary); }
+.ef-white-bg   { background: var(--foreground); color: #080808; }
+
+.ef-surface-0 { background: var(--surface-0); }
+.ef-surface-1 { background: var(--surface-1); }
+.ef-surface-2 { background: var(--surface-2); }
+
+.ef-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ef-hover-lift {
+  transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.ef-hover-lift:hover { transform: translateY(-2px); }
+
+/* Underline link — silver */
+.ef-link {
+  color: var(--mono-300);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.14s ease, border-color 0.14s ease;
+}
+.ef-link:hover {
+  color: var(--mono-100);
+  border-bottom-color: rgba(255, 255, 255, 0.30);
+}
+
+/* Inline code token */
+.ef-code {
+  font-family: var(--font-mono);
+  font-size: 0.8125em;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius-sm) - 2px);
+  padding: 0.15em 0.45em;
+  color: var(--mono-200);
+}
+
+/* ════════════════════════════════════════════════════════════
+   SCROLLBAR
+   ════════════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.18);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-corner { background: transparent; }
+* { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.07) transparent; }
+
+/* ════════════════════════════════════════════════════════════
+   LEGACY ALIASES
+   ════════════════════════════════════════════════════════════ */
+.ef-card-hover { transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.ef-card-hover:hover { transform: translateY(-2px); }
+.fc-gradient { background: var(--foreground); color: #080808; }
+.fc-card-hover { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.fc-card-hover:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4); }
+.ef-fog {
+  background-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(8, 8, 8, 0.65) 65%,
+    rgba(8, 8, 8, 0.98) 100%
+  );
+}
+
+/* renamed from amber — keep old class names working */
+.ef-amber      { color: var(--mono-300); }
+.ef-amber-soft { color: var(--text-secondary); }
+.ef-amber-bg   { background: var(--foreground); color: #080808; }
+.ef-lamp       { width: 6px; height: 6px; border-radius: 50%; background: var(--mono-300); box-shadow: 0 0 6px 1px rgba(255,255,255,0.25); }
+.ef-pulse-amber { animation: ef-pulse-white 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+.ef-divider-amber { height: 1px; width: 2.5rem; background: linear-gradient(90deg, var(--mono-300) 0%, transparent 100%); border-radius: 1px; }
+.ef-text-gradient-amber { background: linear-gradient(135deg, #FFFFFF 0%, #C4C4C4 50%, #888888 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }

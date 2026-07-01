@@ -1,0 +1,27 @@
+{
+  "extends": "../../packages/typescript-config/base.json",
+  "compilerOptions": {
+  
+
+"target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "ignoreDeprecations": "5.0",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+  
+
+ 
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false
+  },
+  "include": ["src"],
+  "ts-node": {
+    "swc": true
+  }
+}
