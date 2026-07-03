@@ -18,13 +18,14 @@ function OAuthCallbackInner() {
         {
           google_denied: "Google sign-in was cancelled.",
           invalid_state: "Invalid OAuth state. Please try again.",
+          token_exchange_failed:
+            "Google redirect URI mismatch. Check BASE_URL and Google Cloud Console.",
+          db_error: "Database error during sign-in. Check Render logs and run migrations.",
           oauth_failed: "Google sign-in failed. Please try again.",
           account_disabled: "Your account has been disabled.",
         }[error] ?? "Sign-in failed. Please try again.";
 
-      router.replace(
-        `/auth/login?oauth_error=${encodeURIComponent(msg)}`
-      );
+      router.replace(`/auth/login?oauth_error=${encodeURIComponent(msg)}`);
 
       return;
     }
@@ -54,16 +55,12 @@ function OAuthCallbackInner() {
         {/* Brand */}
         <div className="mb-8 inline-flex flex-col items-center">
           <div className="ef-btn-primary flex h-14 w-14 items-center justify-center rounded-2xl">
-            <span className="font-display text-xl font-semibold">
-              E
-            </span>
+            <span className="font-display text-xl font-semibold">E</span>
           </div>
 
           <div className="mx-auto mt-6 mb-5 h-px w-20 ef-divider" />
 
-          <h1 className="font-display text-4xl tracking-[-0.04em] text-foreground">
-            EdinForm
-          </h1>
+          <h1 className="font-display text-4xl tracking-[-0.04em] text-foreground">EdinForm</h1>
 
           <p className="mt-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
             Secure Authentication
@@ -74,9 +71,7 @@ function OAuthCallbackInner() {
         <div className="ef-card inline-flex items-center gap-3 rounded-2xl px-5 py-4">
           <Loader2 className="h-4 w-4 animate-spin text-[var(--accent-amber)]" />
 
-          <span className="text-sm text-muted-foreground">
-            Signing you in…
-          </span>
+          <span className="text-sm text-muted-foreground">Signing you in…</span>
         </div>
       </div>
     </div>

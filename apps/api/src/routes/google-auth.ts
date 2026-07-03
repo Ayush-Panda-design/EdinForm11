@@ -17,9 +17,24 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID ?? "";
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET ?? "";
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:8000";
 const APP_URL = process.env.APP_URL ?? "http://localhost:3000";
-const REDIRECT_URI = `${BASE_URL}/auth/google/callback`;
+const REDIRECT_URI = `${BASE_URL.replace(/\/$/, "")}/auth/google/callback`;
 const OAUTH_STATE_COOKIE = "google_oauth_state";
-const IS_PRODUCTION = process.env.NODE_ENV === "production";
+const USE_SECURE_COOKIES = BASE_URL.startsWith("https://");
+
+function oauthErrorCode(err: unknown): string {
+  const message = err instanceof Error ? err.message : String(err);
+  if (message.includes("token_exchange_failed")) return "token_exchange_failed";
+  if (
+    message.includes("ECONNREFUSED") ||
+    message.includes("ENOTFOUND") ||
+    message.includes("Connection terminated") ||
+    message.includes("does not exist") ||
+    message.includes("relation")
+  ) {
+    return "db_error";
+  }
+  return "oauth_failed";
+}
 
 function oauthErrorRedirect(res: Response, error: string): void {
   res.redirect(`${APP_URL}/auth/callback?error=${error}`);
@@ -28,7 +43,7 @@ function oauthErrorRedirect(res: Response, error: string): void {
 function setOAuthStateCookie(res: Response, state: string): void {
   res.cookie(OAUTH_STATE_COOKIE, state, {
     httpOnly: true,
-    secure: IS_PRODUCTION,
+    secure: USE_SECURE_COOKIES,
     sameSite: "lax",
     maxAge: 600_000,
     path: "/",
@@ -66,7 +81,11 @@ export function registerGoogleAuthRoutes(router: Router): void {
     const { code, state, error } = req.query as Record<string, string>;
     const cookieState = readOAuthStateCookie(req);
 
-    res.clearCookie(OAUTH_STATE_COOKIE, { path: "/" });
+    res.clearCookie(OAUTH_STATE_COOKIE, {
+      path: "/",
+      secure: USE_SECURE_COOKIES,
+      sameSite: "lax",
+    });
 
     if (error) {
       oauthErrorRedirect(res, "google_denied");
@@ -174,7 +193,8 @@ export function registerGoogleAuthRoutes(router: Router): void {
       res.redirect(`${APP_URL}/auth/callback?token=${session.token}`);
     } catch (err) {
       console.error("[Google OAuth]", err);
-      oauthErrorRedirect(res, "oauth_failed");
+      console.error("[Google OAuth] redirect_uri used:", REDIRECT_URI);
+      oauthErrorRedirect(res, oauthErrorCode(err));
     }
   });
 }
