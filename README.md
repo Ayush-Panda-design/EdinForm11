@@ -401,10 +401,11 @@ Uses Upstash Redis when configured; falls back to in-memory Map automatically.
 3. **Pre-Deploy command** (Settings → Advanced): `pnpm --filter @repo/database db:migrate`
 4. **Start command:** `node apps/api/dist/index.js`
 5. Create a PostgreSQL database in the **same region** as the web service
-6. On the web service, set `DATABASE_URL` to the **Internal Database URL** (Postgres → Connect → Internal), or link the database from the service Environment tab
-7. Add env vars: `PORT=8000`, `BASE_URL`, `APP_URL`
+6. On the web service, link the Postgres database from the Environment tab (or set `DATABASE_URL` to the **External Database URL** if API and Postgres are in different regions)
+7. Optional fallback: `DATABASE_URL_EXTERNAL` when using the Internal URL
+8. Add env vars: `PORT=8000`, `BASE_URL`, `APP_URL`
 
-> Do **not** run `db:migrate` in the Build command — Render builds cannot reach the internal database hostname. Migrations must run in the Pre-Deploy command.
+> **Region mismatch:** Internal hostnames (`dpg-xxxxx-a`) only resolve when API and Postgres are in the **same region**. If OAuth or API calls fail with `ENOTFOUND dpg-xxxxx-a`, use the External Database URL or move both services to the same region.
 
 #### Railway (Alternative)
 

@@ -1,14 +1,13 @@
 import "dotenv/config";
 import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { env } from "./env";
 import * as schema from "./schema";
 import {
   buildPgPoolConfig,
-  normalizeDatabaseUrl,
+  resolveEffectiveDatabaseUrl,
 } from "./connection-config";
 
-const databaseUrl = normalizeDatabaseUrl(env.DATABASE_URL);
+const databaseUrl = resolveEffectiveDatabaseUrl();
 
 const pool = new Pool(buildPgPoolConfig(databaseUrl));
 

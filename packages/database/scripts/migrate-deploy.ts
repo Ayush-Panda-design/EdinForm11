@@ -16,8 +16,8 @@ import {
   buildPgConnectionAttempts,
   describeSsl,
   getRenderDatabaseSetupHint,
-  normalizeDatabaseUrl,
   parsePostgresHost,
+  resolveEffectiveDatabaseUrl,
   type PgSslConfig,
 } from "../connection-config";
 
@@ -38,7 +38,13 @@ if (!rawDatabaseUrl) {
   process.exit(1);
 }
 
-const DATABASE_URL = normalizeDatabaseUrl(rawDatabaseUrl);
+let DATABASE_URL: string;
+try {
+  DATABASE_URL = resolveEffectiveDatabaseUrl(rawDatabaseUrl);
+} catch (error) {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+}
 process.env.DATABASE_URL = DATABASE_URL;
 
 const dbHost = parsePostgresHost(DATABASE_URL);

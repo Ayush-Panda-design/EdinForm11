@@ -2,8 +2,8 @@ import { defineConfig } from "drizzle-kit";
 import dotenv from "dotenv";
 import path from "path";
 import {
-  normalizeDatabaseUrl,
   parsePostgresUrl,
+  resolveEffectiveDatabaseUrl,
   resolvePgSsl,
 } from "./connection-config";
 
@@ -20,7 +20,7 @@ if (!rawDatabaseUrl) {
   );
 }
 
-const databaseUrl = normalizeDatabaseUrl(rawDatabaseUrl);
+const databaseUrl = resolveEffectiveDatabaseUrl(rawDatabaseUrl);
 const pgParams = parsePostgresUrl(databaseUrl);
 
 export default defineConfig({
