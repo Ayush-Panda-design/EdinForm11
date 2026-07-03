@@ -129,6 +129,16 @@ export function getDatabaseUrlCandidates(rawUrl?: string): string[] {
     }
   }
 
+  // On Render, prefer resolvable external hostnames over internal private-network names.
+  if (process.env.RENDER) {
+    return candidates.sort((a, b) => {
+      const aInternal = isRenderInternalHost(parsePostgresHost(a));
+      const bInternal = isRenderInternalHost(parsePostgresHost(b));
+      if (aInternal === bInternal) return 0;
+      return aInternal ? 1 : -1;
+    });
+  }
+
   return candidates;
 }
 
@@ -227,17 +237,17 @@ export function buildPgConnectionAttempts(url: string): PgConnectionAttempt[] {
     return attempts;
   }
 
-  addAttempt(`host ${host} (ssl, discrete params)`, {
-    ...base,
-    host,
-    ssl: RENDER_EXTERNAL_SSL,
-  });
-
   addAttempt(`host ${host} (connectionString + libpq compat)`, {
     connectionString: buildLibpqCompatConnectionString(url),
     ssl: RENDER_EXTERNAL_SSL,
     connectionTimeoutMillis: 30_000,
-    max: 2,
+    max: 10,
+  });
+
+  addAttempt(`host ${host} (ssl, discrete params)`, {
+    ...base,
+    host,
+    ssl: RENDER_EXTERNAL_SSL,
   });
 
   addAttempt(`host ${host} (ssl: true)`, {
