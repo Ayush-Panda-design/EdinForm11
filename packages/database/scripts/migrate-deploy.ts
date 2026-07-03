@@ -13,10 +13,11 @@ import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import pg from "pg";
 import {
+  buildPgConnectionAttempts,
   describeSsl,
-  getSslCandidates,
   normalizeDatabaseUrl,
   parsePostgresHost,
+  type PgSslConfig,
 } from "../connection-config";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -41,6 +42,11 @@ process.env.DATABASE_URL = DATABASE_URL;
 
 const dbHost = parsePostgresHost(DATABASE_URL);
 console.log(`Database host: ${dbHost}`);
+if (dbHost.includes("render.com")) {
+  console.warn(
+    "Using Render external DATABASE_URL. Prefer the Internal Database URL on your API service for faster, more reliable deploys."
+  );
+}
 
 async function tableExists(client: pg.PoolClient, tableName: string) {
   const { rows } = await client.query<{ exists: boolean }>(
@@ -159,29 +165,24 @@ async function baselineIfNeeded(client: pg.PoolClient) {
 }
 
 async function connectWithRetry() {
-  const sslCandidates = getSslCandidates(DATABASE_URL, rawDatabaseUrl);
+  const connectionAttempts = buildPgConnectionAttempts(DATABASE_URL);
   let lastError: unknown;
 
-  for (const ssl of sslCandidates) {
-    console.log(`Trying connection (ssl: ${describeSsl(ssl)})...`);
+  for (const attempt of connectionAttempts) {
+    console.log(`Trying connection (${attempt.label}, ssl: ${describeSsl(attempt.config.ssl as PgSslConfig)})...`);
 
-    const pool = new pg.Pool({
-      connectionString: DATABASE_URL,
-      ssl,
-      connectionTimeoutMillis: 30_000,
-      max: 2,
-    });
+    const pool = new pg.Pool(attempt.config);
 
-    for (let attempt = 1; attempt <= 3; attempt++) {
+    for (let tryNum = 1; tryNum <= 3; tryNum++) {
       try {
         const client = await pool.connect();
-        return { client, pool };
+        return { client, pool, host: attempt.config.host as string };
       } catch (error) {
         lastError = error;
         const message = error instanceof Error ? error.message : String(error);
-        console.warn(`  attempt ${attempt}/3 failed: ${message}`);
-        if (attempt < 3) {
-          await new Promise((resolve) => setTimeout(resolve, attempt * 1500));
+        console.warn(`  attempt ${tryNum}/3 failed: ${message}`);
+        if (tryNum < 3) {
+          await new Promise((resolve) => setTimeout(resolve, tryNum * 1500));
         }
       }
     }
@@ -193,13 +194,17 @@ async function connectWithRetry() {
 }
 
 async function main() {
-  const { client, pool } = await connectWithRetry();
+  const { client, pool, host } = await connectWithRetry();
   try {
     await client.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto"`);
     await baselineIfNeeded(client);
   } finally {
     client.release();
     await pool.end();
+  }
+
+  if (host !== dbHost) {
+    console.log(`Connected via ${host}; drizzle-kit will use the same host.`);
   }
 
   execSync("drizzle-kit migrate", {
