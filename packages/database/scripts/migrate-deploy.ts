@@ -15,6 +15,7 @@ import pg from "pg";
 import {
   buildPgConnectionAttempts,
   describeSsl,
+  getRenderDatabaseSetupHint,
   normalizeDatabaseUrl,
   parsePostgresHost,
   type PgSslConfig,
@@ -42,10 +43,10 @@ process.env.DATABASE_URL = DATABASE_URL;
 
 const dbHost = parsePostgresHost(DATABASE_URL);
 console.log(`Database host: ${dbHost}`);
-if (dbHost.includes("render.com")) {
-  console.warn(
-    "Using Render external DATABASE_URL. Prefer the Internal Database URL on your API service for faster, more reliable deploys."
-  );
+
+const renderHint = getRenderDatabaseSetupHint(rawDatabaseUrl);
+if (renderHint) {
+  console.warn(renderHint);
 }
 
 async function tableExists(client: pg.PoolClient, tableName: string) {
@@ -176,7 +177,7 @@ async function connectWithRetry() {
     for (let tryNum = 1; tryNum <= 3; tryNum++) {
       try {
         const client = await pool.connect();
-        return { client, pool, host: attempt.config.host as string };
+        return { client, pool };
       } catch (error) {
         lastError = error;
         const message = error instanceof Error ? error.message : String(error);
@@ -194,17 +195,13 @@ async function connectWithRetry() {
 }
 
 async function main() {
-  const { client, pool, host } = await connectWithRetry();
+  const { client, pool } = await connectWithRetry();
   try {
     await client.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto"`);
     await baselineIfNeeded(client);
   } finally {
     client.release();
     await pool.end();
-  }
-
-  if (host !== dbHost) {
-    console.log(`Connected via ${host}; drizzle-kit will use the same host.`);
   }
 
   execSync("drizzle-kit migrate", {
@@ -216,5 +213,8 @@ async function main() {
 
 main().catch((err) => {
   console.error("Migration failed:", err);
+  if (renderHint) {
+    console.error("\n" + renderHint);
+  }
   process.exit(1);
 });

@@ -2,7 +2,6 @@ import { defineConfig } from "drizzle-kit";
 import dotenv from "dotenv";
 import path from "path";
 import {
-  getRenderInternalHostCandidate,
   normalizeDatabaseUrl,
   parsePostgresUrl,
   resolvePgSsl,
@@ -23,21 +22,18 @@ if (!rawDatabaseUrl) {
 
 const databaseUrl = normalizeDatabaseUrl(rawDatabaseUrl);
 const pgParams = parsePostgresUrl(databaseUrl);
-const internalHost = getRenderInternalHostCandidate(pgParams.host);
-const host = internalHost ?? pgParams.host;
-const ssl = internalHost ? false : resolvePgSsl(databaseUrl);
 
 export default defineConfig({
   out: "./drizzle",
   schema: "./schema.ts",
   dialect: "postgresql",
   dbCredentials: {
-    host,
+    host: pgParams.host,
     port: pgParams.port,
     user: pgParams.user,
     password: pgParams.password,
     database: pgParams.database,
-    ssl,
+    ssl: resolvePgSsl(databaseUrl),
   },
   migrations: {
     schema: "public",

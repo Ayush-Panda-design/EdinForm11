@@ -6,21 +6,21 @@
 
 ## 🚀 Live Demo
 
-| | |
-|---|---|
-| **🌐 Domain** | [https://edinform.in](https://edinform.in) |
-| **Frontend (Vercel)** | [https://edin-form11-web-ashen.vercel.app](https://edin-form11-web-ashen.vercel.app) |
-| **Backend (Render)** | [https://edinform11-2.onrender.com](https://edinform11-2.onrender.com) |
-| **GitHub Repository** | [Ayush-Panda-design/EdinForm11](https://github.com/Ayush-Panda-design/EdinForm11) |
-| **API Docs (Scalar)** | [https://edinform11-2.onrender.com/docs](https://edinform11-2.onrender.com/docs) |
-| **OpenAPI JSON** | [https://edinform11-2.onrender.com/openapi.json](https://edinform11-2.onrender.com/openapi.json) |
+|                       |                                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------------------ |
+| **🌐 Domain**         | [https://edinform.in](https://edinform.in)                                                       |
+| **Frontend (Vercel)** | [https://edin-form11-web-ashen.vercel.app](https://edin-form11-web-ashen.vercel.app)             |
+| **Backend (Render)**  | [https://edinform11-2.onrender.com](https://edinform11-2.onrender.com)                           |
+| **GitHub Repository** | [Ayush-Panda-design/EdinForm11](https://github.com/Ayush-Panda-design/EdinForm11)                |
+| **API Docs (Scalar)** | [https://edinform11-2.onrender.com/docs](https://edinform11-2.onrender.com/docs)                 |
+| **OpenAPI JSON**      | [https://edinform11-2.onrender.com/openapi.json](https://edinform11-2.onrender.com/openapi.json) |
 
 ### Demo Credentials
 
-| Role | Email | Password |
-|------|-------|----------|
+| Role        | Email                 | Password      |
+| ----------- | --------------------- | ------------- |
 | **Creator** | `creator@example.com` | `password123` |
-| **Admin** | `admin@example.com` | `password123` |
+| **Admin**   | `admin@example.com`   | `password123` |
 
 > The live demo forms were created directly through the EdinForm product itself — not injected via a seed script — demonstrating that the full form creation flow works end-to-end. The forms and their responses are visible immediately at [edinform.in/explore](https://edinform.in/explore) without any setup.
 
@@ -47,44 +47,44 @@
 
 ### Bonus Features (All Implemented ✅)
 
-| Feature | Description |
-|---|---|
-| **Form Preview** | Preview before publishing in multi-step or classic mode |
-| **Conditional Logic** | Show/hide fields based on answers to earlier questions |
-| **QR Code Sharing** | QR modal with copy link + download PNG for every published form |
-| **Multi-step Typeform UI** | Full Typeform-style experience: dark theme, cover screen, keyboard nav, per-step validation |
-| **Response Limits** | Set max responses — enforced server-side at both fetch and submit |
-| **Form Expiry** | Set close date/time — enforced server-side, returns 403 after expiry |
-| **CSV Export** | Download all responses for any form as CSV |
-| **Recharts Analytics** | Charts and analytics dashboards per form and creator-wide |
-| **Custom Slugs** | Auto-generated, human-readable slugs for each form |
-| **QR PNG Download** | Download QR code as PNG for print/social |
-| **Explore Page** | Browse all public forms with search and pagination |
-| **Form Duplication** | Clone any form instantly |
-| **Form Archiving** | Archive forms you no longer need |
-| **Progress Bar** | Progress indicator in multi-step public form |
-| **Completion Time Tracking** | Time-to-submit sent with every response |
+| Feature                      | Description                                                                                 |
+| ---------------------------- | ------------------------------------------------------------------------------------------- |
+| **Form Preview**             | Preview before publishing in multi-step or classic mode                                     |
+| **Conditional Logic**        | Show/hide fields based on answers to earlier questions                                      |
+| **QR Code Sharing**          | QR modal with copy link + download PNG for every published form                             |
+| **Multi-step Typeform UI**   | Full Typeform-style experience: dark theme, cover screen, keyboard nav, per-step validation |
+| **Response Limits**          | Set max responses — enforced server-side at both fetch and submit                           |
+| **Form Expiry**              | Set close date/time — enforced server-side, returns 403 after expiry                        |
+| **CSV Export**               | Download all responses for any form as CSV                                                  |
+| **Recharts Analytics**       | Charts and analytics dashboards per form and creator-wide                                   |
+| **Custom Slugs**             | Auto-generated, human-readable slugs for each form                                          |
+| **QR PNG Download**          | Download QR code as PNG for print/social                                                    |
+| **Explore Page**             | Browse all public forms with search and pagination                                          |
+| **Form Duplication**         | Clone any form instantly                                                                    |
+| **Form Archiving**           | Archive forms you no longer need                                                            |
+| **Progress Bar**             | Progress indicator in multi-step public form                                                |
+| **Completion Time Tracking** | Time-to-submit sent with every response                                                     |
 
 ---
 
 ## 📦 Tech Stack
 
-| Layer | Tech |
-|-------|------|
-| Monorepo | **Turborepo** + pnpm workspaces |
-| Frontend | **Next.js 16** (App Router) + TailwindCSS v4 |
-| Backend | **Express** + **tRPC** (type-safe RPC + REST) |
-| Validation | **Zod** (everywhere) |
-| Database ORM | **Drizzle ORM** + PostgreSQL |
-| API Docs | **Scalar** (OpenAPI 3.1) |
-| Auth | JWT bearer tokens |
-| Rate Limiting | Upstash Redis (falls back to in-memory) |
-| Email | Resend (falls back to console.log) |
-| Charts | Recharts |
-| QR Codes | qrcode.react |
-| Frontend Hosting | Vercel |
-| Backend Hosting | Render |
-| Domain | edinform.in |
+| Layer            | Tech                                          |
+| ---------------- | --------------------------------------------- |
+| Monorepo         | **Turborepo** + pnpm workspaces               |
+| Frontend         | **Next.js 16** (App Router) + TailwindCSS v4  |
+| Backend          | **Express** + **tRPC** (type-safe RPC + REST) |
+| Validation       | **Zod** (everywhere)                          |
+| Database ORM     | **Drizzle ORM** + PostgreSQL                  |
+| API Docs         | **Scalar** (OpenAPI 3.1)                      |
+| Auth             | JWT bearer tokens                             |
+| Rate Limiting    | Upstash Redis (falls back to in-memory)       |
+| Email            | Resend (falls back to console.log)            |
+| Charts           | Recharts                                      |
+| QR Codes         | qrcode.react                                  |
+| Frontend Hosting | Vercel                                        |
+| Backend Hosting  | Render                                        |
+| Domain           | edinform.in                                   |
 
 ---
 
@@ -142,7 +142,7 @@ edinform/
 ### Prerequisites
 
 - **Node.js** ≥ 18
-- **pnpm** ≥ 9  →  `npm install -g pnpm`
+- **pnpm** ≥ 9 → `npm install -g pnpm`
 - **Docker** (for PostgreSQL)
 
 ### 1. Clone & Install
@@ -218,11 +218,11 @@ pnpm dev
 
 Three themed sample forms were built live through the EdinForm creator dashboard — not injected via a seed script — proving that the full form-building flow works end-to-end. They are publicly visible at [edinform.in/explore](https://edinform.in/explore).
 
-| # | Form | Theme |
-|---|------|-------|
-| 1 | **NPS — Europe Trip Overall** | Overall travel satisfaction and NPS rating |
-| 2 | **FR France** | Country-specific travel experience and highlights |
-| 3 | **GB Scotland** | Destination feedback — nature, landmarks, and culture |
+| #   | Form                          | Theme                                                 |
+| --- | ----------------------------- | ----------------------------------------------------- |
+| 1   | **NPS — Europe Trip Overall** | Overall travel satisfaction and NPS rating            |
+| 2   | **FR France**                 | Country-specific travel experience and highlights     |
+| 3   | **GB Scotland**               | Destination feedback — nature, landmarks, and culture |
 
 All three forms are live, accepting responses, and have analytics populated from real submissions.
 
@@ -247,72 +247,72 @@ Full interactive docs at **[https://edinform11-2.onrender.com/docs](https://edin
 
 ### Auth
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | `/api/auth/sign-up` | ❌ | Register |
-| POST | `/api/auth/sign-in` | ❌ | Login |
-| POST | `/api/auth/sign-out` | ✅ | Logout |
-| GET  | `/api/auth/me` | ✅ | Current user |
+| Method | Path                 | Auth | Description  |
+| ------ | -------------------- | ---- | ------------ |
+| POST   | `/api/auth/sign-up`  | ❌   | Register     |
+| POST   | `/api/auth/sign-in`  | ❌   | Login        |
+| POST   | `/api/auth/sign-out` | ✅   | Logout       |
+| GET    | `/api/auth/me`       | ✅   | Current user |
 
 ### Forms
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | `/api/forms` | ✅ | Create form |
-| GET  | `/api/forms` | ✅ | List my forms |
-| GET  | `/api/forms/:id` | ✅ | Get form + fields |
-| PATCH | `/api/forms/:id` | ✅ | Update (title, settings, **maxResponses**, **closeAfterDate**) |
-| DELETE | `/api/forms/:id` | ✅ | Delete |
-| POST | `/api/forms/:id/publish` | ✅ | Publish (public / unlisted) |
-| POST | `/api/forms/:id/unpublish` | ✅ | Unpublish |
-| POST | `/api/forms/:id/duplicate` | ✅ | Duplicate |
+| Method | Path                       | Auth | Description                                                    |
+| ------ | -------------------------- | ---- | -------------------------------------------------------------- |
+| POST   | `/api/forms`               | ✅   | Create form                                                    |
+| GET    | `/api/forms`               | ✅   | List my forms                                                  |
+| GET    | `/api/forms/:id`           | ✅   | Get form + fields                                              |
+| PATCH  | `/api/forms/:id`           | ✅   | Update (title, settings, **maxResponses**, **closeAfterDate**) |
+| DELETE | `/api/forms/:id`           | ✅   | Delete                                                         |
+| POST   | `/api/forms/:id/publish`   | ✅   | Publish (public / unlisted)                                    |
+| POST   | `/api/forms/:id/unpublish` | ✅   | Unpublish                                                      |
+| POST   | `/api/forms/:id/duplicate` | ✅   | Duplicate                                                      |
 
 ### Fields
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | `/api/forms/:formId/fields` | ✅ | Add field (with **conditionalLogic**) |
-| PATCH | `/api/forms/:formId/fields/:fieldId` | ✅ | Update field |
-| DELETE | `/api/forms/:formId/fields/:fieldId` | ✅ | Delete field |
-| POST | `/api/forms/:formId/fields/reorder` | ✅ | Reorder fields |
+| Method | Path                                 | Auth | Description                           |
+| ------ | ------------------------------------ | ---- | ------------------------------------- |
+| POST   | `/api/forms/:formId/fields`          | ✅   | Add field (with **conditionalLogic**) |
+| PATCH  | `/api/forms/:formId/fields/:fieldId` | ✅   | Update field                          |
+| DELETE | `/api/forms/:formId/fields/:fieldId` | ✅   | Delete field                          |
+| POST   | `/api/forms/:formId/fields/reorder`  | ✅   | Reorder fields                        |
 
 ### Responses (Public)
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | `/api/responses/submit` | ❌ | Submit response (enforces limits/expiry) |
-| GET  | `/api/responses` | ✅ | List responses (paginated) |
-| GET  | `/api/responses/export/csv` | ✅ | Export CSV |
+| Method | Path                        | Auth | Description                              |
+| ------ | --------------------------- | ---- | ---------------------------------------- |
+| POST   | `/api/responses/submit`     | ❌   | Submit response (enforces limits/expiry) |
+| GET    | `/api/responses`            | ✅   | List responses (paginated)               |
+| GET    | `/api/responses/export/csv` | ✅   | Export CSV                               |
 
 ### Public
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | `/api/public/forms/:slug` | ❌ | Get published form (checks expiry + limit) |
-| GET | `/api/public/explore` | ❌ | Browse public forms with search + pagination |
+| Method | Path                      | Auth | Description                                  |
+| ------ | ------------------------- | ---- | -------------------------------------------- |
+| GET    | `/api/public/forms/:slug` | ❌   | Get published form (checks expiry + limit)   |
+| GET    | `/api/public/explore`     | ❌   | Browse public forms with search + pagination |
 
 ### Analytics
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | `/api/analytics/form?formId=...` | ✅ | Per-form analytics |
-| GET | `/api/analytics/dashboard` | ✅ | Creator-wide overview |
+| Method | Path                             | Auth | Description           |
+| ------ | -------------------------------- | ---- | --------------------- |
+| GET    | `/api/analytics/form?formId=...` | ✅   | Per-form analytics    |
+| GET    | `/api/analytics/dashboard`       | ✅   | Creator-wide overview |
 
 ---
 
 ## 📋 Field Types
 
-| Type | Description |
-|------|-------------|
-| `short_text` | Single-line text |
-| `long_text` | Multi-line textarea |
-| `email` | Email with format validation |
-| `number` | Numeric input |
-| `single_select` | Radio — pick one |
-| `multi_select` | Checkboxes — pick many |
-| `checkbox` | Yes/No toggle |
-| `date` | Date picker |
-| `rating` | 1–5 star rating |
+| Type            | Description                  |
+| --------------- | ---------------------------- |
+| `short_text`    | Single-line text             |
+| `long_text`     | Multi-line textarea          |
+| `email`         | Email with format validation |
+| `number`        | Numeric input                |
+| `single_select` | Radio — pick one             |
+| `multi_select`  | Checkboxes — pick many       |
+| `checkbox`      | Yes/No toggle                |
+| `date`          | Date picker                  |
+| `rating`        | 1–5 star rating              |
 
 ---
 
@@ -332,13 +332,13 @@ Each field can have one `showIf` rule:
 }
 ```
 
-| Operator | Description |
-|----------|-------------|
-| `equals` | Answer exactly matches value |
-| `not_equals` | Answer does not match value |
-| `contains` | Answer contains value (text fields) |
-| `is_empty` | No answer given |
-| `is_not_empty` | Any answer given |
+| Operator       | Description                         |
+| -------------- | ----------------------------------- |
+| `equals`       | Answer exactly matches value        |
+| `not_equals`   | Answer does not match value         |
+| `contains`     | Answer contains value (text fields) |
+| `is_empty`     | No answer given                     |
+| `is_not_empty` | Any answer given                    |
 
 Conditional logic is evaluated in real time during form filling. Hidden fields are skipped cleanly on submission.
 
@@ -346,31 +346,31 @@ Conditional logic is evaluated in real time during form filling. Hidden fields a
 
 ## 👁️ Form Visibility
 
-| Mode | Behaviour |
-|------|-----------|
-| `unpublished` | Draft — not accepting responses |
-| `public` | Listed on `/explore` — anyone can fill |
-| `unlisted` | Only accessible via direct link `/forms/:slug` |
+| Mode          | Behaviour                                      |
+| ------------- | ---------------------------------------------- |
+| `unpublished` | Draft — not accepting responses                |
+| `public`      | Listed on `/explore` — anyone can fill         |
+| `unlisted`    | Only accessible via direct link `/forms/:slug` |
 
 ---
 
 ## ⏰ Response Limits & Expiry
 
-| Setting | Field | Enforcement |
-|---------|-------|-------------|
-| Response limit | `maxResponses` (int) | Blocks after N submissions at both fetch and submit |
-| Close date | `closeAfterDate` (datetime) | Returns 403 after this date/time at both fetch and submit |
+| Setting        | Field                       | Enforcement                                               |
+| -------------- | --------------------------- | --------------------------------------------------------- |
+| Response limit | `maxResponses` (int)        | Blocks after N submissions at both fetch and submit       |
+| Close date     | `closeAfterDate` (datetime) | Returns 403 after this date/time at both fetch and submit |
 
 ---
 
 ## 🛡️ Rate Limiting
 
-| Endpoint | Limit |
-|----------|-------|
+| Endpoint                 | Limit              |
+| ------------------------ | ------------------ |
 | `POST /responses/submit` | 10 / 15 min per IP |
-| `POST /auth/sign-in` | 10 / 15 min per IP |
-| `POST /auth/sign-up` | 5 / 15 min per IP |
-| `/public/*` | 60 / min per IP |
+| `POST /auth/sign-in`     | 10 / 15 min per IP |
+| `POST /auth/sign-up`     | 5 / 15 min per IP  |
+| `/public/*`              | 60 / min per IP    |
 
 Uses Upstash Redis when configured; falls back to in-memory Map automatically.
 
@@ -380,11 +380,11 @@ Uses Upstash Redis when configured; falls back to in-memory Map automatically.
 
 ### Current Deployment Stack
 
-| Service | Platform | URL |
-|---------|----------|-----|
-| Frontend | Vercel | [edin-form11-web-ashen.vercel.app](https://edin-form11-web-ashen.vercel.app) |
-| Backend | Render | [edinform11-2.onrender.com](https://edinform11-2.onrender.com) |
-| Domain | edinform.in | [https://edinform.in](https://edinform.in) |
+| Service  | Platform    | URL                                                                          |
+| -------- | ----------- | ---------------------------------------------------------------------------- |
+| Frontend | Vercel      | [edin-form11-web-ashen.vercel.app](https://edin-form11-web-ashen.vercel.app) |
+| Backend  | Render      | [edinform11-2.onrender.com](https://edinform11-2.onrender.com)               |
+| Domain   | edinform.in | [https://edinform.in](https://edinform.in)                                   |
 
 ### Deploy Your Own
 
@@ -397,10 +397,14 @@ Uses Upstash Redis when configured; falls back to in-memory Map automatically.
 #### Render (Backend)
 
 1. New Web Service → connect GitHub repo
-2. Build command: `pnpm install && pnpm build`
-3. Start command: `node apps/api/dist/index.js`
-4. Add env vars: `DATABASE_URL`, `PORT=8000`, `BASE_URL`, `APP_URL`
-5. Add a PostgreSQL database from the Render dashboard
+2. **Build command:** `pnpm install --no-frozen-lockfile --prod=false && pnpm --filter @repo/api build`
+3. **Pre-Deploy command** (Settings → Advanced): `pnpm --filter @repo/database db:migrate`
+4. **Start command:** `node apps/api/dist/index.js`
+5. Create a PostgreSQL database in the **same region** as the web service
+6. On the web service, set `DATABASE_URL` to the **Internal Database URL** (Postgres → Connect → Internal), or link the database from the service Environment tab
+7. Add env vars: `PORT=8000`, `BASE_URL`, `APP_URL`
+
+> Do **not** run `db:migrate` in the Build command — Render builds cannot reach the internal database hostname. Migrations must run in the Pre-Deploy command.
 
 #### Railway (Alternative)
 
