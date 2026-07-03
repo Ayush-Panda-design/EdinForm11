@@ -34,7 +34,7 @@ export function FieldRenderer({ field, value, onChange, readOnly }: FieldRendere
   const arrVal = Array.isArray(value) ? value : [];
 
   const inputClass =
-    "w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-stone-500 dark:focus:border-stone-400 transition-colors disabled:opacity-60 disabled:cursor-not-allowed";
+    "w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 dark:focus:border-cyan-400 transition-colors disabled:opacity-60 disabled:cursor-not-allowed";
 
   if (field.type === "short_text") {
     return (
@@ -106,7 +106,7 @@ export function FieldRenderer({ field, value, onChange, readOnly }: FieldRendere
         <div
           className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors ${
             strVal === "true"
-              ? "bg-stone-900 border-stone-900"
+              ? "bg-cyan-600 border-cyan-600"
               : "border-gray-300 dark:border-gray-600 group-hover:border-stone-400"
           }`}
           onClick={() => !readOnly && onChange(strVal === "true" ? "false" : "true")}
@@ -165,16 +165,16 @@ export function FieldRenderer({ field, value, onChange, readOnly }: FieldRendere
             key={opt.value}
             className={`flex items-center gap-3 cursor-pointer p-4 rounded-xl border-2 transition-all ${
               strVal === opt.value
-                ? "border-stone-500 bg-stone-50 dark:bg-stone-900/20"
-                : "border-gray-200 dark:border-gray-700 hover:border-stone-300 dark:hover:border-stone-900"
+                ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-950/20"
+                : "border-gray-200 dark:border-gray-700 hover:border-cyan-300 dark:hover:border-cyan-600"
             } ${readOnly ? "cursor-not-allowed" : ""}`}
           >
             <div
               className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                strVal === opt.value ? "border-stone-500" : "border-gray-300 dark:border-gray-600"
+                strVal === opt.value ? "border-cyan-500" : "border-gray-300 dark:border-gray-600"
               }`}
             >
-              {strVal === opt.value && <div className="w-2.5 h-2.5 rounded-full bg-stone-500" />}
+              {strVal === opt.value && <div className="w-2.5 h-2.5 rounded-full bg-cyan-500" />}
             </div>
             <input
               type="radio"
@@ -201,15 +201,13 @@ export function FieldRenderer({ field, value, onChange, readOnly }: FieldRendere
               key={opt.value}
               className={`flex items-center gap-3 cursor-pointer p-4 rounded-xl border-2 transition-all ${
                 selected
-                  ? "border-stone-500 bg-stone-50 dark:bg-stone-900/20"
-                  : "border-gray-200 dark:border-gray-700 hover:border-stone-300 dark:hover:border-stone-900"
+                  ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-950/20"
+                  : "border-gray-200 dark:border-gray-700 hover:border-cyan-300 dark:hover:border-cyan-600"
               } ${readOnly ? "cursor-not-allowed" : ""}`}
             >
               <div
                 className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                  selected
-                    ? "bg-stone-900 border-stone-900"
-                    : "border-gray-300 dark:border-gray-600"
+                  selected ? "bg-cyan-600 border-cyan-600" : "border-gray-300 dark:border-gray-600"
                 }`}
                 onClick={() => {
                   if (readOnly) return;

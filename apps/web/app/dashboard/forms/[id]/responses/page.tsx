@@ -3,69 +3,38 @@
 import { use, useState } from "react";
 import Link from "next/link";
 import { trpc } from "~/trpc/client";
-import {
-  ArrowLeft,
-  Download,
-  Loader2,
-  User,
-  Clock,
-} from "lucide-react";
+import { ArrowLeft, Download, Loader2, User, Clock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
-export default function ResponsesPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function ResponsesPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [page, setPage] = useState(1);
 
   const { data: form } = trpc.forms.getById.useQuery({ id });
 
-  const { data: responsesData, isLoading } =
-    trpc.responses.list.useQuery({
-      formId: id,
-      page,
-      limit: 20,
-    });
+  const { data: responsesData, isLoading } = trpc.responses.list.useQuery({
+    formId: id,
+    page,
+    limit: 20,
+  });
 
   const exportCsv = () => {
     if (!responsesData?.data || !form?.fields) return;
 
-    const headers = [
-      "Submitted At",
-      "Respondent",
-      ...form.fields.map((f) => f.label),
-    ];
+    const headers = ["Submitted At", "Respondent", ...form.fields.map((f) => f.label)];
 
     const rows = responsesData.data.map((r) => [
-      r.submittedAt
-        ? new Date(r.submittedAt).toLocaleString()
-        : "",
-      r.respondentName ||
-        r.respondentEmail ||
-        "Anonymous",
+      r.submittedAt ? new Date(r.submittedAt).toLocaleString() : "",
+      r.respondentName || r.respondentEmail || "Anonymous",
       ...form.fields.map((f) => {
-        const ans = r.answers.find(
-          (a) => a.fieldId === f.id
-        );
+        const ans = r.answers.find((a) => a.fieldId === f.id);
 
-        return (
-          ans?.valueArray?.join(", ") ||
-          ans?.value ||
-          ""
-        );
+        return ans?.valueArray?.join(", ") || ans?.value || "";
       }),
     ]);
 
     const csv = [headers, ...rows]
-      .map((r) =>
-        r
-          .map((c) =>
-            `"${String(c).replace(/"/g, '""')}"`
-          )
-          .join(",")
-      )
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
       .join("\n");
 
     const blob = new Blob([csv], {
@@ -76,8 +45,7 @@ export default function ResponsesPage({
 
     const a = document.createElement("a");
     a.href = url;
-    a.download =
-      (form.title || "responses") + ".csv";
+    a.download = (form.title || "responses") + ".csv";
 
     a.click();
   };
@@ -87,7 +55,7 @@ export default function ResponsesPage({
       {/* Ambient cinematic glow */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-violet-500/10 blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
       </div>
 
       {/* Header */}
@@ -130,20 +98,15 @@ export default function ResponsesPage({
             <User className="w-7 h-7 text-muted-foreground" />
           </div>
 
-          <h2 className="text-lg font-semibold text-foreground mb-2">
-            No responses yet
-          </h2>
+          <h2 className="text-lg font-semibold text-foreground mb-2">No responses yet</h2>
 
           <p className="text-muted-foreground max-w-md mx-auto">
-            Share your form to start collecting responses
-            from users.
+            Share your form to start collecting responses from users.
           </p>
 
           {form?.visibility !== "unpublished" && (
             <div className="mt-5 inline-flex items-center rounded-xl border border-border/60 bg-background/60 backdrop-blur-md px-4 py-2 text-sm text-muted-foreground">
-              {typeof window !== "undefined"
-                ? window.location.origin
-                : ""}
+              {typeof window !== "undefined" ? window.location.origin : ""}
               /forms/{form?.slug}
             </div>
           )}
@@ -167,18 +130,13 @@ export default function ResponsesPage({
 
                   <div className="min-w-0">
                     <p className="font-medium text-foreground truncate">
-                      {response.respondentName ||
-                        response.respondentEmail ||
-                        "Anonymous"}
+                      {response.respondentName || response.respondentEmail || "Anonymous"}
                     </p>
 
                     {response.submittedAt && (
                       <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-1">
                         <Clock className="w-3.5 h-3.5" />
-                        {formatDistanceToNow(
-                          new Date(response.submittedAt)
-                        )}{" "}
-                        ago
+                        {formatDistanceToNow(new Date(response.submittedAt))} ago
                       </p>
                     )}
                   </div>
@@ -192,32 +150,20 @@ export default function ResponsesPage({
               {/* Answers */}
               <div className="space-y-4">
                 {response.answers.map((ans) => {
-                  const field = form?.fields.find(
-                    (f) => f.id === ans.fieldId
-                  );
+                  const field = form?.fields.find((f) => f.id === ans.fieldId);
 
                   if (!field) return null;
 
-                  const value =
-                    ans.valueArray?.join(", ") ||
-                    ans.value ||
-                    "";
+                  const value = ans.valueArray?.join(", ") || ans.value || "";
 
                   return (
-                    <div
-                      key={ans.id}
-                      className="pl-4 border-l-2 border-border/60"
-                    >
+                    <div key={ans.id} className="pl-4 border-l-2 border-border/60">
                       <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
                         {field.label}
                       </p>
 
                       <p className="text-sm leading-relaxed text-foreground">
-                        {value || (
-                          <span className="italic text-muted-foreground">
-                            —
-                          </span>
-                        )}
+                        {value || <span className="italic text-muted-foreground">—</span>}
                       </p>
                     </div>
                   );
@@ -227,44 +173,29 @@ export default function ResponsesPage({
           ))}
 
           {/* Pagination */}
-          {responsesData &&
-            responsesData.totalPages > 1 && (
-              <div className="flex items-center justify-center gap-3 pt-6">
-                <button
-                  onClick={() =>
-                    setPage((p) =>
-                      Math.max(1, p - 1)
-                    )
-                  }
-                  disabled={page === 1}
-                  className="px-4 py-2 rounded-xl border border-border/60 bg-secondary/50 hover:bg-secondary text-sm text-foreground disabled:opacity-40 transition-colors"
-                >
-                  Previous
-                </button>
+          {responsesData && responsesData.totalPages > 1 && (
+            <div className="flex items-center justify-center gap-3 pt-6">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-4 py-2 rounded-xl border border-border/60 bg-secondary/50 hover:bg-secondary text-sm text-foreground disabled:opacity-40 transition-colors"
+              >
+                Previous
+              </button>
 
-                <div className="px-4 py-2 rounded-xl bg-background/60 border border-border/50 backdrop-blur-md text-sm text-muted-foreground">
-                  Page {page} of{" "}
-                  {responsesData.totalPages}
-                </div>
-
-                <button
-                  onClick={() =>
-                    setPage((p) =>
-                      Math.min(
-                        responsesData.totalPages,
-                        p + 1
-                      )
-                    )
-                  }
-                  disabled={
-                    page === responsesData.totalPages
-                  }
-                  className="px-4 py-2 rounded-xl border border-border/60 bg-secondary/50 hover:bg-secondary text-sm text-foreground disabled:opacity-40 transition-colors"
-                >
-                  Next
-                </button>
+              <div className="px-4 py-2 rounded-xl bg-background/60 border border-border/50 backdrop-blur-md text-sm text-muted-foreground">
+                Page {page} of {responsesData.totalPages}
               </div>
-            )}
+
+              <button
+                onClick={() => setPage((p) => Math.min(responsesData.totalPages, p + 1))}
+                disabled={page === responsesData.totalPages}
+                className="px-4 py-2 rounded-xl border border-border/60 bg-secondary/50 hover:bg-secondary text-sm text-foreground disabled:opacity-40 transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

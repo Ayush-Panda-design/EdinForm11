@@ -175,9 +175,9 @@ export default function DashboardPage() {
         <span
           className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium uppercase"
           style={{
-            background: "rgba(200,155,99,0.12)",
-            color: "#C89B63",
-            border: "1px solid rgba(200,155,99,0.25)",
+            background: "rgba(34,211,238,0.12)",
+            color: "#22d3ee",
+            border: "1px solid rgba(34,211,238,0.25)",
             letterSpacing: "0.1em",
           }}
         >
@@ -368,9 +368,9 @@ export default function DashboardPage() {
                     style={{
                       marginLeft: "10px",
                       fontSize: "11px",
-                      background: "rgba(200,155,99,0.12)",
-                      color: "#C89B63",
-                      border: "1px solid rgba(200,155,99,0.2)",
+                      background: "rgba(34,211,238,0.12)",
+                      color: "#22d3ee",
+                      border: "1px solid rgba(34,211,238,0.2)",
                       borderRadius: "20px",
                       padding: "1px 8px",
                     }}
@@ -391,7 +391,7 @@ export default function DashboardPage() {
               <div style={{ padding: "4rem", display: "flex", justifyContent: "center" }}>
                 <Loader2
                   className="animate-spin"
-                  style={{ width: 20, height: 20, color: "#C89B63" }}
+                  style={{ width: 20, height: 20, color: "#22d3ee" }}
                 />
               </div>
             )}
@@ -403,15 +403,15 @@ export default function DashboardPage() {
                     width: 56,
                     height: 56,
                     borderRadius: "50%",
-                    background: "rgba(200,155,99,0.08)",
-                    border: "1px solid rgba(200,155,99,0.15)",
+                    background: "rgba(34,211,238,0.08)",
+                    border: "1px solid rgba(34,211,238,0.15)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     margin: "0 auto 1.25rem",
                   }}
                 >
-                  <FileText style={{ width: 22, height: 22, color: "#C89B63" }} />
+                  <FileText style={{ width: 22, height: 22, color: "#22d3ee" }} />
                 </div>
                 <p
                   style={{
@@ -466,15 +466,15 @@ export default function DashboardPage() {
                         width: 36,
                         height: 36,
                         borderRadius: "10px",
-                        background: "rgba(200,155,99,0.08)",
-                        border: "1px solid rgba(200,155,99,0.12)",
+                        background: "rgba(34,211,238,0.08)",
+                        border: "1px solid rgba(34,211,238,0.12)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         flexShrink: 0,
                       }}
                     >
-                      <FileText style={{ width: 15, height: 15, color: "#C89B63" }} />
+                      <FileText style={{ width: 15, height: 15, color: "#22d3ee" }} />
                     </div>
 
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -501,7 +501,7 @@ export default function DashboardPage() {
                             maxWidth: "240px",
                           }}
                           onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLElement).style.color = "#C89B63";
+                            (e.currentTarget as HTMLElement).style.color = "#22d3ee";
                           }}
                           onMouseLeave={(e) => {
                             (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
@@ -656,15 +656,15 @@ export default function DashboardPage() {
                       width: 30,
                       height: 30,
                       borderRadius: "8px",
-                      background: "rgba(200,155,99,0.08)",
-                      border: "1px solid rgba(200,155,99,0.12)",
+                      background: "rgba(34,211,238,0.08)",
+                      border: "1px solid rgba(34,211,238,0.12)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       flexShrink: 0,
                     }}
                   >
-                    <Icon style={{ width: 13, height: 13, color: "#C89B63" }} />
+                    <Icon style={{ width: 13, height: 13, color: "#22d3ee" }} />
                   </div>
                   <div>
                     <p
@@ -776,7 +776,7 @@ export default function DashboardPage() {
                 alignItems: "center",
                 gap: "6px",
                 fontSize: "12px",
-                color: "#C89B63",
+                color: "#22d3ee",
                 textDecoration: "none",
               }}
               onMouseEnter={(e) => {
@@ -875,15 +875,15 @@ export default function DashboardPage() {
                   width: 36,
                   height: 36,
                   borderRadius: "10px",
-                  background: "rgba(200,155,99,0.08)",
-                  border: "1px solid rgba(200,155,99,0.12)",
+                  background: "rgba(34,211,238,0.08)",
+                  border: "1px solid rgba(34,211,238,0.12)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   marginBottom: "1rem",
                 }}
               >
-                <f.icon style={{ width: 16, height: 16, color: "#C89B63" }} />
+                <f.icon style={{ width: 16, height: 16, color: "#22d3ee" }} />
               </div>
               <p
                 style={{
@@ -990,7 +990,7 @@ export default function DashboardPage() {
                         (e.currentTarget as HTMLElement).style.background = "transparent";
                       }}
                     >
-                      <Layers style={{ width: 14, height: 14, color: "#C89B63", flexShrink: 0 }} />
+                      <Layers style={{ width: 14, height: 14, color: "#22d3ee", flexShrink: 0 }} />
                       Edit &amp; Preview
                     </Link>
 
@@ -1113,7 +1113,7 @@ function MenuBtn({
       }}
     >
       <Icon
-        style={{ width: 14, height: 14, color: danger ? "#e05555" : "#C89B63", flexShrink: 0 }}
+        style={{ width: 14, height: 14, color: danger ? "#e05555" : "#22d3ee", flexShrink: 0 }}
       />
       {label}
     </button>
@@ -1156,7 +1156,7 @@ function MenuAnchor({
         (e.currentTarget as HTMLElement).style.background = "transparent";
       }}
     >
-      <Icon style={{ width: 14, height: 14, color: "#C89B63", flexShrink: 0 }} />
+      <Icon style={{ width: 14, height: 14, color: "#22d3ee", flexShrink: 0 }} />
       {label}
     </a>
   );

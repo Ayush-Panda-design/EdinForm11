@@ -10,6 +10,7 @@ import { trpc } from "~/trpc/client";
 import { setToken, isAuthenticated } from "~/lib/auth";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { AuthShell } from "~/components/layout/auth-shell";
 import { env } from "~/env.js";
 
 const schema = z.object({
@@ -21,8 +22,7 @@ type FormData = z.infer<typeof schema>;
 
 const GOOGLE_AUTH_URL =
   (env.NEXT_PUBLIC_API_BASE_URL ??
-    (env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace("/trpc", "")) +
-  "/auth/google";
+    (env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace("/trpc", "")) + "/auth/google";
 
 function LoginForm() {
   const [showPass, setShowPass] = useState(false);
@@ -60,183 +60,96 @@ function LoginForm() {
   });
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background px-4">
-      {/* Atmospheric overlays */}
-      <div className="pointer-events-none absolute inset-0 z-0">
-        <div className="absolute left-[-10%] top-[-10%] h-[520px] w-[520px] rounded-full bg-[rgba(200,155,99,0.10)] blur-3xl" />
-        <div className="absolute bottom-[-15%] right-[-10%] h-[600px] w-[600px] rounded-full bg-[rgba(139,115,85,0.08)] blur-3xl" />
-      </div>
+    <AuthShell
+      title="Welcome back"
+      subtitle="Sign in to your workspace and continue building forms."
+    >
+      <div className="space-y-6">
+        <a
+          href={GOOGLE_AUTH_URL}
+          className="ef-btn-ghost flex w-full items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm font-medium"
+        >
+          <GoogleIcon />
+          Continue with Google
+        </a>
 
-      <div className="relative z-10 flex min-h-screen items-center justify-center">
-        <div className="w-full max-w-md">
-          {/* Brand */}
-          <div className="mb-10 text-center">
-            <Link
-              href="/"
-              className="group inline-flex items-center gap-3"
-            >
-              <div className="ef-btn-primary flex h-11 w-11 items-center justify-center rounded-2xl">
-                <span className="font-display text-lg font-semibold">
-                  E
-                </span>
-              </div>
-
-              <div className="text-left">
-                <p className="font-display text-2xl tracking-tight text-foreground">
-                  EdinForm
-                </p>
-                <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                  Cinematic Forms
-                </p>
-              </div>
-            </Link>
-
-            <div className="mx-auto mt-8 mb-6 h-px w-24 ef-divider" />
-
-            <h1 className="font-display text-5xl leading-none tracking-[-0.04em] text-foreground">
-              Welcome back
-            </h1>
-
-            <p className="mt-3 text-sm text-muted-foreground">
-              Return to your workspace and continue building elegant forms.
-            </p>
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full ef-divider" />
           </div>
-
-          {/* Card */}
-          <div className="ef-card relative overflow-hidden rounded-[28px] p-8 md:p-10">
-            {/* cinematic glow */}
-            <div className="pointer-events-none absolute inset-0">
-              <div className="absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 rounded-full bg-[rgba(200,155,99,0.08)] blur-3xl" />
-            </div>
-
-            <div className="relative z-10 space-y-6">
-              {/* Google */}
-              <a
-                href={GOOGLE_AUTH_URL}
-                className="ef-btn-ghost flex w-full items-center justify-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium"
-              >
-                <GoogleIcon />
-                Continue with Google
-              </a>
-
-              {/* Divider */}
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full ef-divider" />
-                </div>
-
-                <div className="relative flex justify-center">
-                  <span className="bg-card px-4 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
-                    or continue
-                  </span>
-                </div>
-              </div>
-
-              {/* Form */}
-              <form
-                onSubmit={handleSubmit((d) => signIn.mutate(d))}
-                className="space-y-5"
-              >
-                {/* Email */}
-                <div className="space-y-2">
-                  <label className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                    Email Address
-                  </label>
-
-                  <input
-                    {...register("email")}
-                    type="email"
-                    placeholder="you@example.com"
-                    className="ef-input w-full rounded-2xl px-4 py-3.5 text-sm"
-                  />
-
-                  {errors.email && (
-                    <p className="text-xs text-[#C97B7B]">
-                      Valid email required
-                    </p>
-                  )}
-                </div>
-
-                {/* Password */}
-                <div className="space-y-2">
-                  <label className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                    Password
-                  </label>
-
-                  <div className="relative">
-                    <input
-                      {...register("password")}
-                      type={showPass ? "text" : "password"}
-                      placeholder="••••••••"
-                      className="ef-input w-full rounded-2xl px-4 py-3.5 pr-12 text-sm"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => setShowPass(!showPass)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      {showPass ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-
-                  {errors.password && (
-                    <p className="text-xs text-[#C97B7B]">
-                      Password required
-                    </p>
-                  )}
-                </div>
-
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={signIn.isPending}
-                  className="ef-btn-primary flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-medium disabled:opacity-50"
-                >
-                  {signIn.isPending && (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  )}
-
-                  Sign in
-                </button>
-
-                {/* Forgot */}
-                <div className="pt-1 text-center">
-                  <Link
-                    href="/auth/forgot-password"
-                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    Forgot your password?
-                  </Link>
-                </div>
-              </form>
-
-              {/* Footer */}
-              <div className="pt-2 text-center text-sm text-muted-foreground">
-                No account yet?{" "}
-                <Link
-                  href="/auth/register"
-                  className="font-medium text-[var(--accent-amber)] transition-colors hover:opacity-80"
-                >
-                  Create one
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom atmosphere */}
-          <div className="mt-8 flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            <span>Secure authentication</span>
-            <span className="h-1 w-1 rounded-full bg-[var(--accent-amber)]" />
-            <span>Encrypted session</span>
+          <div className="relative flex justify-center">
+            <span className="bg-card px-3 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              or email
+            </span>
           </div>
         </div>
+
+        <form onSubmit={handleSubmit((d) => signIn.mutate(d))} className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
+              Email
+            </label>
+            <input
+              {...register("email")}
+              type="email"
+              placeholder="you@example.com"
+              className="ef-input w-full rounded-xl px-4 py-3 text-sm"
+            />
+            {errors.email && <p className="text-xs text-red-400">Valid email required</p>}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                {...register("password")}
+                type={showPass ? "text" : "password"}
+                placeholder="••••••••"
+                className="ef-input w-full rounded-xl px-4 py-3 pr-12 text-sm"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPass(!showPass)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {errors.password && <p className="text-xs text-red-400">Password required</p>}
+          </div>
+
+          <button
+            type="submit"
+            disabled={signIn.isPending}
+            className="ef-btn-primary flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm disabled:opacity-50"
+          >
+            {signIn.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            Sign in
+          </button>
+
+          <div className="text-center">
+            <Link
+              href="/auth/forgot-password"
+              className="text-sm text-muted-foreground hover:text-[var(--signal-accent)]"
+            >
+              Forgot password?
+            </Link>
+          </div>
+        </form>
+
+        <p className="text-center text-sm text-muted-foreground">
+          No account?{" "}
+          <Link
+            href="/auth/register"
+            className="font-medium text-[var(--signal-accent)] hover:opacity-80"
+          >
+            Create one
+          </Link>
+        </p>
       </div>
-    </div>
+    </AuthShell>
   );
 }
 

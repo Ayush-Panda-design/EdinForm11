@@ -4,9 +4,10 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * EdinForm — Cinematic Edinburgh.
- * Theme: rainy gothic city, warm amber lamps, matte stone, dark academia.
- * Type: Cormorant Garamond display + Inter body + JetBrains Mono.
+ * EdinForm — Signal design system.
+ * Dark: true black + cyan/emerald accents (Linear / Supabase inspired).
+ * Light: sage-mint field — not plain white.
+ * Type: Inter + JetBrains Mono (display uses sans in app shell).
  */
 
 @theme inline {
@@ -55,104 +56,111 @@
 }
 
 /* ════════════════════════════════════════
-   DARK THEME (default / cinematic)
+   DARK THEME — true black + signal cyan
    ════════════════════════════════════════ */
 :root, .dark {
   --radius: 0.75rem;
 
-  --accent-amber: #C89B63;
-  --accent-amber-soft: #8B7355;
+  --signal-accent: #22d3ee;
+  --signal-accent-dim: #0891b2;
+  --signal-success: #34d399;
+  --signal-warn: #fb923c;
+  --accent-amber: var(--signal-accent);
+  --accent-amber-soft: #67e8f9;
 
-  --background: #0B0B0C;
-  --foreground: #F5F1EA;
+  --background: #000000;
+  --foreground: #fafafa;
 
-  --card: #121214;
-  --card-foreground: #F5F1EA;
-  --popover: #15151A;
-  --popover-foreground: #F5F1EA;
+  --card: #0a0a0a;
+  --card-foreground: #fafafa;
+  --popover: #0d0d0d;
+  --popover-foreground: #fafafa;
 
-  --primary: #C89B63;
-  --primary-foreground: #0B0B0C;
+  --primary: #22d3ee;
+  --primary-foreground: #000000;
 
-  --secondary: #1A1A1D;
-  --secondary-foreground: #F5F1EA;
+  --secondary: #141414;
+  --secondary-foreground: #fafafa;
 
-  --muted: #1A1A1D;
-  --muted-foreground: #A1A1AA;
+  --muted: #141414;
+  --muted-foreground: #a1a1aa;
 
-  --accent: #1F1F23;
-  --accent-foreground: #F5F1EA;
+  --accent: #181818;
+  --accent-foreground: #fafafa;
 
-  --destructive: #8C4B4B;
+  --destructive: #f87171;
 
-  --border: rgba(255, 255, 255, 0.07);
-  --input: rgba(255, 255, 255, 0.06);
-  --ring: rgba(200, 155, 99, 0.45);
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.05);
+  --ring: rgba(34, 211, 238, 0.45);
 
-  --chart-1: #C89B63;
-  --chart-2: #8B7355;
-  --chart-3: #58745C;
-  --chart-4: #A1A1AA;
-  --chart-5: #6E6E76;
+  --chart-1: #22d3ee;
+  --chart-2: #34d399;
+  --chart-3: #fbbf24;
+  --chart-4: #a1a1aa;
+  --chart-5: #52525b;
 
-  --sidebar: #0F0F11;
-  --sidebar-foreground: #F5F1EA;
-  --sidebar-primary: #C89B63;
-  --sidebar-primary-foreground: #0B0B0C;
-  --sidebar-accent: #1A1A1D;
-  --sidebar-accent-foreground: #F5F1EA;
-  --sidebar-border: rgba(255, 255, 255, 0.07);
-  --sidebar-ring: rgba(200, 155, 99, 0.45);
+  --sidebar: #050505;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #22d3ee;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #141414;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: rgba(34, 211, 238, 0.45);
 }
 
 /* ════════════════════════════════════════
-   LIGHT THEME — warm parchment, not white
-   Edinburgh daylight through stone windows.
+   LIGHT THEME — sage mint field (not white)
    ════════════════════════════════════════ */
 .light {
-  --accent-amber: #A07040;
-  --accent-amber-soft: #C4975A;
+  --signal-accent: #0891b2;
+  --signal-accent-dim: #0e7490;
+  --signal-success: #059669;
+  --signal-warn: #ea580c;
+  --accent-amber: var(--signal-accent);
+  --accent-amber-soft: #22d3ee;
 
-  --background: #F7F3EC;       /* warm parchment, not pure white */
-  --foreground: #1C1A16;       /* near-black ink */
+  --background: #eef4f2;
+  --foreground: #0f172a;
 
-  --card: #EDE8DF;             /* slightly darker parchment for cards */
-  --card-foreground: #1C1A16;
-  --popover: #EAE5DB;
-  --popover-foreground: #1C1A16;
+  --card: #f7faf9;
+  --card-foreground: #0f172a;
+  --popover: #f0f5f3;
+  --popover-foreground: #0f172a;
 
-  --primary: #A07040;          /* deeper amber for light bg contrast */
-  --primary-foreground: #FDFAF5;
+  --primary: #0891b2;
+  --primary-foreground: #ffffff;
 
-  --secondary: #E3DDD4;
-  --secondary-foreground: #1C1A16;
+  --secondary: #e2ebe8;
+  --secondary-foreground: #0f172a;
 
-  --muted: #E3DDD4;
-  --muted-foreground: #6B6560; /* warm gray, readable on parchment */
+  --muted: #e2ebe8;
+  --muted-foreground: #64748b;
 
-  --accent: #DDD8CE;
-  --accent-foreground: #1C1A16;
+  --accent: #dce8e4;
+  --accent-foreground: #0f172a;
 
-  --destructive: #A03030;
+  --destructive: #dc2626;
 
-  --border: rgba(28, 26, 22, 0.10);
-  --input: rgba(28, 26, 22, 0.06);
-  --ring: rgba(160, 112, 64, 0.40);
+  --border: rgba(15, 23, 42, 0.10);
+  --input: rgba(15, 23, 42, 0.05);
+  --ring: rgba(8, 145, 178, 0.35);
 
-  --chart-1: #A07040;
-  --chart-2: #C4975A;
-  --chart-3: #4A6E50;
-  --chart-4: #6B6560;
-  --chart-5: #8A8480;
+  --chart-1: #0891b2;
+  --chart-2: #059669;
+  --chart-3: #d97706;
+  --chart-4: #64748b;
+  --chart-5: #94a3b8;
 
-  --sidebar: #EDE8DF;
-  --sidebar-foreground: #1C1A16;
-  --sidebar-primary: #A07040;
-  --sidebar-primary-foreground: #FDFAF5;
-  --sidebar-accent: #E3DDD4;
-  --sidebar-accent-foreground: #1C1A16;
-  --sidebar-border: rgba(28, 26, 22, 0.10);
-  --sidebar-ring: rgba(160, 112, 64, 0.40);
+  --sidebar: #f0f5f3;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #0891b2;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e2ebe8;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: rgba(15, 23, 42, 0.10);
+  --sidebar-ring: rgba(8, 145, 178, 0.35);
 }
 
 /* ════════════════════════════════════════
@@ -174,7 +182,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Cinematic ambient background — adapts to theme */
+/* Ambient background — cyan glow on dark, soft mint on light */
 body::before {
   content: "";
   position: fixed;
@@ -182,9 +190,16 @@ body::before {
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(900px 600px at 12% -10%, rgba(200, 155, 99, 0.10), transparent 60%),
-    radial-gradient(1100px 800px at 110% 10%, rgba(139, 115, 85, 0.07), transparent 65%),
-    radial-gradient(700px 500px at 50% 110%, rgba(200, 155, 99, 0.06), transparent 60%);
+    radial-gradient(900px 600px at 12% -10%, rgba(34, 211, 238, 0.06), transparent 60%),
+    radial-gradient(1100px 800px at 110% 10%, rgba(52, 211, 153, 0.04), transparent 65%),
+    radial-gradient(700px 500px at 50% 110%, rgba(34, 211, 238, 0.03), transparent 60%);
+}
+.light body::before,
+html.light body::before {
+  background:
+    radial-gradient(900px 600px at 12% -10%, rgba(8, 145, 178, 0.08), transparent 60%),
+    radial-gradient(1100px 800px at 110% 10%, rgba(5, 150, 105, 0.06), transparent 65%),
+    radial-gradient(700px 500px at 50% 110%, rgba(8, 145, 178, 0.04), transparent 60%);
 }
 
 /* Subtle film grain overlay */
@@ -209,7 +224,7 @@ nav, main, footer, section, header, aside { position: relative; z-index: 2; }
 }
 .font-mono { font-family: var(--font-mono); }
 
-::selection { background: var(--accent-amber); color: var(--primary-foreground); }
+::selection { background: var(--signal-accent); color: var(--primary-foreground); }
 
 /* ════════════════════════════════════════
    EdinForm utility classes
@@ -258,28 +273,33 @@ nav, main, footer, section, header, aside { position: relative; z-index: 2; }
 .ef-input::placeholder { color: var(--muted-foreground); opacity: 0.7; }
 .ef-input:focus, .ef-input:focus-visible {
   outline: none;
-  border-color: rgba(200, 155, 99, 0.55);
+  border-color: rgba(34, 211, 238, 0.5);
   box-shadow: 0 0 0 3px var(--ring);
   background: var(--input);
 }
+.light .ef-input:focus, .light .ef-input:focus-visible {
+  border-color: rgba(8, 145, 178, 0.5);
+}
 
-/* Primary button — same amber gradient on both themes */
+/* Primary button — cyan signal */
 .ef-btn-primary {
-  background: linear-gradient(180deg, #D6A872 0%, #B7884F 100%);
-  color: #14110C;
-  border: 1px solid rgba(200, 155, 99, 0.45);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 235, 200, 0.35),
-    0 8px 24px -8px rgba(200, 155, 99, 0.45);
+  background: linear-gradient(135deg, var(--signal-accent) 0%, var(--signal-success) 100%);
+  color: #000;
+  border: none;
+  box-shadow: 0 4px 20px rgba(34, 211, 238, 0.25);
   transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.01em;
 }
+.light .ef-btn-primary {
+  background: linear-gradient(135deg, #0891b2 0%, #059669 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(8, 145, 178, 0.25);
+}
 .ef-btn-primary:hover {
-  filter: brightness(1.06);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 235, 200, 0.45),
-    0 12px 36px -10px rgba(200, 155, 99, 0.6);
+  filter: brightness(1.05);
+  box-shadow: 0 8px 28px rgba(34, 211, 238, 0.35);
+  transform: translateY(-1px);
 }
 
 /* Ghost button — adapts via CSS vars */
@@ -315,19 +335,19 @@ nav, main, footer, section, header, aside { position: relative; z-index: 2; }
   transition: transform .35s ease, border-color .35s ease, box-shadow .35s ease;
 }
 .dark .ef-card:hover, :root .ef-card:hover {
-  border-color: rgba(200, 155, 99, 0.25);
-  box-shadow: 0 16px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(200, 155, 99, 0.05);
+  border-color: rgba(34, 211, 238, 0.22);
+  box-shadow: 0 16px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(34, 211, 238, 0.06);
 }
 .light .ef-card {
-  background: rgba(237, 232, 223, 0.90);
-  border: 1px solid rgba(28, 26, 22, 0.09);
-  box-shadow: 0 2px 16px rgba(28, 26, 22, 0.06);
+  background: rgba(247, 250, 249, 0.95);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 2px 16px rgba(15, 23, 42, 0.05);
   border-radius: 1rem;
   transition: transform .35s ease, border-color .35s ease, box-shadow .35s ease;
 }
 .light .ef-card:hover {
-  border-color: rgba(160, 112, 64, 0.30);
-  box-shadow: 0 8px 32px rgba(28, 26, 22, 0.10), 0 0 0 1px rgba(160, 112, 64, 0.08);
+  border-color: rgba(8, 145, 178, 0.28);
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(8, 145, 178, 0.06);
 }
 
 .ef-fog {
@@ -372,18 +392,18 @@ nav, main, footer, section, header, aside { position: relative; z-index: 2; }
 .ef-delay-3 { animation-delay: .35s; }
 .ef-delay-4 { animation-delay: .5s; }
 
-@keyframes ef-pulse-amber {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 155, 99, 0.35); }
-  50%      { box-shadow: 0 0 0 10px rgba(200, 155, 99, 0); }
+@keyframes ef-pulse-signal {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.35); }
+  50%      { box-shadow: 0 0 0 10px rgba(34, 211, 238, 0); }
 }
-.ef-pulse-amber { animation: ef-pulse-amber 2.4s ease-in-out infinite; }
+.ef-pulse-amber, .ef-pulse-signal { animation: ef-pulse-signal 2.4s ease-in-out infinite; }
 
 /* Legacy aliases */
 .fc-gradient { background: var(--accent-amber); color: var(--primary-foreground); }
 .fc-card-hover { transition: transform .25s ease, box-shadow .25s ease; }
 .fc-card-hover:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25); }
 .ef-card-hover { transition: transform .25s ease, border-color .25s ease; }
-.ef-card-hover:hover { transform: translateY(-2px); border-color: rgba(200, 155, 99, 0.3); }
+.ef-card-hover:hover { transform: translateY(-2px); border-color: rgba(34, 211, 238, 0.28); }
 .ef-grid-lines {
   background-image: linear-gradient(to right, var(--border) 1px, transparent 1px);
   background-size: 8.3333% 100%;
@@ -399,7 +419,7 @@ nav, main, footer, section, header, aside { position: relative; z-index: 2; }
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(200, 155, 99, 0.4);
+  background: rgba(34, 211, 238, 0.35);
   background-clip: padding-box;
 }
 
@@ -541,7 +561,6 @@ html.light .marketing-page,
   --neon-cyan: #00e5c2;
   --neon-green: #39ff88;
   --neon-red: #ff4d6d;
-  --neon-purple: #a78bfa;
   --accent-amber: var(--neon-cyan);
   background: var(--dash-bg);
   color: #f4f4f5;
@@ -637,7 +656,7 @@ html.light .marketing-page,
 .dashboard-shell main {
   background:
     radial-gradient(ellipse 80% 50% at 0% 0%, rgba(0, 229, 194, 0.04), transparent 50%),
-    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(167, 139, 250, 0.04), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(52, 211, 153, 0.03), transparent 50%),
     var(--dash-bg);
 }
 
@@ -645,4 +664,53 @@ html.light .marketing-page,
   background: var(--dash-card);
   border: 1px solid var(--dash-border);
   backdrop-filter: none;
+}
+
+/* ════════════════════════════════════════
+   AUTH — split layout hero
+   ════════════════════════════════════════ */
+.app-auth {
+  background: var(--background);
+}
+.app-auth .auth-hero {
+  background: #000;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+.app-auth .auth-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 20% 30%, rgba(34, 211, 238, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 80% 80%, rgba(52, 211, 153, 0.08), transparent 50%),
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: auto, auto, 48px 48px, 48px 48px;
+  pointer-events: none;
+}
+.app-auth .auth-hero > * { position: relative; z-index: 1; }
+
+/* ════════════════════════════════════════
+   PUBLIC PAGES — explore, pricing
+   ════════════════════════════════════════ */
+.app-public {
+  background: var(--background);
+  min-height: 100vh;
+}
+.app-public .public-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.app-public .public-card:hover {
+  border-color: rgba(34, 211, 238, 0.25);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+.light .app-public .public-card:hover {
+  border-color: rgba(8, 145, 178, 0.28);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 }

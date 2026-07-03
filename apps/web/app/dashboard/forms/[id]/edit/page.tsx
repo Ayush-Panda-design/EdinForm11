@@ -451,9 +451,9 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                 disabled={publishMutation.isPending}
                 className="flex items-center gap-1 text-xs px-3 py-2 rounded-xl transition-colors"
                 style={{
-                  border: "1px solid rgba(200,155,99,0.35)",
+                  border: "1px solid rgba(34,211,238,0.35)",
                   color: "var(--accent-amber)",
-                  background: "rgba(200,155,99,0.08)",
+                  background: "rgba(34,211,238,0.08)",
                 }}
               >
                 <Lock className="w-3.5 h-3.5" /> Unlisted
@@ -493,7 +493,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
               : form.visibility === "public"
                 ? "rgba(88,116,92,0.18)"
                 : form.visibility === "unlisted"
-                  ? "rgba(200,155,99,0.12)"
+                  ? "rgba(34,211,238,0.12)"
                   : "var(--muted)",
           border: `1px solid ${
             isExpired || isLimitReached
@@ -501,7 +501,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
               : form.visibility === "public"
                 ? "rgba(88,116,92,0.35)"
                 : form.visibility === "unlisted"
-                  ? "rgba(200,155,99,0.30)"
+                  ? "rgba(34,211,238,0.30)"
                   : "var(--border)"
           }`,
           color:
@@ -644,8 +644,8 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                         key={field.id}
                         className="rounded-lg transition-colors"
                         style={{
-                          border: `1px solid ${isOpen ? "rgba(200,155,99,0.25)" : "transparent"}`,
-                          background: isOpen ? "rgba(200,155,99,0.04)" : "transparent",
+                          border: `1px solid ${isOpen ? "rgba(34,211,238,0.25)" : "transparent"}`,
+                          background: isOpen ? "rgba(34,211,238,0.04)" : "transparent",
                         }}
                         onMouseEnter={(e) => {
                           if (!isOpen)
@@ -660,7 +660,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                           <div
                             className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
                             style={{
-                              background: "rgba(200,155,99,0.12)",
+                              background: "rgba(34,211,238,0.12)",
                               color: "var(--accent-amber)",
                             }}
                           >
@@ -686,7 +686,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                                 <span
                                   className="text-xs px-1.5 py-0.5 rounded font-medium flex items-center gap-0.5"
                                   style={{
-                                    background: "rgba(200,155,99,0.12)",
+                                    background: "rgba(34,211,238,0.12)",
                                     color: "var(--accent-amber)",
                                   }}
                                 >
@@ -696,7 +696,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                               {isFieldLocked && (
                                 <span
                                   className="text-xs px-1.5 py-0.5 rounded font-medium flex items-center gap-0.5"
-                                  style={{ background: "rgba(200,155,99,0.18)", color: "#D4A96A" }}
+                                  style={{ background: "rgba(34,211,238,0.18)", color: "#22d3ee" }}
                                 >
                                   <LockIcon className="w-3 h-3" /> locked
                                 </span>
@@ -716,7 +716,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                               style={{ color: "var(--muted-foreground)" }}
                               onMouseEnter={(e) => {
                                 e.currentTarget.style.color = "var(--accent-amber)";
-                                e.currentTarget.style.background = "rgba(200,155,99,0.1)";
+                                e.currentTarget.style.background = "rgba(34,211,238,0.1)";
                               }}
                               onMouseLeave={(e) => {
                                 e.currentTarget.style.color = "var(--muted-foreground)";
@@ -740,15 +740,15 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                               title={isFieldLocked ? "Unlock field" : "Lock field"}
                               className="p-1.5 rounded-lg transition-colors"
                               style={{
-                                color: isFieldLocked ? "#D4A96A" : "var(--muted-foreground)",
+                                color: isFieldLocked ? "#22d3ee" : "var(--muted-foreground)",
                               }}
                               onMouseEnter={(e) => {
-                                e.currentTarget.style.color = "#D4A96A";
-                                e.currentTarget.style.background = "rgba(200,155,99,0.12)";
+                                e.currentTarget.style.color = "#22d3ee";
+                                e.currentTarget.style.background = "rgba(34,211,238,0.12)";
                               }}
                               onMouseLeave={(e) => {
                                 e.currentTarget.style.color = isFieldLocked
-                                  ? "#D4A96A"
+                                  ? "#22d3ee"
                                   : "var(--muted-foreground)";
                                 e.currentTarget.style.background = "transparent";
                               }}
@@ -810,7 +810,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
           {addingField ? (
             <div
               className="ef-card p-5 space-y-4"
-              style={{ border: "1px solid rgba(200,155,99,0.3)" }}
+              style={{ border: "1px solid rgba(34,211,238,0.3)" }}
             >
               <h3
                 className="font-semibold flex items-center gap-2"
@@ -830,8 +830,8 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                     style={
                       newFieldType === t.value
                         ? {
-                            border: "1px solid rgba(200,155,99,0.5)",
-                            background: "rgba(200,155,99,0.10)",
+                            border: "1px solid rgba(34,211,238,0.5)",
+                            background: "rgba(34,211,238,0.10)",
                             color: "var(--accent-amber)",
                           }
                         : {
@@ -971,7 +971,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
               className="w-full py-4 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all"
               style={{ border: "2px dashed var(--border)", color: "var(--muted-foreground)" }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "rgba(200,155,99,0.45)";
+                e.currentTarget.style.borderColor = "rgba(34,211,238,0.45)";
                 e.currentTarget.style.color = "var(--accent-amber)";
               }}
               onMouseLeave={(e) => {
@@ -1026,13 +1026,13 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                       selectedThemeId === null
                         ? "2px solid var(--accent-amber)"
                         : "1px solid var(--border)",
-                    background: selectedThemeId === null ? "rgba(200,155,99,0.08)" : "transparent",
+                    background: selectedThemeId === null ? "rgba(34,211,238,0.08)" : "transparent",
                   }}
                 >
                   <span style={{ color: "var(--foreground)" }}>Default</span>
                   <div className="flex gap-1 mt-2">
-                    <span className="w-4 h-4 rounded-full bg-blue-500" />
-                    <span className="w-4 h-4 rounded-full bg-violet-500" />
+                    <span className="w-4 h-4 rounded-full bg-cyan-500" />
+                    <span className="w-4 h-4 rounded-full bg-emerald-500" />
                   </div>
                 </button>
                 {themes.map((theme) => {
@@ -1051,7 +1051,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                         border: isSelected
                           ? "2px solid var(--accent-amber)"
                           : "1px solid var(--border)",
-                        background: isSelected ? "rgba(200,155,99,0.08)" : "transparent",
+                        background: isSelected ? "rgba(34,211,238,0.08)" : "transparent",
                       }}
                     >
                       <span className="font-medium" style={{ color: "var(--foreground)" }}>
@@ -1245,8 +1245,8 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
             <div
               className="p-4 rounded-xl text-sm"
               style={{
-                background: "rgba(200,155,99,0.10)",
-                border: "1px solid rgba(200,155,99,0.25)",
+                background: "rgba(34,211,238,0.10)",
+                border: "1px solid rgba(34,211,238,0.25)",
                 color: "var(--accent-amber)",
               }}
             >
@@ -1329,7 +1329,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                         <div
                           className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
                           style={{
-                            background: "rgba(200,155,99,0.12)",
+                            background: "rgba(34,211,238,0.12)",
                             color: "var(--accent-amber)",
                           }}
                         >
@@ -1357,7 +1357,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                             style={{ color: "var(--muted-foreground)" }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.color = "var(--accent-amber)";
-                              e.currentTarget.style.background = "rgba(200,155,99,0.1)";
+                              e.currentTarget.style.background = "rgba(34,211,238,0.1)";
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.color = "var(--muted-foreground)";

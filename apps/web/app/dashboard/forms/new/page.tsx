@@ -21,15 +21,17 @@ const schema = z.object({
 
 /* ── shared label style ── */
 const Label = ({ children }: { children: React.ReactNode }) => (
-  <p style={{
-    fontSize: "11px",
-    textTransform: "uppercase",
-    letterSpacing: "0.24em",
-    color: "var(--muted-foreground)",
-    fontFamily: "'Inter', sans-serif",
-    marginBottom: "8px",
-    fontWeight: 500,
-  }}>
+  <p
+    style={{
+      fontSize: "11px",
+      textTransform: "uppercase",
+      letterSpacing: "0.24em",
+      color: "var(--muted-foreground)",
+      fontFamily: "'Inter', sans-serif",
+      marginBottom: "8px",
+      fontWeight: 500,
+    }}
+  >
     {children}
   </p>
 );
@@ -69,17 +71,19 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
           : "rgba(255,255,255,0.08)",
       }}
     >
-      <span style={{
-        position: "absolute",
-        top: "3px",
-        left: checked ? "21px" : "3px",
-        width: 18,
-        height: 18,
-        borderRadius: "50%",
-        background: checked ? "#14110C" : "rgba(255,255,255,0.5)",
-        transition: "left 0.22s cubic-bezier(.4,0,.2,1)",
-        display: "block",
-      }} />
+      <span
+        style={{
+          position: "absolute",
+          top: "3px",
+          left: checked ? "21px" : "3px",
+          width: 18,
+          height: 18,
+          borderRadius: "50%",
+          background: checked ? "#14110C" : "rgba(255,255,255,0.5)",
+          transition: "left 0.22s cubic-bezier(.4,0,.2,1)",
+          display: "block",
+        }}
+      />
     </button>
   );
 }
@@ -87,13 +91,15 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 /* ── section card ── */
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{
-      background: "rgba(255,255,255,0.025)",
-      border: "1px solid rgba(255,255,255,0.07)",
-      borderRadius: "16px",
-      padding: "1.75rem",
-      backdropFilter: "blur(24px)",
-    }}>
+    <div
+      style={{
+        background: "rgba(255,255,255,0.025)",
+        border: "1px solid rgba(255,255,255,0.07)",
+        borderRadius: "16px",
+        padding: "1.75rem",
+        backdropFilter: "blur(24px)",
+      }}
+    >
       {children}
     </div>
   );
@@ -101,27 +107,27 @@ function Card({ children }: { children: React.ReactNode }) {
 
 export default function NewFormPage() {
   const router = useRouter();
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm({
     resolver: zodResolver(schema),
     defaultValues: { allowMultipleResponses: true, showProgressBar: true },
   });
 
- const allowMultiple = watch("allowMultipleResponses") ?? true;
-const showProgress = watch("showProgressBar") ?? true;
+  const allowMultiple = watch("allowMultipleResponses") ?? true;
+  const showProgress = watch("showProgressBar") ?? true;
 
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const focusStyle = (name: string): React.CSSProperties => ({
     ...inputStyle,
-    borderColor: focusedField === name
-      ? "rgba(200,155,99,0.55)"
-      : "rgba(255,255,255,0.09)",
-    boxShadow: focusedField === name
-      ? "0 0 0 3px rgba(200,155,99,0.10)"
-      : "none",
-    background: focusedField === name
-      ? "rgba(255,255,255,0.06)"
-      : "rgba(255,255,255,0.04)",
+    borderColor: focusedField === name ? "rgba(34,211,238,0.55)" : "rgba(255,255,255,0.09)",
+    boxShadow: focusedField === name ? "0 0 0 3px rgba(34,211,238,0.10)" : "none",
+    background: focusedField === name ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.04)",
   });
 
   const createForm = trpc.forms.create.useMutation({
@@ -134,25 +140,32 @@ const showProgress = watch("showProgressBar") ?? true;
 
   return (
     <div style={{ maxWidth: "640px", fontFamily: "'Inter', sans-serif" }}>
-
       {/* ── Header ── */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", marginBottom: "2.5rem" }}>
+      <div
+        style={{ display: "flex", alignItems: "flex-start", gap: "12px", marginBottom: "2.5rem" }}
+      >
         <Link
           href="/dashboard"
           style={{
-            width: 36, height: 36, borderRadius: "10px", flexShrink: 0,
-            display: "flex", alignItems: "center", justifyContent: "center",
+            width: 36,
+            height: 36,
+            borderRadius: "10px",
+            flexShrink: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             background: "rgba(255,255,255,0.03)",
             border: "1px solid rgba(255,255,255,0.08)",
             color: "var(--muted-foreground)",
-            textDecoration: "none", marginTop: "2px",
+            textDecoration: "none",
+            marginTop: "2px",
             transition: "background .2s, color .2s",
           }}
-          onMouseEnter={e => {
+          onMouseEnter={(e) => {
             (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)";
             (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
           }}
-          onMouseLeave={e => {
+          onMouseLeave={(e) => {
             (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)";
             (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
           }}
@@ -160,21 +173,27 @@ const showProgress = watch("showProgressBar") ?? true;
           <ArrowLeft style={{ width: 15, height: 15 }} />
         </Link>
         <div>
-          <p style={{
-            fontSize: "11px", textTransform: "uppercase",
-            letterSpacing: "0.28em", color: "var(--muted-foreground)",
-            marginBottom: "5px",
-          }}>
+          <p
+            style={{
+              fontSize: "11px",
+              textTransform: "uppercase",
+              letterSpacing: "0.28em",
+              color: "var(--muted-foreground)",
+              marginBottom: "5px",
+            }}
+          >
             New Form
           </p>
-          <h1 style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontSize: "clamp(1.6rem, 3vw, 2.2rem)",
-            fontWeight: 400,
-            color: "var(--foreground)",
-            lineHeight: 1.1,
-          }}>
-            Draft a new <em style={{ color: "#C89B63" }}>form</em>.
+          <h1
+            style={{
+              fontFamily: "'Cormorant Garamond', Georgia, serif",
+              fontSize: "clamp(1.6rem, 3vw, 2.2rem)",
+              fontWeight: 400,
+              color: "var(--foreground)",
+              lineHeight: 1.1,
+            }}
+          >
+            Draft a new <em style={{ color: "#22d3ee" }}>form</em>.
           </h1>
           <p style={{ fontSize: "13px", color: "var(--muted-foreground)", marginTop: "5px" }}>
             Set up the basics, then add your fields.
@@ -184,15 +203,19 @@ const showProgress = watch("showProgressBar") ?? true;
 
       <form onSubmit={handleSubmit((d) => createForm.mutate(d))}>
         <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-
           {/* ── Basic Info ── */}
           <Card>
             <div style={{ marginBottom: "1.25rem" }}>
-              <p style={{
-                fontSize: "11px", textTransform: "uppercase",
-                letterSpacing: "0.28em", color: "var(--muted-foreground)",
-                marginBottom: "1.25rem", fontWeight: 500,
-              }}>
+              <p
+                style={{
+                  fontSize: "11px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.28em",
+                  color: "var(--muted-foreground)",
+                  marginBottom: "1.25rem",
+                  fontWeight: 500,
+                }}
+              >
                 Basic Info
               </p>
 
@@ -232,11 +255,16 @@ const showProgress = watch("showProgressBar") ?? true;
 
           {/* ── Settings ── */}
           <Card>
-            <p style={{
-              fontSize: "11px", textTransform: "uppercase",
-              letterSpacing: "0.28em", color: "var(--muted-foreground)",
-              marginBottom: "1.25rem", fontWeight: 500,
-            }}>
+            <p
+              style={{
+                fontSize: "11px",
+                textTransform: "uppercase",
+                letterSpacing: "0.28em",
+                color: "var(--muted-foreground)",
+                marginBottom: "1.25rem",
+                fontWeight: 500,
+              }}
+            >
               Settings
             </p>
 
@@ -268,7 +296,11 @@ const showProgress = watch("showProgressBar") ?? true;
                   }}
                 >
                   <div>
-                    <p style={{ fontSize: "14px", color: "var(--foreground)", marginBottom: "2px" }}>{title}</p>
+                    <p
+                      style={{ fontSize: "14px", color: "var(--foreground)", marginBottom: "2px" }}
+                    >
+                      {title}
+                    </p>
                     <p style={{ fontSize: "12px", color: "var(--muted-foreground)" }}>{sub}</p>
                   </div>
                   <Toggle checked={checked} onChange={(v) => setValue(key, v)} />
@@ -277,7 +309,14 @@ const showProgress = watch("showProgressBar") ?? true;
             </div>
 
             {/* Text fields */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1.25rem" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+                marginTop: "1.25rem",
+              }}
+            >
               <div>
                 <Label>Submit button text</Label>
                 <input
@@ -321,11 +360,11 @@ const showProgress = watch("showProgressBar") ?? true;
                 alignItems: "center",
                 justifyContent: "center",
               }}
-              onMouseEnter={e => {
+              onMouseEnter={(e) => {
                 (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)";
                 (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
               }}
-              onMouseLeave={e => {
+              onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)";
                 (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
               }}
@@ -352,13 +391,17 @@ const showProgress = watch("showProgressBar") ?? true;
                 border: "none",
               }}
             >
-              {createForm.isPending
-                ? <><Loader2 style={{ width: 14, height: 14 }} className="animate-spin" /> Creating…</>
-                : <>Create &amp; add fields <ArrowRight style={{ width: 14, height: 14 }} /></>
-              }
+              {createForm.isPending ? (
+                <>
+                  <Loader2 style={{ width: 14, height: 14 }} className="animate-spin" /> Creating…
+                </>
+              ) : (
+                <>
+                  Create &amp; add fields <ArrowRight style={{ width: 14, height: 14 }} />
+                </>
+              )}
             </button>
           </div>
-
         </div>
       </form>
     </div>

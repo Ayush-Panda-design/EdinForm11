@@ -3,20 +3,8 @@
 import { use } from "react";
 import Link from "next/link";
 import { trpc } from "~/trpc/client";
-import {
-  ArrowLeft,
-  Loader2,
-  User,
- Clock,
-  Mail,
-  Globe,
-  AlertCircle,
-  Flag,
-} from "lucide-react";
-import {
-  formatDistanceToNow,
-  format,
-} from "date-fns";
+import { ArrowLeft, Loader2, User, Clock, Mail, Globe, AlertCircle, Flag } from "lucide-react";
+import { formatDistanceToNow, format } from "date-fns";
 import { toast } from "sonner";
 
 export default function ResponseDetailPage({
@@ -31,31 +19,25 @@ export default function ResponseDetailPage({
 
   const utils = trpc.useUtils();
 
-  const { data: form } =
-    trpc.forms.getById.useQuery({
-      id,
-    });
+  const { data: form } = trpc.forms.getById.useQuery({
+    id,
+  });
 
-  const { data: response, isLoading } =
-    trpc.responses.getById.useQuery({
-      id: responseId,
-    });
+  const { data: response, isLoading } = trpc.responses.getById.useQuery({
+    id: responseId,
+  });
 
-  const markSpamMutation =
-    trpc.responses.markAsSpam.useMutation({
-      onSuccess: () => {
-        toast.success(
-          "Response marked as spam"
-        );
+  const markSpamMutation = trpc.responses.markAsSpam.useMutation({
+    onSuccess: () => {
+      toast.success("Response marked as spam");
 
-        utils.responses.list.invalidate({
-          formId: id,
-        });
-      },
+      utils.responses.list.invalidate({
+        formId: id,
+      });
+    },
 
-      onError: (e) =>
-        toast.error(e.message),
-    });
+    onError: (e) => toast.error(e.message),
+  });
 
   if (isLoading) {
     return (
@@ -71,7 +53,7 @@ export default function ResponseDetailPage({
         {/* Ambient glow */}
         <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/3 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-violet-500/10 blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
         </div>
 
         <div className="rounded-3xl border border-border/50 bg-background/70 backdrop-blur-xl shadow-sm p-12">
@@ -79,13 +61,10 @@ export default function ResponseDetailPage({
             <AlertCircle className="w-8 h-8 text-red-400" />
           </div>
 
-          <h1 className="text-2xl font-semibold text-foreground mb-2">
-            Response not found
-          </h1>
+          <h1 className="text-2xl font-semibold text-foreground mb-2">Response not found</h1>
 
           <p className="text-muted-foreground mb-6">
-            This response may have been deleted
-            or is no longer available.
+            This response may have been deleted or is no longer available.
           </p>
 
           <Link
@@ -105,7 +84,7 @@ export default function ResponseDetailPage({
       {/* Cinematic ambient glow */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-violet-500/10 blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
       </div>
 
       {/* Header */}
@@ -118,23 +97,15 @@ export default function ResponseDetailPage({
         </Link>
 
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-semibold text-foreground">
-            Response Detail
-          </h1>
+          <h1 className="text-2xl font-semibold text-foreground">Response Detail</h1>
 
-          <p className="text-sm text-muted-foreground mt-1 truncate">
-            {form?.title}
-          </p>
+          <p className="text-sm text-muted-foreground mt-1 truncate">{form?.title}</p>
         </div>
 
         {response.status !== "spam" && (
           <button
             onClick={() => {
-              if (
-                confirm(
-                  "Mark this response as spam?"
-                )
-              ) {
+              if (confirm("Mark this response as spam?")) {
                 markSpamMutation.mutate({
                   id: responseId,
                 });
@@ -156,19 +127,16 @@ export default function ResponseDetailPage({
               Respondent Info
             </p>
 
-            <h2 className="text-lg font-semibold text-foreground mt-1">
-              Submission Metadata
-            </h2>
+            <h2 className="text-lg font-semibold text-foreground mt-1">Submission Metadata</h2>
           </div>
 
           <span
             className={`px-3 py-1 rounded-full text-xs font-medium border ${
-              response.status ===
-              "completed"
+              response.status === "completed"
                 ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
                 : response.status === "spam"
-                ? "border-red-500/20 bg-red-500/10 text-red-400"
-                : "border-border/60 bg-secondary/60 text-muted-foreground"
+                  ? "border-red-500/20 bg-red-500/10 text-red-400"
+                  : "border-border/60 bg-secondary/60 text-muted-foreground"
             }`}
           >
             {response.status}
@@ -178,51 +146,34 @@ export default function ResponseDetailPage({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {/* Name */}
           <InfoCard
-            icon={
-              <User className="w-4 h-4 text-primary" />
-            }
+            icon={<User className="w-4 h-4 text-primary" />}
             title="Name"
             value={
               response.respondentName || (
-                <span className="italic text-muted-foreground">
-                  Anonymous
-                </span>
+                <span className="italic text-muted-foreground">Anonymous</span>
               )
             }
           />
 
           {/* Email */}
           <InfoCard
-            icon={
-              <Mail className="w-4 h-4 text-blue-400" />
-            }
+            icon={<Mail className="w-4 h-4 text-blue-400" />}
             title="Email"
             value={
               response.respondentEmail || (
-                <span className="italic text-muted-foreground">
-                  Not provided
-                </span>
+                <span className="italic text-muted-foreground">Not provided</span>
               )
             }
           />
 
           {/* Submitted */}
           <InfoCard
-            icon={
-              <Clock className="w-4 h-4 text-emerald-400" />
-            }
+            icon={<Clock className="w-4 h-4 text-emerald-400" />}
             title="Submitted"
             value={
               response.submittedAt
-                ? `${format(
-                    new Date(
-                      response.submittedAt
-                    ),
-                    "PPP 'at' p"
-                  )} (${formatDistanceToNow(
-                    new Date(
-                      response.submittedAt
-                    )
+                ? `${format(new Date(response.submittedAt), "PPP 'at' p")} (${formatDistanceToNow(
+                    new Date(response.submittedAt),
                   )} ago)`
                 : "—"
             }
@@ -230,15 +181,10 @@ export default function ResponseDetailPage({
 
           {/* Completion */}
           <InfoCard
-            icon={
-              <Globe className="w-4 h-4 text-orange-400" />
-            }
+            icon={<Globe className="w-4 h-4 text-orange-400" />}
             title="Completion Time"
             value={
-              response.completionTimeSeconds !=
-              null
-                ? `${response.completionTimeSeconds}s`
-                : "—"
+              response.completionTimeSeconds != null ? `${response.completionTimeSeconds}s` : "—"
             }
           />
         </div>
@@ -247,9 +193,7 @@ export default function ResponseDetailPage({
       {/* Answers */}
       <div className="rounded-3xl border border-border/50 bg-background/70 backdrop-blur-xl shadow-sm p-7">
         <div className="mb-7">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-            Answers
-          </p>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Answers</p>
 
           <h2 className="text-lg font-semibold text-foreground mt-1">
             {response.answers.length} Responses
@@ -258,21 +202,14 @@ export default function ResponseDetailPage({
 
         {response.answers.length === 0 ? (
           <div className="rounded-2xl border border-border/50 bg-background/50 backdrop-blur-md p-8 text-center">
-            <p className="text-muted-foreground italic">
-              No answers recorded.
-            </p>
+            <p className="text-muted-foreground italic">No answers recorded.</p>
           </div>
         ) : (
           <div className="space-y-6">
             {response.answers.map((ans, i) => {
-              const field = form?.fields.find(
-                (f) => f.id === ans.fieldId
-              );
+              const field = form?.fields.find((f) => f.id === ans.fieldId);
 
-              const value =
-                ans.valueArray?.join(", ") ||
-                ans.value ||
-                "";
+              const value = ans.valueArray?.join(", ") || ans.value || "";
 
               return (
                 <div
@@ -286,17 +223,11 @@ export default function ResponseDetailPage({
 
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-foreground">
-                        {field?.label ??
-                          `Field ${ans.fieldId.slice(
-                            0,
-                            8
-                          )}`}
+                        {field?.label ?? `Field ${ans.fieldId.slice(0, 8)}`}
                       </p>
 
                       {field?.required && (
-                        <span className="inline-flex mt-1 text-xs text-red-400">
-                          * required
-                        </span>
+                        <span className="inline-flex mt-1 text-xs text-red-400">* required</span>
                       )}
                     </div>
                   </div>
@@ -309,9 +240,7 @@ export default function ResponseDetailPage({
                         </p>
                       </div>
                     ) : (
-                      <p className="text-sm italic text-muted-foreground">
-                        Not answered
-                      </p>
+                      <p className="text-sm italic text-muted-foreground">Not answered</p>
                     )}
                   </div>
                 </div>
@@ -341,13 +270,9 @@ function InfoCard({
         </div>
 
         <div className="min-w-0">
-          <p className="text-xs text-muted-foreground mb-1">
-            {title}
-          </p>
+          <p className="text-xs text-muted-foreground mb-1">{title}</p>
 
-          <div className="text-sm font-medium text-foreground break-words">
-            {value}
-          </div>
+          <div className="text-sm font-medium text-foreground break-words">{value}</div>
         </div>
       </div>
     </div>

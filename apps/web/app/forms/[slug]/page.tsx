@@ -214,7 +214,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
         <div className="relative z-10 w-full max-w-md">
           <div className="rounded-[32px] border border-white/10 bg-white/[0.04] backdrop-blur-2xl p-8 shadow-[0_0_60px_rgba(0,0,0,0.45)]">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-violet-500/20 border border-white/10 flex items-center justify-center mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-emerald-500/20 border border-white/10 flex items-center justify-center mb-6">
               <Lock className="w-7 h-7 text-blue-300" />
             </div>
 
@@ -235,7 +235,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
                 onKeyDown={(e) => e.key === "Enter" && handleVerifyPassword()}
                 placeholder="Enter password"
                 autoFocus
-                className="w-full h-14 rounded-2xl border border-white/10 bg-white/[0.05] backdrop-blur-xl px-5 text-white placeholder:text-slate-500 outline-none focus:border-blue-400/40 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                className="w-full h-14 rounded-2xl border border-white/10 bg-white/[0.05] backdrop-blur-xl px-5 text-white placeholder:text-slate-500 outline-none focus:border-cyan-400/40 focus:ring-4 focus:ring-cyan-500/10 transition-all"
               />
 
               {passwordError && (
@@ -248,7 +248,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
               <button
                 onClick={handleVerifyPassword}
                 disabled={verifyingPassword}
-                className="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-500 to-violet-500 text-white font-semibold hover:opacity-95 transition-all shadow-[0_10px_30px_rgba(59,130,246,0.35)] disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full h-14 rounded-2xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold hover:opacity-95 transition-all shadow-[0_10px_30px_rgba(34,211,238,0.35)] disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {verifyingPassword ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -402,13 +402,13 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
         {form.showProgressBar && (
           <div className="relative z-10 h-1 bg-white/5">
-            <div className="h-1 w-0 bg-gradient-to-r from-blue-500 to-violet-500" />
+            <div className="h-1 w-0 bg-gradient-to-r from-cyan-500 to-emerald-500" />
           </div>
         )}
 
         <div className="relative z-10 flex-1 flex items-center justify-center px-6 py-20">
           <div className="max-w-3xl text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/[0.05] text-blue-200 text-sm font-medium mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/[0.05] text-cyan-200 text-sm font-medium mb-8">
               <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
               {totalSteps} question
               {totalSteps !== 1 ? "s" : ""}
@@ -507,7 +507,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
         <div className="w-full max-w-3xl">
           <div className="rounded-[32px] border border-white/10 bg-white/[0.04] backdrop-blur-2xl p-8 sm:p-10 shadow-[0_0_60px_rgba(0,0,0,0.45)]">
             <div className="mb-8">
-              <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-violet-500/20 border border-white/10 text-blue-200 font-bold mb-5">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-emerald-500/20 border border-white/10 text-cyan-200 font-bold mb-5">
                 {currentStep + 1}
               </div>
 
@@ -543,7 +543,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
               <button
                 onClick={handleNext}
                 disabled={submitMutation.isPending}
-                className="group inline-flex items-center gap-2 h-14 px-7 rounded-2xl bg-gradient-to-r from-blue-500 to-violet-500 text-white font-semibold shadow-[0_10px_35px_rgba(59,130,246,0.35)] hover:scale-[1.02] transition-all disabled:opacity-50"
+                className="group inline-flex items-center gap-2 h-14 px-7 rounded-2xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold shadow-[0_10px_35px_rgba(34,211,238,0.35)] hover:scale-[1.02] transition-all disabled:opacity-50"
               >
                 {submitMutation.isPending ? (
                   <Loader2 className="w-5 h-5 animate-spin" />

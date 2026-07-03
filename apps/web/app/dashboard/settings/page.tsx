@@ -1,52 +1,64 @@
 "use client";
 
 import { useAuth } from "~/providers/auth-provider";
-import { User, Mail, Shield } from "lucide-react";
+import { User, Mail, Shield, Bell } from "lucide-react";
+import { DashPageHeader, DashPanel } from "~/components/dashboard/page-chrome";
 
 export default function SettingsPage() {
   const { user } = useAuth();
 
+  const rows = [
+    { icon: User, label: "Full name", value: user?.fullName },
+    { icon: Mail, label: "Email", value: user?.email },
+    { icon: Shield, label: "Role", value: user?.role },
+  ];
+
   return (
     <div className="max-w-2xl">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">Manage your account</p>
-      </div>
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 space-y-6">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-stone-500 to-stone-500 flex items-center justify-center text-white text-2xl font-bold">
-            {user?.fullName?.[0] || "?"}
+      <DashPageHeader
+        eyebrow="Account"
+        title="Settings"
+        description="Manage your profile and workspace preferences."
+      />
+
+      <DashPanel>
+        <div className="p-6 space-y-6">
+          <div className="flex items-center gap-4">
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold text-black"
+              style={{ background: "linear-gradient(135deg, #22d3ee 0%, #34d399 100%)" }}
+            >
+              {user?.fullName?.[0] || "?"}
+            </div>
+            <div>
+              <p className="text-lg font-semibold text-white">{user?.fullName}</p>
+              <p className="text-sm text-zinc-500 capitalize">{user?.role} account</p>
+            </div>
           </div>
-          <div>
-            <p className="text-xl font-semibold text-gray-900 dark:text-white">{user?.fullName}</p>
-            <p className="text-gray-500 capitalize">{user?.role}</p>
+
+          <div className="space-y-2">
+            {rows.map(({ icon: Icon, label, value }) => (
+              <div
+                key={label}
+                className="flex items-center gap-3 p-4 rounded-xl border border-white/[0.06] bg-white/[0.02]"
+              >
+                <Icon className="w-4 h-4 text-[var(--signal-accent)] shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">{label}</p>
+                  <p className="font-medium text-zinc-100 truncate capitalize">{value}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-        <hr className="border-gray-100 dark:border-gray-800" />
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
-            <User className="w-5 h-5 text-gray-400" />
-            <div>
-              <p className="text-xs text-gray-500">Full Name</p>
-              <p className="font-medium text-gray-900 dark:text-white">{user?.fullName}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
-            <Mail className="w-5 h-5 text-gray-400" />
-            <div>
-              <p className="text-xs text-gray-500">Email</p>
-              <p className="font-medium text-gray-900 dark:text-white">{user?.email}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
-            <Shield className="w-5 h-5 text-gray-400" />
-            <div>
-              <p className="text-xs text-gray-500">Account Role</p>
-              <p className="font-medium text-gray-900 dark:text-white capitalize">{user?.role}</p>
-            </div>
-          </div>
+      </DashPanel>
+
+      <DashPanel title="Notifications" className="mt-4">
+        <div className="p-5 flex items-center gap-3 text-sm text-zinc-400">
+          <Bell className="w-4 h-4 text-zinc-500" />
+          Email notifications for new responses — coming soon.
         </div>
-      </div>
+      </DashPanel>
     </div>
   );
 }

@@ -201,8 +201,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto pt-14 lg:pt-0">
-        <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px]">{children}</div>
+      <main className="flex-1 overflow-y-auto pt-14 lg:pt-0 flex flex-col">
+        <header className="hidden lg:flex items-center justify-between px-6 lg:px-8 py-4 border-b border-white/[0.06] bg-black/40 backdrop-blur-sm sticky top-0 z-30">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.22em] text-zinc-500 font-semibold">
+              Workspace
+            </p>
+            <p className="text-sm text-zinc-300 font-medium capitalize">
+              {pathname.split("/").filter(Boolean).slice(1).join(" / ") || "Overview"}
+            </p>
+          </div>
+          <Link
+            href="/dashboard/forms/new"
+            className="ef-btn-primary rounded-lg px-4 py-2 text-xs font-semibold inline-flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            New form
+          </Link>
+        </header>
+        <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px] flex-1">{children}</div>
       </main>
     </div>
   );

@@ -259,9 +259,9 @@ export default function AnalyticsDashboardPage() {
                 border: "none",
                 cursor: "pointer",
                 transition: "all 0.18s",
-                background: daysFilter === days ? "rgba(200,155,99,0.12)" : "transparent",
+                background: daysFilter === days ? "rgba(34,211,238,0.12)" : "transparent",
                 color: daysFilter === days ? CYAN : "var(--muted-foreground)",
-                boxShadow: daysFilter === days ? "inset 0 0 0 1px rgba(200,155,99,0.2)" : "none",
+                boxShadow: daysFilter === days ? "inset 0 0 0 1px rgba(34,211,238,0.2)" : "none",
                 fontWeight: daysFilter === days ? 600 : 400,
               }}
             >
@@ -450,7 +450,7 @@ export default function AnalyticsDashboardPage() {
                       contentStyle={{
                         background: "rgba(15,15,17,0.95)",
                         borderRadius: "12px",
-                        border: "1px solid rgba(200,155,99,0.2)",
+                        border: "1px solid rgba(34,211,238,0.2)",
                         color: "#F5F1EA",
                         fontSize: "12px",
                         fontFamily: "'Inter', sans-serif",
@@ -533,7 +533,7 @@ export default function AnalyticsDashboardPage() {
                       transition: "border-color 0.2s",
                     }}
                     onMouseEnter={(e) =>
-                      ((e.currentTarget as HTMLElement).style.borderColor = "rgba(200,155,99,0.2)")
+                      ((e.currentTarget as HTMLElement).style.borderColor = "rgba(34,211,238,0.2)")
                     }
                     onMouseLeave={(e) =>
                       ((e.currentTarget as HTMLElement).style.borderColor =
@@ -555,7 +555,7 @@ export default function AnalyticsDashboardPage() {
                             fontWeight: 700,
                             fontFamily: "monospace",
                             color: CYAN,
-                            background: "rgba(200,155,99,0.1)",
+                            background: "rgba(34,211,238,0.1)",
                             padding: "1px 6px",
                             borderRadius: "4px",
                           }}
@@ -599,7 +599,7 @@ export default function AnalyticsDashboardPage() {
                       }}
                       onMouseEnter={(e) => {
                         (e.currentTarget as HTMLElement).style.color = CYAN;
-                        (e.currentTarget as HTMLElement).style.background = "rgba(200,155,99,0.08)";
+                        (e.currentTarget as HTMLElement).style.background = "rgba(34,211,238,0.08)";
                       }}
                       onMouseLeave={(e) => {
                         (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
@@ -716,8 +716,8 @@ export default function AnalyticsDashboardPage() {
                 width: 44,
                 height: 44,
                 borderRadius: "50%",
-                background: "rgba(200,155,99,0.08)",
-                border: "1px solid rgba(200,155,99,0.12)",
+                background: "rgba(34,211,238,0.08)",
+                border: "1px solid rgba(34,211,238,0.12)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -756,8 +756,8 @@ export default function AnalyticsDashboardPage() {
                     width: 34,
                     height: 34,
                     borderRadius: "50%",
-                    background: "rgba(200,155,99,0.08)",
-                    border: "1px solid rgba(200,155,99,0.12)",
+                    background: "rgba(34,211,238,0.08)",
+                    border: "1px solid rgba(34,211,238,0.12)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -860,7 +860,7 @@ export default function AnalyticsDashboardPage() {
                   }}
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLElement).style.color = CYAN;
-                    (e.currentTarget as HTMLElement).style.background = "rgba(200,155,99,0.08)";
+                    (e.currentTarget as HTMLElement).style.background = "rgba(34,211,238,0.08)";
                   }}
                   onMouseLeave={(e) => {
                     (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
@@ -1042,7 +1042,7 @@ export default function AnalyticsDashboardPage() {
                           onMouseEnter={(e) => {
                             (e.currentTarget as HTMLElement).style.color = CYAN;
                             (e.currentTarget as HTMLElement).style.background =
-                              "rgba(200,155,99,0.08)";
+                              "rgba(34,211,238,0.08)";
                           }}
                           onMouseLeave={(e) => {
                             (e.currentTarget as HTMLElement).style.color =
@@ -1064,17 +1064,17 @@ export default function AnalyticsDashboardPage() {
                             textDecoration: "none",
                             fontFamily: "'Inter', sans-serif",
                             color: CYAN,
-                            background: "rgba(200,155,99,0.08)",
-                            border: "1px solid rgba(200,155,99,0.15)",
+                            background: "rgba(34,211,238,0.08)",
+                            border: "1px solid rgba(34,211,238,0.15)",
                             transition: "background 0.15s",
                           }}
                           onMouseEnter={(e) =>
                             ((e.currentTarget as HTMLElement).style.background =
-                              "rgba(200,155,99,0.15)")
+                              "rgba(34,211,238,0.15)")
                           }
                           onMouseLeave={(e) =>
                             ((e.currentTarget as HTMLElement).style.background =
-                              "rgba(200,155,99,0.08)")
+                              "rgba(34,211,238,0.08)")
                           }
                         >
                           Full Analytics

@@ -30,10 +30,10 @@ import {
   Cell,
 } from "recharts";
 
-const COLORS = ["#C89B63", "#B7884F", "#8B7355", "#6E5A45", "#5C4635", "#3F3126"];
+const COLORS = ["#22d3ee", "#0891b2", "#34d399", "#67e8f9", "#14b8a6", "#0e7490"];
 
 function HealthScoreRing({ score }: { score: number }) {
-  const color = score >= 75 ? "#C89B63" : score >= 50 ? "#B7884F" : "#8C4B4B";
+  const color = score >= 75 ? "#22d3ee" : score >= 50 ? "#0891b2" : "#f87171";
 
   const circumference = 2 * Math.PI * 40;
   const offset = circumference - (score / 100) * circumference;
@@ -264,7 +264,7 @@ export default function FormAnalyticsPage({ params }: { params: Promise<{ id: st
                       }}
                     />
 
-                    <Bar dataKey="count" fill="#C89B63" radius={[6, 6, 0, 0]} name="Responses" />
+                    <Bar dataKey="count" fill="#22d3ee" radius={[6, 6, 0, 0]} name="Responses" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -290,15 +290,15 @@ export default function FormAnalyticsPage({ params }: { params: Promise<{ id: st
                 <AreaChart data={analytics.dailyData}>
                   <defs>
                     <linearGradient id="views" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#C89B63" stopOpacity={0.25} />
+                      <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.25} />
 
-                      <stop offset="95%" stopColor="#C89B63" stopOpacity={0} />
+                      <stop offset="95%" stopColor="#22d3ee" stopOpacity={0} />
                     </linearGradient>
 
                     <linearGradient id="subs" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8B7355" stopOpacity={0.25} />
+                      <stop offset="5%" stopColor="#0891b2" stopOpacity={0.25} />
 
-                      <stop offset="95%" stopColor="#8B7355" stopOpacity={0} />
+                      <stop offset="95%" stopColor="#0891b2" stopOpacity={0} />
                     </linearGradient>
                   </defs>
 
@@ -335,7 +335,7 @@ export default function FormAnalyticsPage({ params }: { params: Promise<{ id: st
                   <Area
                     type="monotone"
                     dataKey="views"
-                    stroke="#C89B63"
+                    stroke="#22d3ee"
                     fill="url(#views)"
                     strokeWidth={2}
                     name="Views"
@@ -344,7 +344,7 @@ export default function FormAnalyticsPage({ params }: { params: Promise<{ id: st
                   <Area
                     type="monotone"
                     dataKey="submissions"
-                    stroke="#8B7355"
+                    stroke="#0891b2"
                     fill="url(#subs)"
                     strokeWidth={2}
                     name="Submissions"
