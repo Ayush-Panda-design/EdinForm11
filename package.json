@@ -21,9 +21,9 @@
     "drizzle-kit": "^0.31.1",
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0",
-    "prettier": "^3.7.4",
-    "turbo": "^2.7.2",
-    "typescript": "5.9.2"
+    "prettier": "^3.9.4",
+    "turbo": "^2.10.2",
+    "typescript": "5.9.3"
   },
   "dependencies": {
     "dotenv-cli": "^11.0.0"

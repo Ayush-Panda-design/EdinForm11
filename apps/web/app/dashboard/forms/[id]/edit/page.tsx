@@ -59,7 +59,7 @@ type FieldSaveUpdates = {
   helpText?: string;
   required: boolean;
   options?: FieldOption[];
-  conditionalLogic?: ConditionalLogic | null;
+  conditionalLogic?: ConditionalLogic;
 };
 
 type FieldType =
