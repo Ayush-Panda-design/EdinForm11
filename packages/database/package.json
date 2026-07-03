@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "dotenv": "^16.5.0",
-    "drizzle-orm": "^0.43.1",
-    "pg": "^8.16.0",
+    "drizzle-orm": "^0.45.2",
+    "pg": "^8.22.0",
     "zod": "^4.3.5"
   },
   "devDependencies": {
