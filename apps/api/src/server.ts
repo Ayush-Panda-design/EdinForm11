@@ -117,7 +117,7 @@ if (REDIS_URL && REDIS_TOKEN) {
 app.use(
   cors({
     origin:
-      env.NODE_ENV === "prod"
+      env.NODE_ENV === "production"
         ? [env.APP_URL]
         : "*",
     credentials: true,

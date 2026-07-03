@@ -1,13 +1,27 @@
 import "dotenv/config";
+import { initDatabase } from "@repo/database";
 import { logger } from "@repo/logger";
-import { app } from "./server";
-import { env } from "./env";
 
-const PORT = parseInt(env.PORT ?? "8000", 10);
+async function main() {
+  await initDatabase();
 
-app.listen(PORT, () => {
-  logger.info(`🚀 FormCraft API running on port ${PORT}`);
-  logger.info(`📚 Scalar docs: http://localhost:${PORT}/docs`);
-  logger.info(`🔌 tRPC endpoint: http://localhost:${PORT}/trpc`);
-  logger.info(`🌐 REST endpoint: http://localhost:${PORT}/api`);
+  const { app } = await import("./server");
+  const { env } = await import("./env");
+
+  const PORT = parseInt(env.PORT ?? "8000", 10);
+
+  app.listen(PORT, () => {
+    logger.info(`FormCraft API running on port ${PORT}`);
+    logger.info(`Scalar docs: http://localhost:${PORT}/docs`);
+    logger.info(`tRPC endpoint: http://localhost:${PORT}/trpc`);
+    logger.info(`REST endpoint: http://localhost:${PORT}/api`);
+    logger.info(`Google OAuth redirect: ${env.BASE_URL}/auth/google/callback`);
+  });
+}
+
+main().catch((error) => {
+  logger.error("Failed to start API", {
+    error: error instanceof Error ? error.message : String(error),
+  });
+  process.exit(1);
 });

@@ -1,5 +1,5 @@
 import "dotenv/config";
-import db, { usersTable } from "@repo/database";
+import db, { initDatabase, usersTable } from "@repo/database";
 import { eq } from "@repo/database";
 import { createPasswordHash } from "@repo/services/auth";
 import { seedThemes } from "./themes.seed";
@@ -22,6 +22,7 @@ const DEMO_USERS = [
 ];
 
 async function main() {
+  await initDatabase();
   console.log("🌱 Starting seed...\n");
 
   // -------------------------------------------------------------------------
