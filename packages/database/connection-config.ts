@@ -2,7 +2,10 @@
 
 import type { PoolConfig } from "pg";
 
-export type PgSslConfig = false | true | { rejectUnauthorized: boolean };
+export type PgSslConfig =
+  | false
+  | true
+  | { rejectUnauthorized: boolean; checkServerIdentity?: () => undefined };
 
 export interface PostgresConnectionParams {
   host: string;
@@ -11,6 +14,11 @@ export interface PostgresConnectionParams {
   password: string;
   database: string;
 }
+
+export const RENDER_EXTERNAL_SSL: PgSslConfig = {
+  rejectUnauthorized: false,
+  checkServerIdentity: () => undefined,
+};
 
 /** Strip sslmode from URL — pg v8 treats require as verify-full when parsed from connection strings. */
 export function stripSslModeFromUrl(url: string): string {
@@ -57,11 +65,8 @@ export function isRenderInternalHost(host: string): boolean {
   return /^dpg-[a-z0-9]+-[a-z0-9]+$/i.test(host);
 }
 
-/** External Render URL hostnames embed the internal hostname as a prefix. */
-export function getRenderInternalHostCandidate(host: string): string | null {
-  const match = host.match(/^(dpg-[a-z0-9]+-[a-z0-9]+)\./i);
-  if (!match?.[1] || isRenderInternalHost(host)) return null;
-  return match[1];
+export function isRenderExternalHost(host: string): boolean {
+  return host.includes("render.com");
 }
 
 export function needsTls(url: string): boolean {
@@ -72,7 +77,13 @@ export function needsTls(url: string): boolean {
 }
 
 export function resolvePgSsl(url: string): PgSslConfig {
-  return needsTls(url) ? { rejectUnauthorized: false } : false;
+  return needsTls(url) ? RENDER_EXTERNAL_SSL : false;
+}
+
+export function buildLibpqCompatConnectionString(url: string): string {
+  const base = stripSslModeFromUrl(url);
+  const separator = base.includes("?") ? "&" : "?";
+  return `${base}${separator}uselibpqcompat=true&sslmode=require`;
 }
 
 export interface PgConnectionAttempt {
@@ -91,6 +102,8 @@ export function buildPgConnectionAttempts(url: string): PgConnectionAttempt[] {
       host: config.host,
       port: config.port,
       database: config.database,
+      user: config.user,
+      connectionString: config.connectionString ?? null,
       ssl: config.ssl ?? false,
     });
     if (seen.has(key)) return;
@@ -107,59 +120,65 @@ export function buildPgConnectionAttempts(url: string): PgConnectionAttempt[] {
     max: 2,
   };
 
-  const internalHost = getRenderInternalHostCandidate(host);
-  if (internalHost) {
-    addAttempt(`internal host ${internalHost} (no ssl)`, {
-      ...base,
-      host: internalHost,
-      ssl: false,
-    });
-  }
-
-  if (isRenderInternalHost(host) || internalHost) {
-    addAttempt(`host ${internalHost ?? host} (no ssl)`, {
-      ...base,
-      host: internalHost ?? host,
-      ssl: false,
-    });
-  }
-
-  if (needsTls(url)) {
-    addAttempt(`host ${host} (ssl, discrete params)`, {
-      ...base,
-      host,
-      ssl: { rejectUnauthorized: false },
-    });
-    addAttempt(`host ${host} (ssl: true)`, {
-      ...base,
-      host,
-      ssl: true,
-    });
-  }
-
-  if (attempts.length === 0) {
-    addAttempt(`host ${host}`, {
+  if (isRenderInternalHost(host) || !needsTls(url)) {
+    addAttempt(`host ${host} (no ssl)`, {
       ...base,
       host,
       ssl: false,
     });
+    return attempts;
   }
+
+  addAttempt(`host ${host} (ssl, discrete params)`, {
+    ...base,
+    host,
+    ssl: RENDER_EXTERNAL_SSL,
+  });
+
+  addAttempt(`host ${host} (connectionString + libpq compat)`, {
+    connectionString: buildLibpqCompatConnectionString(url),
+    ssl: RENDER_EXTERNAL_SSL,
+    connectionTimeoutMillis: 30_000,
+    max: 2,
+  });
+
+  addAttempt(`host ${host} (ssl: true)`, {
+    ...base,
+    host,
+    ssl: true,
+  });
 
   return attempts;
 }
 
 export function buildPgPoolConfig(url: string): PoolConfig {
   const attempts = buildPgConnectionAttempts(url);
-  return attempts[0]?.config ?? {
-    ...parsePostgresUrl(url),
-    ssl: resolvePgSsl(url),
-    connectionTimeoutMillis: 30_000,
-    max: 2,
-  };
+  return (
+    attempts[0]?.config ?? {
+      ...parsePostgresUrl(url),
+      ssl: resolvePgSsl(url),
+      connectionTimeoutMillis: 30_000,
+      max: 2,
+    }
+  );
 }
 
 export function describeSsl(ssl: PgSslConfig | undefined): string {
   if (ssl === false || ssl === undefined) return "disabled";
   if (ssl === true) return "enabled (ssl: true)";
   return "enabled (rejectUnauthorized: false)";
+}
+
+export function getRenderDatabaseSetupHint(url: string): string | null {
+  const host = parsePostgresHost(url);
+  if (!isRenderExternalHost(host)) return null;
+
+  return [
+    "Render deploy checklist:",
+    "1. Set DATABASE_URL to the Internal Database URL (Postgres → Connect → Internal).",
+    "2. Move db:migrate from Build Command to Pre-Deploy Command.",
+    "3. Ensure API service and Postgres are in the same region.",
+    "   Build command: pnpm install --no-frozen-lockfile --prod=false && pnpm --filter @repo/api build",
+    "   Pre-deploy:    pnpm --filter @repo/database db:migrate",
+  ].join("\n");
 }
