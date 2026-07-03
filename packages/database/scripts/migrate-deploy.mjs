@@ -24,26 +24,37 @@ const BASELINE_ADVISORY_LOCK_KEY = 7249011;
 
 dotenv.config({ path: path.resolve(pkgRoot, "../../.env") });
 
-const DATABASE_URL = process.env.DATABASE_URL;
-if (!DATABASE_URL) {
+const rawDatabaseUrl = process.env.DATABASE_URL;
+if (!rawDatabaseUrl) {
   console.error("DATABASE_URL is required for db:migrate");
   process.exit(1);
 }
 
-function resolveSsl() {
-  const needsSsl =
-    DATABASE_URL.includes("sslmode=require") ||
-    DATABASE_URL.includes("sslmode=verify-full") ||
-    DATABASE_URL.includes("render.com") ||
-    DATABASE_URL.includes("neon.tech") ||
-    DATABASE_URL.includes("supabase.co");
-
-  return needsSsl ? { rejectUnauthorized: false } : false;
+/** Strip sslmode from URL — pg v8 treats require as verify-full and drops Render connections. */
+function normalizeDatabaseUrl(url) {
+  let normalized = url.replace(/([?&])sslmode=[^&]*/gi, "$1");
+  normalized = normalized.replace(/[?&]$/, "");
+  normalized = normalized.replace(/\?&/, "?");
+  return normalized;
 }
+
+function isLocalDatabase(url) {
+  return /(?:localhost|127\.0\.0\.1)/i.test(url);
+}
+
+function resolveSsl(url) {
+  if (isLocalDatabase(url)) return false;
+  return { rejectUnauthorized: false };
+}
+
+const DATABASE_URL = normalizeDatabaseUrl(rawDatabaseUrl);
+process.env.DATABASE_URL = DATABASE_URL;
 
 const pool = new pg.Pool({
   connectionString: DATABASE_URL,
-  ssl: resolveSsl(),
+  ssl: resolveSsl(DATABASE_URL),
+  connectionTimeoutMillis: 30_000,
+  max: 2,
 });
 
 async function tableExists(client, tableName) {
@@ -163,8 +174,25 @@ async function baselineIfNeeded(client) {
   }
 }
 
+async function connectWithRetry(poolInstance, attempts = 4) {
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await poolInstance.connect();
+    } catch (error) {
+      lastError = error;
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`Database connect attempt ${attempt}/${attempts} failed: ${message}`);
+      if (attempt < attempts) {
+        await new Promise((resolve) => setTimeout(resolve, attempt * 2000));
+      }
+    }
+  }
+  throw lastError;
+}
+
 async function main() {
-  const client = await pool.connect();
+  const client = await connectWithRetry(pool);
   try {
     await client.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto"`);
     await baselineIfNeeded(client);
