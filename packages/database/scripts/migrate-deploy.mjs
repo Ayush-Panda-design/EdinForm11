@@ -12,6 +12,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import pg from "pg";
+import {
+  describeSsl,
+  getSslCandidates,
+  normalizeDatabaseUrl,
+  parsePostgresHost,
+} from "../connection-config.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pkgRoot = path.resolve(__dirname, "..");
@@ -30,32 +36,11 @@ if (!rawDatabaseUrl) {
   process.exit(1);
 }
 
-/** Strip sslmode from URL — pg v8 treats require as verify-full and drops Render connections. */
-function normalizeDatabaseUrl(url) {
-  let normalized = url.replace(/([?&])sslmode=[^&]*/gi, "$1");
-  normalized = normalized.replace(/[?&]$/, "");
-  normalized = normalized.replace(/\?&/, "?");
-  return normalized;
-}
-
-function isLocalDatabase(url) {
-  return /(?:localhost|127\.0\.0\.1)/i.test(url);
-}
-
-function resolveSsl(url) {
-  if (isLocalDatabase(url)) return false;
-  return { rejectUnauthorized: false };
-}
-
 const DATABASE_URL = normalizeDatabaseUrl(rawDatabaseUrl);
 process.env.DATABASE_URL = DATABASE_URL;
 
-const pool = new pg.Pool({
-  connectionString: DATABASE_URL,
-  ssl: resolveSsl(DATABASE_URL),
-  connectionTimeoutMillis: 30_000,
-  max: 2,
-});
+const dbHost = parsePostgresHost(DATABASE_URL);
+console.log(`Database host: ${dbHost}`);
 
 async function tableExists(client, tableName) {
   const { rows } = await client.query(
@@ -174,25 +159,42 @@ async function baselineIfNeeded(client) {
   }
 }
 
-async function connectWithRetry(poolInstance, attempts = 4) {
+async function connectWithRetry() {
+  const sslCandidates = getSslCandidates(DATABASE_URL, rawDatabaseUrl);
   let lastError;
-  for (let attempt = 1; attempt <= attempts; attempt++) {
-    try {
-      return await poolInstance.connect();
-    } catch (error) {
-      lastError = error;
-      const message = error instanceof Error ? error.message : String(error);
-      console.warn(`Database connect attempt ${attempt}/${attempts} failed: ${message}`);
-      if (attempt < attempts) {
-        await new Promise((resolve) => setTimeout(resolve, attempt * 2000));
+
+  for (const ssl of sslCandidates) {
+    console.log(`Trying connection (ssl: ${describeSsl(ssl)})...`);
+
+    const pool = new pg.Pool({
+      connectionString: DATABASE_URL,
+      ssl,
+      connectionTimeoutMillis: 30_000,
+      max: 2,
+    });
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const client = await pool.connect();
+        return { client, pool };
+      } catch (error) {
+        lastError = error;
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn(`  attempt ${attempt}/3 failed: ${message}`);
+        if (attempt < 3) {
+          await new Promise((resolve) => setTimeout(resolve, attempt * 1500));
+        }
       }
     }
+
+    await pool.end();
   }
+
   throw lastError;
 }
 
 async function main() {
-  const client = await connectWithRetry(pool);
+  const { client, pool } = await connectWithRetry();
   try {
     await client.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto"`);
     await baselineIfNeeded(client);

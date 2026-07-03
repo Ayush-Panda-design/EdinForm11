@@ -1,6 +1,10 @@
 import { defineConfig } from "drizzle-kit";
 import dotenv from "dotenv";
 import path from "path";
+import {
+  normalizeDatabaseUrl,
+  resolvePgSsl,
+} from "./connection-config.mjs";
 
 const envPath = path.resolve(__dirname, "../../.env");
 
@@ -15,16 +19,7 @@ if (!rawDatabaseUrl) {
   );
 }
 
-/** Strip sslmode from URL — pg v8 treats require as verify-full and drops Render connections. */
-function normalizeDatabaseUrl(url: string) {
-  let normalized = url.replace(/([?&])sslmode=[^&]*/gi, "$1");
-  normalized = normalized.replace(/[?&]$/, "");
-  normalized = normalized.replace(/\?&/, "?");
-  return normalized;
-}
-
 const databaseUrl = normalizeDatabaseUrl(rawDatabaseUrl);
-const isLocalDatabase = /(?:localhost|127\.0\.0\.1)/i.test(databaseUrl);
 
 export default defineConfig({
   out: "./drizzle",
@@ -32,7 +27,7 @@ export default defineConfig({
   dialect: "postgresql",
   dbCredentials: {
     url: databaseUrl,
-    ssl: isLocalDatabase ? false : { rejectUnauthorized: false },
+    ssl: resolvePgSsl(databaseUrl, rawDatabaseUrl),
   },
   migrations: {
     schema: "public",
