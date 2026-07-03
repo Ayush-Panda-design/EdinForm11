@@ -4,16 +4,13 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { env } from "./env";
 import * as schema from "./schema";
 import {
+  buildPgPoolConfig,
   normalizeDatabaseUrl,
-  resolvePgSsl,
 } from "./connection-config";
 
 const databaseUrl = normalizeDatabaseUrl(env.DATABASE_URL);
 
-const pool = new Pool({
-  connectionString: databaseUrl,
-  ssl: resolvePgSsl(databaseUrl, env.DATABASE_URL),
-});
+const pool = new Pool(buildPgPoolConfig(databaseUrl));
 
 // Pass the configured pool to drizzle
 export const db = drizzle(pool, { schema });
