@@ -36,6 +36,15 @@ export const themesRouter = router({
       return themesService.listThemes(ctx.user?.id);
     }),
 
+  /** GET /themes/:id */
+  getById: publicProcedure
+    .meta({ openapi: { method: "GET", path: getPath("/{id}"), tags: TAGS } })
+    .input(z.object({ id: z.string().uuid() }))
+    .output(themeOutput.nullable())
+    .query(async ({ input }) => {
+      return themesService.getThemeById(input.id);
+    }),
+
   /** POST /themes — create custom theme */
   create: protectedProcedure
     .meta({ openapi: { method: "POST", path: getPath("/"), tags: TAGS } })

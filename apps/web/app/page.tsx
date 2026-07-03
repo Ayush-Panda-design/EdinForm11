@@ -21,7 +21,6 @@ import {
   Layers,
   CheckCircle2,
   ArrowUpRight,
-  Play,
 } from "lucide-react";
 import { isAuthenticated } from "~/lib/auth";
 import { EdinFormLogo } from "~/components/brand/logo";
@@ -2104,6 +2103,16 @@ export default function LandingPage() {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove("dark");
+    root.classList.add("light");
+    return () => {
+      root.classList.add("dark");
+      root.classList.remove("light");
+    };
+  }, []);
+
   const ctaHref = loggedIn ? "/dashboard" : "/auth/register";
 
   const faqs = [
@@ -2130,124 +2139,42 @@ export default function LandingPage() {
   ];
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        fontFamily: "'Cormorant Garamond', Georgia, serif",
-        background: "var(--background)",
-        color: "var(--foreground)",
-      }}
-    >
+    <div className="min-h-screen marketing-page relative">
       {/* ── NAVBAR ── */}
-      <nav
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 50,
-          borderBottom: "1px solid " + (navScrolled ? "rgba(200,155,99,0.12)" : "transparent"),
-          backdropFilter: navScrolled ? "blur(20px)" : "none",
-          background: navScrolled ? "rgba(11,11,12,0.88)" : "transparent",
-          transition: "all 0.3s",
-        }}
-      >
+      <nav className={`mkt-nav ${navScrolled ? "mkt-nav--scrolled" : ""}`}>
         <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1.5rem" }}>
           <div
             style={{
               display: "flex",
-              height: "64px",
+              height: "72px",
               alignItems: "center",
               justifyContent: "space-between",
             }}
           >
             <EdinFormLogo />
-            <div
-              style={{
-                display: "flex",
-                gap: "2rem",
-                fontSize: "14px",
-                color: "var(--muted-foreground)",
-                fontFamily: "'Cormorant Garamond', serif",
-                letterSpacing: "0.04em",
-              }}
-              className="hidden-mobile"
-            >
+            <div style={{ display: "flex", gap: "2rem" }} className="hidden-mobile">
               {[
                 { l: "Features", h: "#features" },
                 { l: "How it works", h: "#how" },
                 { l: "Pricing", h: "/pricing" },
                 { l: "Templates", h: "/explore" },
               ].map(({ l, h }) => (
-                <a
-                  key={l}
-                  href={h}
-                  style={{ textDecoration: "none", color: "inherit", transition: "color 0.2s" }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "#C89B63";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "";
-                  }}
-                >
+                <a key={l} href={h} className="mkt-nav-link">
                   {l}
                 </a>
               ))}
             </div>
-            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
               {loggedIn ? (
-                <Link
-                  href="/dashboard"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    borderRadius: "999px",
-                    padding: "8px 20px",
-                    fontSize: "13px",
-                    background: "linear-gradient(135deg, #C89B63 0%, #8B6540 100%)",
-                    color: "#0B0B0C",
-                    textDecoration: "none",
-                    fontWeight: 700,
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.transform = "scale(1.04)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.transform = "";
-                  }}
-                >
+                <Link href="/dashboard" className="mkt-btn-primary">
                   Open dashboard <ArrowUpRight style={{ width: 13, height: 13 }} />
                 </Link>
               ) : (
                 <>
-                  <Link
-                    href="/auth/login"
-                    style={{
-                      padding: "8px 16px",
-                      fontSize: "13px",
-                      color: "var(--muted-foreground)",
-                      textDecoration: "none",
-                      borderRadius: "999px",
-                      fontFamily: "'Cormorant Garamond', serif",
-                    }}
-                    className="hidden-mobile"
-                  >
+                  <Link href="/auth/login" className="mkt-btn-outline hidden-mobile">
                     Sign in
                   </Link>
-                  <Link
-                    href="/auth/register"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      borderRadius: "999px",
-                      padding: "8px 20px",
-                      fontSize: "13px",
-                      background: "linear-gradient(135deg, #C89B63 0%, #8B6540 100%)",
-                      color: "#0B0B0C",
-                      textDecoration: "none",
-                      fontWeight: 700,
-                    }}
-                  >
+                  <Link href="/auth/register" className="mkt-btn-primary">
                     Start free
                   </Link>
                 </>
@@ -2256,16 +2183,16 @@ export default function LandingPage() {
                 onClick={() => setNavOpen((v) => !v)}
                 className="show-mobile"
                 style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: "10px",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  background: "rgba(255,255,255,0.04)",
+                  width: 40,
+                  height: 40,
+                  borderRadius: "12px",
+                  border: "1px solid rgba(15,23,42,0.1)",
+                  background: "#fff",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   cursor: "pointer",
-                  color: "var(--foreground)",
+                  color: "#1e293b",
                 }}
               >
                 {navOpen ? (
@@ -2344,184 +2271,123 @@ export default function LandingPage() {
       </nav>
 
       {/* ══ HERO ══ */}
-      <section style={{ position: "relative", overflow: "hidden", padding: "4rem 1.5rem 0" }}>
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: 0,
-            pointerEvents: "none",
-            background:
-              "radial-gradient(ellipse 70% 60% at 50% 20%, rgba(200,155,99,0.09) 0%, transparent 65%)",
-          }}
-        />
+      <section style={{ position: "relative", overflow: "hidden", padding: "3rem 1.5rem 0" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto", position: "relative", zIndex: 1 }}>
-          {/* Top text */}
-          <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-                background: "rgba(200,155,99,0.10)",
-                border: "1px solid rgba(200,155,99,0.22)",
-                borderRadius: "999px",
-                padding: "5px 14px",
-                marginBottom: "2rem",
-                fontSize: "12px",
-                fontWeight: 600,
-                color: "#C89B63",
-                fontFamily: "'Cormorant Garamond', serif",
-                letterSpacing: "0.06em",
-                animation: "fadeUp 0.6s ease both",
-              }}
-            >
-              <span
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  background: "#C89B63",
-                  boxShadow: "0 0 8px #C89B6388",
-                }}
-              />
-              Precision-crafted in Edinburgh
-              <ArrowRight style={{ width: 12, height: 12 }} />
-            </div>
-
-            <h1
-              style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "clamp(3rem, 7vw, 6.5rem)",
-                lineHeight: 1.0,
-                letterSpacing: "-0.02em",
-                fontWeight: 700,
-                color: "var(--foreground)",
-                animation: "fadeUp 0.7s ease 0.1s both",
-                marginBottom: "1.5rem",
-              }}
-            >
-              Ask better
-              <br />
-              <em style={{ color: "#C89B63", fontStyle: "italic" }}>questions.</em>
-            </h1>
-
-            <p
-              style={{
-                maxWidth: "54ch",
-                margin: "0 auto 2.25rem",
-                fontSize: "clamp(15px, 1.6vw, 18px)",
-                lineHeight: 1.8,
-                color: "var(--muted-foreground)",
-                fontFamily: "'Cormorant Garamond', serif",
-                fontWeight: 400,
-                animation: "fadeUp 0.7s ease 0.2s both",
-                letterSpacing: "0.01em",
-              }}
-            >
-              EdinForm is the form builder for teams who care about the quality of every
-              conversation. Adaptive logic, live analytics, and a respondent experience that's
-              quietly exceptional — like the city that inspired its name.
-            </p>
-
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "10px",
-                alignItems: "center",
-                justifyContent: "center",
-                animation: "fadeUp 0.7s ease 0.3s both",
-                marginBottom: "2.5rem",
-              }}
-            >
-              <Link
-                href={ctaHref}
+          <div
+            className="mkt-card"
+            style={{
+              padding: "3rem 2rem 2rem",
+              marginBottom: "2rem",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            {/* Top text */}
+            <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
+              <div
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
                   gap: "8px",
+                  background: "rgba(225, 29, 143, 0.08)",
+                  border: "1px solid rgba(225, 29, 143, 0.2)",
                   borderRadius: "999px",
-                  padding: "13px 28px",
-                  fontSize: "15px",
-                  background: "linear-gradient(135deg, #C89B63 0%, #8B6540 100%)",
-                  color: "#0B0B0C",
-                  textDecoration: "none",
+                  padding: "6px 16px",
+                  marginBottom: "1.5rem",
+                  fontSize: "12px",
                   fontWeight: 700,
-                  boxShadow: "0 4px 20px rgba(200,155,99,0.30)",
-                  fontFamily: "'Cormorant Garamond', serif",
-                  letterSpacing: "0.03em",
-                  transition: "transform 0.2s, box-shadow 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.transform = "scale(1.04)";
-                  (e.currentTarget as HTMLElement).style.boxShadow =
-                    "0 8px 32px rgba(200,155,99,0.45)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.transform = "";
-                  (e.currentTarget as HTMLElement).style.boxShadow =
-                    "0 4px 20px rgba(200,155,99,0.30)";
+                  color: "#e11d8f",
+                  fontFamily: "var(--font-inter), sans-serif",
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  animation: "fadeUp 0.6s ease both",
                 }}
               >
-                Build your first form — free <ArrowRight style={{ width: 15, height: 15 }} />
-              </Link>
-              <Link
-                href="#demo"
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "#22d3ee",
+                    boxShadow: "0 0 8px #22d3ee88",
+                  }}
+                />
+                Online form business — built for growth
+                <ArrowRight style={{ width: 12, height: 12 }} />
+              </div>
+
+              <h1
+                className="mkt-hero-title"
+                style={{ animation: "fadeUp 0.7s ease 0.1s both", marginBottom: "1.25rem" }}
+              >
+                Build smarter
+                <br />
+                <em>forms.</em>
+              </h1>
+
+              <p
                 style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  borderRadius: "999px",
-                  padding: "13px 22px",
-                  fontSize: "15px",
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.10)",
-                  color: "var(--foreground)",
-                  textDecoration: "none",
-                  fontFamily: "'Cormorant Garamond', serif",
-                  letterSpacing: "0.03em",
-                  transition: "background 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.09)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+                  maxWidth: "54ch",
+                  margin: "0 auto 2rem",
+                  fontSize: "clamp(16px, 1.6vw, 18px)",
+                  lineHeight: 1.7,
+                  color: "#64748b",
+                  fontFamily: "var(--font-inter), sans-serif",
+                  animation: "fadeUp 0.7s ease 0.2s both",
                 }}
               >
-                <Play style={{ width: 13, height: 13, fill: "currentColor" }} /> See a live demo
-              </Link>
+                Create beautiful multi-step forms, collect responses in real time, and turn answers
+                into insights — the modern way to grow your audience and business.
+              </p>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "12px",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  animation: "fadeUp 0.7s ease 0.3s both",
+                  marginBottom: "1rem",
+                }}
+              >
+                <Link href={ctaHref} className="mkt-btn-primary">
+                  Learn more <ArrowRight style={{ width: 15, height: 15 }} />
+                </Link>
+                <Link href="#demo" className="mkt-btn-outline">
+                  Watch live demo
+                </Link>
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  flexWrap: "wrap",
+                  gap: "1.5rem",
+                  fontSize: "13px",
+                  color: "#64748b",
+                  animation: "fadeUp 0.7s ease 0.4s both",
+                  fontFamily: "var(--font-inter), sans-serif",
+                }}
+              >
+                {[
+                  "Free plan forever",
+                  "No credit card needed",
+                  "GDPR compliant",
+                  "Trusted by 8,400+ teams",
+                ].map((t) => (
+                  <span key={t} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <Check style={{ width: 12, height: 12, color: "#22c55e" }} /> {t}
+                  </span>
+                ))}
+              </div>
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                flexWrap: "wrap",
-                gap: "1.5rem",
-                fontSize: "13px",
-                color: "var(--muted-foreground)",
-                animation: "fadeUp 0.7s ease 0.4s both",
-                fontFamily: "'Cormorant Garamond', serif",
-              }}
-            >
-              {[
-                "Free plan forever",
-                "No credit card needed",
-                "GDPR compliant",
-                "Trusted by 8,400+ teams",
-              ].map((t) => (
-                <span key={t} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <Check style={{ width: 12, height: 12, color: "#7EB884" }} /> {t}
-                </span>
-              ))}
+            {/* Edinburgh Skyline — full width */}
+            <div style={{ animation: "fadeUp 0.9s ease 0.35s both", marginBottom: "0" }}>
+              <EdinburghSkylineHero />
             </div>
-          </div>
-
-          {/* Edinburgh Skyline — full width */}
-          <div style={{ animation: "fadeUp 0.9s ease 0.35s both", marginBottom: "0" }}>
-            <EdinburghSkylineHero />
           </div>
 
           {/* Horizontal two-col below skyline */}

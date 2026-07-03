@@ -15,3 +15,27 @@ export interface FormAnalyticsSummary {
   avgCompletionSeconds: number | null;
   dailyData: DailyAnalytics[];
 }
+
+export interface FieldOptionCount {
+  value: string;
+  label: string;
+  count: number;
+  percentage: number;
+}
+
+export interface RatingDistribution {
+  rating: number;
+  count: number;
+}
+
+export interface FieldAnalyticsSummary {
+  fieldId: string;
+  label: string;
+  type: string;
+  totalAnswers: number;
+  skipRate: number;
+  optionCounts?: FieldOptionCount[];
+  numericStats?: { avg: number; min: number; max: number };
+  ratingDistribution?: RatingDistribution[];
+  avgRating?: number;
+}

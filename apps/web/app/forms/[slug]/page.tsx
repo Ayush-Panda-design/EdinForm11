@@ -1,9 +1,11 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { trpc } from "~/trpc/client";
 import { toast } from "sonner";
+import { validateSubmissionAnswers } from "@repo/validators/responses";
+import type { DynamicField } from "@repo/validators/responses";
 import {
   Loader2,
   AlertCircle,
@@ -15,6 +17,49 @@ import {
 } from "lucide-react";
 import { FieldRenderer, shouldShowField, type FormField } from "~/components/forms/field-renderer";
 
+type ThemeConfig = {
+  primaryColor?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  fontFamily?: string;
+  borderRadius?: string;
+};
+
+function resolveFormTheme(theme?: { config: ThemeConfig } | null) {
+  const cfg = theme?.config;
+  return {
+    bg: cfg?.backgroundColor ?? "#050816",
+    primary: cfg?.primaryColor ?? "#3b82f6",
+    accent: cfg?.primaryColor ?? "#8b5cf6",
+    text: cfg?.textColor ?? "#ffffff",
+    muted: "rgba(148, 163, 184, 0.9)",
+    fontFamily: cfg?.fontFamily,
+    borderRadius: cfg?.borderRadius ?? "16px",
+  };
+}
+
+function toDynamicField(f: FormField): DynamicField {
+  return {
+    id: f.id,
+    type: f.type,
+    label: f.label,
+    required: f.required,
+    options: f.options ?? null,
+    validationRules: (f.validationRules as DynamicField["validationRules"]) ?? null,
+    conditionalLogic: f.conditionalLogic ?? null,
+  };
+}
+
+function formatAnswerForValidation(
+  field: FormField,
+  value: string | string[] | undefined,
+): { fieldId: string; value?: string; valueArray?: string[] } {
+  if (field.type === "multi_select" && Array.isArray(value)) {
+    return { fieldId: field.id, valueArray: value };
+  }
+  return { fieldId: field.id, value: value !== undefined ? String(value) : undefined };
+}
+
 export default function PublicFormPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
 
@@ -24,6 +69,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
   const [currentStep, setCurrentStep] = useState(-1);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [startTime] = useState(Date.now());
+  const [honeypot, setHoneypot] = useState("");
 
   // Password gate
   const [passwordInput, setPasswordInput] = useState("");
@@ -52,6 +98,16 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
     },
     onError: (e) => toast.error(e.message || "Submission failed"),
   });
+
+  const activeForm = passwordVerified && unlockedForm ? unlockedForm : form;
+
+  const theme = useMemo(
+    () =>
+      resolveFormTheme(
+        activeForm ? (activeForm as { theme?: { config: ThemeConfig } | null }).theme : null,
+      ),
+    [activeForm],
+  );
 
   // Keyboard navigation
   useEffect(() => {
@@ -207,9 +263,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
       </div>
     );
 
-  const activeForm = passwordVerified && unlockedForm ? unlockedForm : form;
-
-  const visibleFields = activeForm.fields
+  const visibleFields = (activeForm?.fields ?? [])
     .filter((f) => shouldShowField(f as FormField, answers))
     .sort((a, b) => a.order - b.order);
 
@@ -224,31 +278,14 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
   const validateCurrentStep = (): boolean => {
     if (!currentField) return true;
 
-    if (currentField.required) {
-      const ans = answers[currentField.id];
+    const validation = validateSubmissionAnswers(
+      [toDynamicField(currentField as FormField)],
+      [formatAnswerForValidation(currentField as FormField, answers[currentField.id])],
+    );
 
-      const isEmpty =
-        ans === undefined ||
-        ans === null ||
-        ans === "" ||
-        ans === "false" ||
-        (Array.isArray(ans) && ans.length === 0);
-
-      if (isEmpty) {
-        setValidationError(`Please answer "${currentField.label}" before continuing`);
-
-        return false;
-      }
-
-      if (currentField.type === "email") {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if (!emailRegex.test(String(ans))) {
-          setValidationError("Please enter a valid email address");
-
-          return false;
-        }
-      }
+    if (!validation.success) {
+      setValidationError(validation.errors[0]?.message ?? "Invalid answer");
+      return false;
     }
 
     return true;
@@ -280,44 +317,35 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
   };
 
   const handleSubmit = () => {
-    const missingRequired = visibleFields.filter((f) => {
-      if (!f.required) return false;
+    const formattedAnswers = visibleFields
+      .map((f) => formatAnswerForValidation(f as FormField, answers[f.id]))
+      .filter((a) => a.value !== undefined || a.valueArray !== undefined);
 
-      const ans = answers[f.id];
+    const validation = validateSubmissionAnswers(
+      visibleFields.map((f) => toDynamicField(f as FormField)),
+      formattedAnswers,
+    );
 
-      return !ans || (Array.isArray(ans) ? ans.length === 0 : ans === "" || ans === "false");
-    });
-
-    if (missingRequired.length > 0) {
-      const firstMissing = missingRequired[0];
-
-      if (firstMissing) {
-        const idx = visibleFields.findIndex((f) => f.id === firstMissing.id);
-
-        setCurrentStep(idx);
-
-        setValidationError(`Please answer "${firstMissing.label}"`);
+    if (!validation.success) {
+      const err = validation.errors[0];
+      if (err) {
+        const idx = visibleFields.findIndex((f) => f.id === err.fieldId);
+        if (idx >= 0) setCurrentStep(idx);
+        setValidationError(err.message);
       }
-
       return;
     }
 
     const completionTimeSeconds = Math.round((Date.now() - startTime) / 1000);
 
-    const formattedAnswers = visibleFields
+    const submitAnswers = visibleFields
       .map((f) => {
         const raw = answers[f.id];
 
         if (Array.isArray(raw) && raw.length > 0) {
-          return {
-            fieldId: f.id,
-            valueArray: raw as string[],
-          };
+          return { fieldId: f.id, valueArray: raw as string[] };
         } else if (!Array.isArray(raw) && raw !== undefined && raw !== "" && raw !== null) {
-          return {
-            fieldId: f.id,
-            value: String(raw),
-          };
+          return { fieldId: f.id, value: String(raw) };
         }
 
         return null;
@@ -326,8 +354,9 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
     submitMutation.mutate({
       formId: form.id,
-      answers: formattedAnswers,
+      answers: submitAnswers,
       completionTimeSeconds,
+      honeypot: honeypot || undefined,
     });
   };
 
@@ -360,8 +389,16 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
   // Cover Screen
   if (currentStep === -1)
     return (
-      <div className="min-h-screen bg-[#050816] flex flex-col relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(91,140,255,0.14),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(139,92,246,0.14),transparent_40%)]" />
+      <div
+        className="min-h-screen flex flex-col relative overflow-hidden"
+        style={{ backgroundColor: theme.bg, color: theme.text, fontFamily: theme.fontFamily }}
+      >
+        <div
+          className="absolute inset-0 opacity-40"
+          style={{
+            background: `radial-gradient(circle at top left, ${theme.primary}33, transparent 40%), radial-gradient(circle at bottom right, ${theme.accent}33, transparent 40%)`,
+          }}
+        />
 
         {form.showProgressBar && (
           <div className="relative z-10 h-1 bg-white/5">
@@ -389,7 +426,12 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
             <button
               onClick={handleNext}
-              className="group inline-flex items-center gap-3 h-16 px-8 rounded-2xl bg-gradient-to-r from-blue-500 to-violet-500 text-white font-semibold text-lg shadow-[0_12px_40px_rgba(59,130,246,0.35)] hover:scale-[1.03] transition-all"
+              className="group inline-flex items-center gap-3 h-16 px-8 rounded-2xl text-white font-semibold text-lg hover:scale-[1.03] transition-all"
+              style={{
+                background: `linear-gradient(to right, ${theme.primary}, ${theme.accent})`,
+                boxShadow: `0 12px 40px ${theme.primary}55`,
+                borderRadius: theme.borderRadius,
+              }}
             >
               Start form
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -409,16 +451,37 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
   // Question Screen
   return (
-    <div className="min-h-screen bg-[#050816] flex flex-col relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(91,140,255,0.12),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(139,92,246,0.14),transparent_40%)]" />
+    <div
+      className="min-h-screen flex flex-col relative overflow-hidden"
+      style={{ backgroundColor: theme.bg, color: theme.text, fontFamily: theme.fontFamily }}
+    >
+      <div
+        className="absolute inset-0 opacity-40"
+        style={{
+          background: `radial-gradient(circle at top left, ${theme.primary}33, transparent 35%), radial-gradient(circle at bottom right, ${theme.accent}33, transparent 40%)`,
+        }}
+      />
+
+      {/* Honeypot — hidden from humans, filled by bots */}
+      <input
+        type="text"
+        name="website"
+        value={honeypot}
+        onChange={(e) => setHoneypot(e.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="absolute opacity-0 h-0 w-0 pointer-events-none"
+      />
 
       {/* Progress */}
       {form.showProgressBar && (
         <div className="relative z-10 h-1 bg-white/5">
           <div
-            className="h-1 bg-gradient-to-r from-blue-500 to-violet-500 transition-all duration-500"
+            className="h-1 transition-all duration-500"
             style={{
               width: `${progress}%`,
+              background: `linear-gradient(to right, ${theme.primary}, ${theme.accent})`,
             }}
           />
         </div>

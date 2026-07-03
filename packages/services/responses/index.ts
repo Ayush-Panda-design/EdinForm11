@@ -7,6 +7,7 @@ import db, {
   responseAnswersTable,
 } from "@repo/database";
 import type { SubmitResponseInput, ListResponsesInput } from "@repo/validators/responses";
+import { validateSubmissionAnswers, type DynamicField } from "@repo/validators/responses";
 import type { FormResponse, PaginatedResponses } from "@repo/types/responses";
 
 // Injected Redis client (optional)
@@ -134,6 +135,25 @@ export class ResponsesService {
         if (form.visibility === "unpublished") throw new Error("FORM_NOT_ACCEPTING_RESPONSES");
         if (form.isArchived) throw new Error("FORM_NOT_ACCEPTING_RESPONSES");
 
+        // Honeypot — silently accept without storing (anti-spam)
+        if (input.honeypot && input.honeypot.trim() !== "") {
+          return {
+            responseId: "honeypot-blocked",
+            successMessage: form.successMessage ?? "Thank you for your response!",
+          };
+        }
+
+        // Reject impossibly fast submissions (< 2 seconds)
+        if (
+          input.completionTimeSeconds !== undefined &&
+          input.completionTimeSeconds < 2
+        ) {
+          return {
+            responseId: "timing-blocked",
+            successMessage: form.successMessage ?? "Thank you for your response!",
+          };
+        }
+
         // Browser fingerprint deduplication (always applied)
         const fpCheck = await checkFingerprintDuplicate({
           formId: input.formId,
@@ -207,7 +227,24 @@ export class ResponsesService {
           }
         }
 
-        // REQUIRED FIELD VALIDATION
+        // REQUIRED FIELD VALIDATION + dynamic Zod rules (min/max/pattern/options)
+        const dynamicFields = fields.map((f) => ({
+          id: f.id,
+          type: f.type,
+          label: f.label,
+          required: f.required,
+          options: f.options as { value: string; label: string }[] | null,
+          validationRules: f.validationRules as DynamicField["validationRules"],
+          conditionalLogic: f.conditionalLogic as DynamicField["conditionalLogic"],
+        }));
+
+        const validation = validateSubmissionAnswers(dynamicFields, input.answers);
+        if (!validation.success) {
+          const first = validation.errors[0]!;
+          throw new Error(`VALIDATION_FAILED:${first.fieldId}:${first.message}`);
+        }
+
+        // Legacy required check kept for explicit error codes
         const requiredFields = fields.filter((f) => f.required);
         const answerMap = new Map(input.answers.map((a) => [a.fieldId, a]));
 

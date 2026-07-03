@@ -74,6 +74,13 @@ export const responsesRouter = router({
           const parts = msg.split(":");
           throw new TRPCError({ code: "BAD_REQUEST", message: `Answer type mismatch for field ${parts[1]}: ${parts[2]}` });
         }
+        if (msg.startsWith("VALIDATION_FAILED:")) {
+          const parts = msg.split(":");
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: parts.slice(2).join(":") || "Validation failed",
+          });
+        }
         if (msg.startsWith("DUPLICATE_SUBMISSION:")) {
           throw new TRPCError({ code: "CONFLICT", message: "You have already submitted a response to this form." });
         }

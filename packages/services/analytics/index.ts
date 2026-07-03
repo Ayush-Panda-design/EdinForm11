@@ -790,6 +790,171 @@ export class AnalyticsService {
     d.setDate(d.getDate() - 30);
     return d;
   }
+
+  /**
+   * Per-field answer distributions — option counts, rating stats, numeric aggregates.
+   */
+  async getFieldAnalytics(
+    formId: string,
+    creatorId: string,
+    from?: Date,
+    to?: Date
+  ): Promise<import("@repo/types/analytics").FieldAnalyticsSummary[]> {
+    const [form] = await db
+      .select({ id: formsTable.id })
+      .from(formsTable)
+      .where(and(eq(formsTable.id, formId), eq(formsTable.creatorId, creatorId)))
+      .limit(1);
+
+    if (!form) throw new Error("FORM_NOT_FOUND_OR_UNAUTHORIZED");
+
+    const fromDate = from ?? this.defaultFromDate();
+    const toDate = to ?? new Date();
+
+    const fields = await db
+      .select()
+      .from(formFieldsTable)
+      .where(eq(formFieldsTable.formId, formId))
+      .orderBy(formFieldsTable.order);
+
+    const [totalSubmissionsResult] = await db
+      .select({ total: sql<number>`count(*)::int` })
+      .from(formResponsesTable)
+      .where(
+        and(
+          eq(formResponsesTable.formId, formId),
+          eq(formResponsesTable.status, "completed"),
+          gte(formResponsesTable.submittedAt, fromDate),
+          lte(formResponsesTable.submittedAt, toDate)
+        )
+      );
+
+    const totalSubmissions = totalSubmissionsResult?.total ?? 0;
+
+    const answers = await db
+      .select({
+        fieldId: responseAnswersTable.fieldId,
+        value: responseAnswersTable.value,
+        valueArray: responseAnswersTable.valueArray,
+      })
+      .from(responseAnswersTable)
+      .innerJoin(
+        formResponsesTable,
+        eq(responseAnswersTable.responseId, formResponsesTable.id)
+      )
+      .where(
+        and(
+          eq(responseAnswersTable.formId, formId),
+          eq(formResponsesTable.status, "completed"),
+          gte(formResponsesTable.submittedAt, fromDate),
+          lte(formResponsesTable.submittedAt, toDate)
+        )
+      );
+
+    const answersByField = new Map<string, typeof answers>();
+    for (const a of answers) {
+      const arr = answersByField.get(a.fieldId) ?? [];
+      arr.push(a);
+      answersByField.set(a.fieldId, arr);
+    }
+
+    return fields.map((field) => {
+      const fieldAnswers = answersByField.get(field.id) ?? [];
+      const totalAnswers = fieldAnswers.length;
+      const skipRate =
+        totalSubmissions > 0
+          ? Math.round(((totalSubmissions - totalAnswers) / totalSubmissions) * 1000) / 10
+          : 0;
+
+      const base = {
+        fieldId: field.id,
+        label: field.label,
+        type: field.type,
+        totalAnswers,
+        skipRate,
+      };
+
+      const options = field.options as { value: string; label: string }[] | null;
+
+      if (["single_select", "multi_select", "checkbox"].includes(field.type)) {
+        const countMap = new Map<string, number>();
+        for (const a of fieldAnswers) {
+          if (field.type === "multi_select" && a.valueArray) {
+            for (const v of a.valueArray as string[]) {
+              countMap.set(v, (countMap.get(v) ?? 0) + 1);
+            }
+          } else if (a.value) {
+            countMap.set(a.value, (countMap.get(a.value) ?? 0) + 1);
+          }
+        }
+        const optionCounts = (options ?? []).map((opt) => {
+          const count = countMap.get(opt.value) ?? 0;
+          return {
+            value: opt.value,
+            label: opt.label,
+            count,
+            percentage:
+              totalAnswers > 0 ? Math.round((count / totalAnswers) * 1000) / 10 : 0,
+          };
+        });
+        // Include ad-hoc values not in options
+        for (const [value, count] of countMap) {
+          if (!options?.some((o) => o.value === value)) {
+            optionCounts.push({
+              value,
+              label: value,
+              count,
+              percentage:
+                totalAnswers > 0 ? Math.round((count / totalAnswers) * 1000) / 10 : 0,
+            });
+          }
+        }
+        return { ...base, optionCounts };
+      }
+
+      if (field.type === "rating") {
+        const ratings: number[] = [];
+        for (const a of fieldAnswers) {
+          const n = Number(a.value);
+          if (!Number.isNaN(n)) ratings.push(n);
+        }
+        const distMap = new Map<number, number>();
+        for (const r of ratings) {
+          distMap.set(r, (distMap.get(r) ?? 0) + 1);
+        }
+        const maxRating = (field.validationRules as { maxRating?: number } | null)?.maxRating ?? 5;
+        const ratingDistribution = Array.from({ length: maxRating }, (_, i) => ({
+          rating: i + 1,
+          count: distMap.get(i + 1) ?? 0,
+        }));
+        const avgRating =
+          ratings.length > 0
+            ? Math.round((ratings.reduce((s, n) => s + n, 0) / ratings.length) * 10) / 10
+            : undefined;
+        return { ...base, ratingDistribution, avgRating };
+      }
+
+      if (field.type === "number") {
+        const nums: number[] = [];
+        for (const a of fieldAnswers) {
+          const n = Number(a.value);
+          if (!Number.isNaN(n)) nums.push(n);
+        }
+        if (nums.length > 0) {
+          return {
+            ...base,
+            numericStats: {
+              avg: Math.round((nums.reduce((s, n) => s + n, 0) / nums.length) * 100) / 100,
+              min: Math.min(...nums),
+              max: Math.max(...nums),
+            },
+          };
+        }
+      }
+
+      return base;
+    });
+  }
 }
 
 export const analyticsService = new AnalyticsService();

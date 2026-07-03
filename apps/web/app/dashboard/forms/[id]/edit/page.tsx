@@ -34,7 +34,9 @@ import {
   type ConditionalLogic,
 } from "~/components/forms/conditional-logic-editor";
 import { DndFieldList } from "~/components/forms/dnd-field-list";
+import { ValidationRulesEditor } from "~/components/forms/validation-rules-editor";
 import { FormField as PreviewField, type FieldOption } from "~/components/forms/field-renderer";
+import type { ValidationRules } from "@repo/types/forms";
 import { Lock as LockIcon } from "lucide-react";
 
 type EditorFormField = {
@@ -60,6 +62,7 @@ type FieldSaveUpdates = {
   required: boolean;
   options?: FieldOption[];
   conditionalLogic?: ConditionalLogic;
+  validationRules?: ValidationRules;
 };
 
 type FieldType =
@@ -107,9 +110,13 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
   const [newFieldPlaceholder, setNewFieldPlaceholder] = useState("");
   const [newFieldHelpText, setNewFieldHelpText] = useState("");
   const [newFieldLogic, setNewFieldLogic] = useState<ConditionalLogic | null>(null);
+  const [newFieldValidationRules, setNewFieldValidationRules] = useState<ValidationRules | null>(
+    null,
+  );
 
   // Settings state
   const [settingsSaving, setSettingsSaving] = useState(false);
+  const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
   const [maxResponses, setMaxResponses] = useState<string>("");
   const [closeAfterDate, setCloseAfterDate] = useState<string>("");
   const [submitButtonText, setSubmitButtonText] = useState("");
@@ -129,6 +136,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
   const [editingPageTitle, setEditingPageTitle] = useState("");
 
   const { data: form, isLoading } = trpc.forms.getById.useQuery({ id });
+  const { data: themes } = trpc.themes.list.useQuery();
 
   useEffect(() => {
     if (form && !settingsLoaded) {
@@ -140,6 +148,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
       setSuccessMessage(form.successMessage ?? "");
       setShowProgressBar(form.showProgressBar ?? true);
       setAllowMultipleResponses(form.allowMultipleResponses ?? true);
+      setSelectedThemeId(form.themeId ?? null);
       setSettingsLoaded(true);
     }
   }, [form, settingsLoaded]);
@@ -180,6 +189,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
       setNewFieldPlaceholder("");
       setNewFieldHelpText("");
       setNewFieldLogic(null);
+      setNewFieldValidationRules(null);
     },
     onError: (e) => toast.error(e.message),
   });
@@ -291,6 +301,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
       order: form?.fields?.length ?? 0,
       options,
       conditionalLogic: newFieldLogic ?? undefined,
+      validationRules: newFieldValidationRules ?? undefined,
     });
   };
 
@@ -304,6 +315,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
       successMessage: successMessage || undefined,
       showProgressBar,
       allowMultipleResponses,
+      themeId: selectedThemeId ?? undefined,
     });
   };
 
@@ -778,6 +790,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                                   formId: id,
                                   fieldId: field.id,
                                   ...updates,
+                                  validationRules: updates.validationRules ?? undefined,
                                 });
                                 setExpandedField(null);
                               }}
@@ -909,6 +922,12 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                 </span>
               </label>
 
+              <ValidationRulesEditor
+                fieldType={newFieldType}
+                rules={newFieldValidationRules}
+                onChange={setNewFieldValidationRules}
+              />
+
               {/* Conditional Logic */}
               <div className="pt-4" style={{ borderTop: "1px solid var(--border)" }}>
                 <ConditionalLogicEditor
@@ -987,6 +1006,74 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
           <h2 className="font-semibold" style={{ color: "var(--foreground)" }}>
             Form Settings
           </h2>
+
+          {/* Theme selector */}
+          {themes && themes.length > 0 && (
+            <div>
+              <label
+                className="block text-sm font-medium mb-2"
+                style={{ color: "var(--foreground)" }}
+              >
+                Form theme
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSelectedThemeId(null)}
+                  className="rounded-xl p-3 text-left text-sm transition-all"
+                  style={{
+                    border:
+                      selectedThemeId === null
+                        ? "2px solid var(--accent-amber)"
+                        : "1px solid var(--border)",
+                    background: selectedThemeId === null ? "rgba(200,155,99,0.08)" : "transparent",
+                  }}
+                >
+                  <span style={{ color: "var(--foreground)" }}>Default</span>
+                  <div className="flex gap-1 mt-2">
+                    <span className="w-4 h-4 rounded-full bg-blue-500" />
+                    <span className="w-4 h-4 rounded-full bg-violet-500" />
+                  </div>
+                </button>
+                {themes.map((theme) => {
+                  const cfg = theme.config as {
+                    primaryColor?: string;
+                    backgroundColor?: string;
+                  };
+                  const isSelected = selectedThemeId === theme.id;
+                  return (
+                    <button
+                      key={theme.id}
+                      type="button"
+                      onClick={() => setSelectedThemeId(theme.id)}
+                      className="rounded-xl p-3 text-left text-sm transition-all"
+                      style={{
+                        border: isSelected
+                          ? "2px solid var(--accent-amber)"
+                          : "1px solid var(--border)",
+                        background: isSelected ? "rgba(200,155,99,0.08)" : "transparent",
+                      }}
+                    >
+                      <span className="font-medium" style={{ color: "var(--foreground)" }}>
+                        {theme.name}
+                      </span>
+                      <div className="flex gap-1 mt-2">
+                        <span
+                          className="w-4 h-4 rounded-full"
+                          style={{ background: cfg.primaryColor ?? "#3b82f6" }}
+                        />
+                        <span
+                          className="w-4 h-4 rounded-full"
+                          style={{ background: cfg.backgroundColor ?? "#050816" }}
+                        />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div>
             <label
               className="block text-sm font-medium mb-1.5"
@@ -1539,6 +1626,9 @@ function FieldExpander({
     field.options ? (field.options as { label: string }[]).map((o) => o.label).join("\n") : "",
   );
   const [logic, setLogic] = useState<ConditionalLogic | null>(field.conditionalLogic ?? null);
+  const [validationRules, setValidationRules] = useState<ValidationRules | null>(
+    (field.validationRules as ValidationRules | null) ?? null,
+  );
 
   const fieldsBeforeThis = allFields.filter((f) => f.order < field.order);
 
@@ -1627,6 +1717,12 @@ function FieldExpander({
         onChange={setLogic}
       />
 
+      <ValidationRulesEditor
+        fieldType={field.type as FieldType}
+        rules={validationRules}
+        onChange={setValidationRules}
+      />
+
       <button
         onClick={() => {
           const hasOptions = ["single_select", "multi_select"].includes(field.type);
@@ -1647,6 +1743,7 @@ function FieldExpander({
             required,
             options: parsedOptions,
             conditionalLogic: logic ?? undefined,
+            validationRules: validationRules ?? undefined,
           });
         }}
         disabled={isSaving}

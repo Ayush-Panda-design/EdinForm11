@@ -32,8 +32,8 @@ import {
 import { format, parseISO, subDays, formatDistanceToNow } from "date-fns";
 
 /* ── shared tokens ── */
-const AMBER = "#C89B63";
-const GREEN = "#58745C";
+const CYAN = "#00e5c2";
+const GREEN = "#39ff88";
 
 export default function AnalyticsDashboardPage() {
   const { data: dashboard, isLoading } = trpc.analytics.dashboard.useQuery(undefined, {
@@ -56,7 +56,7 @@ export default function AnalyticsDashboardPage() {
       <div
         style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "8rem" }}
       >
-        <Loader2 className="animate-spin" style={{ width: 28, height: 28, color: AMBER }} />
+        <Loader2 className="animate-spin" style={{ width: 28, height: 28, color: CYAN }} />
       </div>
     );
   }
@@ -110,10 +110,9 @@ export default function AnalyticsDashboardPage() {
 
   /* ── shared section card style ── */
   const card: React.CSSProperties = {
-    background: "rgba(255,255,255,0.025)",
-    border: "1px solid rgba(255,255,255,0.07)",
+    background: "#0c0c0e",
+    border: "1px solid rgba(255,255,255,0.06)",
     borderRadius: "16px",
-    backdropFilter: "blur(24px)",
   };
 
   const th: React.CSSProperties = {
@@ -178,7 +177,7 @@ export default function AnalyticsDashboardPage() {
                 lineHeight: 1.1,
               }}
             >
-              Workspace <em style={{ color: AMBER }}>Overview</em>
+              Workspace <em style={{ color: CYAN }}>Overview</em>
             </h1>
             {/* live dot */}
             <span
@@ -261,7 +260,7 @@ export default function AnalyticsDashboardPage() {
                 cursor: "pointer",
                 transition: "all 0.18s",
                 background: daysFilter === days ? "rgba(200,155,99,0.12)" : "transparent",
-                color: daysFilter === days ? AMBER : "var(--muted-foreground)",
+                color: daysFilter === days ? CYAN : "var(--muted-foreground)",
                 boxShadow: daysFilter === days ? "inset 0 0 0 1px rgba(200,155,99,0.2)" : "none",
                 fontWeight: daysFilter === days ? 600 : 400,
               }}
@@ -304,7 +303,7 @@ export default function AnalyticsDashboardPage() {
               >
                 {label}
               </span>
-              <Icon style={{ width: 13, height: 13, color: AMBER, opacity: 0.7 }} />
+              <Icon style={{ width: 13, height: 13, color: CYAN, opacity: 0.7 }} />
             </div>
             <p
               style={{
@@ -378,7 +377,7 @@ export default function AnalyticsDashboardPage() {
                       width: 8,
                       height: 8,
                       borderRadius: "50%",
-                      background: AMBER,
+                      background: CYAN,
                       display: "inline-block",
                     }}
                   />{" "}
@@ -408,8 +407,8 @@ export default function AnalyticsDashboardPage() {
                   >
                     <defs>
                       <linearGradient id="gViews" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={AMBER} stopOpacity={0.18} />
-                        <stop offset="95%" stopColor={AMBER} stopOpacity={0} />
+                        <stop offset="5%" stopColor={CYAN} stopOpacity={0.18} />
+                        <stop offset="95%" stopColor={CYAN} stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="gSubs" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor={GREEN} stopOpacity={0.18} />
@@ -467,7 +466,7 @@ export default function AnalyticsDashboardPage() {
                     <Area
                       type="monotone"
                       dataKey="views"
-                      stroke={AMBER}
+                      stroke={CYAN}
                       strokeWidth={1.5}
                       fill="url(#gViews)"
                       name="Views"
@@ -505,7 +504,7 @@ export default function AnalyticsDashboardPage() {
             <div
               style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "1.25rem" }}
             >
-              <Sparkles style={{ width: 15, height: 15, color: AMBER }} />
+              <Sparkles style={{ width: 15, height: 15, color: CYAN }} />
               <p
                 style={{
                   fontSize: "11px",
@@ -555,7 +554,7 @@ export default function AnalyticsDashboardPage() {
                             fontSize: "10px",
                             fontWeight: 700,
                             fontFamily: "monospace",
-                            color: AMBER,
+                            color: CYAN,
                             background: "rgba(200,155,99,0.1)",
                             padding: "1px 6px",
                             borderRadius: "4px",
@@ -599,7 +598,7 @@ export default function AnalyticsDashboardPage() {
                         flexShrink: 0,
                       }}
                       onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.color = AMBER;
+                        (e.currentTarget as HTMLElement).style.color = CYAN;
                         (e.currentTarget as HTMLElement).style.background = "rgba(200,155,99,0.08)";
                       }}
                       onMouseLeave={(e) => {
@@ -708,7 +707,7 @@ export default function AnalyticsDashboardPage() {
 
         {isLoadingRecent ? (
           <div style={{ display: "flex", justifyContent: "center", padding: "3rem" }}>
-            <Loader2 className="animate-spin" style={{ width: 20, height: 20, color: AMBER }} />
+            <Loader2 className="animate-spin" style={{ width: 20, height: 20, color: CYAN }} />
           </div>
         ) : !recentSubmissions || recentSubmissions.length === 0 ? (
           <div style={{ padding: "4rem 2rem", textAlign: "center" }}>
@@ -725,7 +724,7 @@ export default function AnalyticsDashboardPage() {
                 margin: "0 auto 1rem",
               }}
             >
-              <Mail style={{ width: 18, height: 18, color: AMBER }} />
+              <Mail style={{ width: 18, height: 18, color: CYAN }} />
             </div>
             <p style={{ fontSize: "13px", color: "var(--muted-foreground)" }}>
               No submissions yet — share your forms to start collecting responses.
@@ -765,7 +764,7 @@ export default function AnalyticsDashboardPage() {
                     flexShrink: 0,
                   }}
                 >
-                  <User style={{ width: 14, height: 14, color: AMBER }} />
+                  <User style={{ width: 14, height: 14, color: CYAN }} />
                 </div>
 
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -860,7 +859,7 @@ export default function AnalyticsDashboardPage() {
                     transition: "color 0.15s, background 0.15s",
                   }}
                   onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = AMBER;
+                    (e.currentTarget as HTMLElement).style.color = CYAN;
                     (e.currentTarget as HTMLElement).style.background = "rgba(200,155,99,0.08)";
                   }}
                   onMouseLeave={(e) => {
@@ -1019,7 +1018,7 @@ export default function AnalyticsDashboardPage() {
                             style={{
                               width: `${Math.min(form.conversionRate, 100)}%`,
                               height: "100%",
-                              background: AMBER,
+                              background: CYAN,
                               borderRadius: "999px",
                             }}
                           />
@@ -1041,7 +1040,7 @@ export default function AnalyticsDashboardPage() {
                             transition: "color 0.15s, background 0.15s",
                           }}
                           onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLElement).style.color = AMBER;
+                            (e.currentTarget as HTMLElement).style.color = CYAN;
                             (e.currentTarget as HTMLElement).style.background =
                               "rgba(200,155,99,0.08)";
                           }}
@@ -1064,7 +1063,7 @@ export default function AnalyticsDashboardPage() {
                             fontSize: "11px",
                             textDecoration: "none",
                             fontFamily: "'Inter', sans-serif",
-                            color: AMBER,
+                            color: CYAN,
                             background: "rgba(200,155,99,0.08)",
                             border: "1px solid rgba(200,155,99,0.15)",
                             transition: "background 0.15s",

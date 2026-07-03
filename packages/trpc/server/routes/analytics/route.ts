@@ -91,4 +91,45 @@ export const analyticsRouter = router({
     .query(async ({ input, ctx }) => {
       return analyticsService.getRecentSubmissions(ctx.user!.id, input.limit ?? 20);
     }),
+
+  /** GET /analytics/field-summary — per-field answer distributions */
+  getFieldAnalytics: protectedProcedure
+    .meta({ openapi: { method: "GET", path: getPath("/field-summary"), tags: TAGS } })
+    .input(analyticsQuerySchema)
+    .output(
+      z.array(
+        z.object({
+          fieldId: z.string(),
+          label: z.string(),
+          type: z.string(),
+          totalAnswers: z.number(),
+          skipRate: z.number(),
+          optionCounts: z
+            .array(
+              z.object({
+                value: z.string(),
+                label: z.string(),
+                count: z.number(),
+                percentage: z.number(),
+              })
+            )
+            .optional(),
+          numericStats: z
+            .object({ avg: z.number(), min: z.number(), max: z.number() })
+            .optional(),
+          ratingDistribution: z
+            .array(z.object({ rating: z.number(), count: z.number() }))
+            .optional(),
+          avgRating: z.number().optional(),
+        })
+      )
+    )
+    .query(async ({ input, ctx }) => {
+      return analyticsService.getFieldAnalytics(
+        input.formId,
+        ctx.user!.id,
+        input.from ? new Date(input.from) : undefined,
+        input.to ? new Date(input.to) : undefined
+      );
+    }),
 });

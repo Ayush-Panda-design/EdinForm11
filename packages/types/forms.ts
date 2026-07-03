@@ -21,6 +21,7 @@ export interface ValidationRules {
   minLength?: number;
   maxLength?: number;
   pattern?: string;
+  minRating?: number;
   maxRating?: number;
 }
 

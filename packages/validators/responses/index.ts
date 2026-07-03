@@ -12,8 +12,9 @@ export const submitResponseSchema = z.object({
   answers: z.array(answerSchema).min(0).max(200),
   respondentEmail: z.string().email().optional(),
   respondentName: z.string().max(200).optional(),
-  // FIX: was .positive() which excludes 0; use .nonnegative() to allow 0
   completionTimeSeconds: z.number().int().nonnegative().max(86400).optional(),
+  /** Hidden honeypot — bots fill this; humans leave it empty */
+  honeypot: z.string().max(500).optional(),
 });
 
 export const listResponsesSchema = paginationSchema.extend({
@@ -26,3 +27,6 @@ export const listResponsesSchema = paginationSchema.extend({
 
 export type SubmitResponseInput = z.infer<typeof submitResponseSchema>;
 export type ListResponsesInput = z.infer<typeof listResponsesSchema>;
+
+export * from "./conditional";
+export * from "./dynamic-schema";

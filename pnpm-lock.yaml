@@ -216,6 +216,12 @@ importers:
       "@repo/trpc":
         specifier: workspace:*
         version: link:../../packages/trpc
+      "@repo/types":
+        specifier: workspace:*
+        version: link:../../packages/types
+      "@repo/validators":
+        specifier: workspace:*
+        version: link:../../packages/validators
       "@t3-oss/env-nextjs":
         specifier: ^0.13.10
         version: 0.13.11(typescript@5.9.3)(zod@4.4.3)

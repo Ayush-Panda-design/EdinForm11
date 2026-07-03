@@ -4,6 +4,7 @@ import { router, publicProcedure } from "../../trpc";
 import { generatePath } from "../../utils/path-generator";
 import { formsService } from "@repo/services/forms";
 import { analyticsService } from "@repo/services/analytics";
+import { themesService } from "@repo/services/themes";
 
 const TAGS = ["Public"];
 const getPath = generatePath("/public");
@@ -44,6 +45,14 @@ export const publicRouter = router({
       submitButtonText: z.string().nullable(),
       successMessage: z.string().nullable(),
       themeId: z.string().nullable(),
+      theme: z
+        .object({
+          id: z.string(),
+          name: z.string(),
+          config: z.any(),
+        })
+        .nullable()
+        .optional(),
       maxResponses: z.number().nullable(),
       closeAfterDate: z.date().nullable(),
       isClosed: z.boolean(),
@@ -94,8 +103,13 @@ export const publicRouter = router({
         analyticsService.upsertDailyAnalytics(form.id),
       ]).catch(() => {});
 
+      const theme = form.themeId ? await themesService.getThemeById(form.themeId) : null;
+
       return {
         ...form,
+        theme: theme
+          ? { id: theme.id, name: theme.name, config: theme.config }
+          : null,
         maxResponses: form.maxResponses ?? null,
         closeAfterDate: form.closeAfterDate ?? null,
         isClosed: false,

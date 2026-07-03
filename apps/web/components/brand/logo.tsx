@@ -13,8 +13,7 @@ export function EdinFormMark({ size = 30 }: { size?: number }) {
           background:
             "linear-gradient(140deg, rgba(200,155,99,0.18) 0%, rgba(255,255,255,0.03) 60%)",
           border: "1px solid rgba(200,155,99,0.35)",
-          boxShadow:
-            "inset 0 1px 0 rgba(255,235,200,0.18), 0 6px 18px -8px rgba(200,155,99,0.4)",
+          boxShadow: "inset 0 1px 0 rgba(255,235,200,0.18), 0 6px 18px -8px rgba(200,155,99,0.4)",
         }}
       />
       <svg
@@ -51,14 +50,14 @@ export function EdinFormLogo({
       <EdinFormMark size={size} />
       <span className="flex items-baseline gap-[2px] leading-none">
         <span
-          className="font-display text-[1.55rem] tracking-tight"
-          style={{ color: "#F5F1EA" }}
+          className="font-display text-[1.55rem] tracking-tight marketing-logo-edin"
+          style={{ color: "var(--foreground, #F5F1EA)" }}
         >
           Edin
         </span>
         <span
-          className="font-display text-[1.55rem] italic"
-          style={{ color: "#C89B63" }}
+          className="font-display text-[1.55rem] italic marketing-logo-form"
+          style={{ color: "var(--accent-amber, #C89B63)" }}
         >
           Form
         </span>
