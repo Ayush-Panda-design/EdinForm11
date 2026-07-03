@@ -112,8 +112,18 @@ export function FieldRenderer({ field, value, onChange, readOnly }: FieldRendere
           onClick={() => !readOnly && onChange(strVal === "true" ? "false" : "true")}
         >
           {strVal === "true" && (
-            <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+            <svg
+              className="w-3.5 h-3.5 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={3}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
           )}
         </div>
@@ -123,7 +133,7 @@ export function FieldRenderer({ field, value, onChange, readOnly }: FieldRendere
   }
 
   if (field.type === "rating") {
-    const maxStars = (field.validationRules as any)?.maxRating ?? 5;
+    const maxStars = Number(field.validationRules?.maxRating) || 5;
     return (
       <div className="flex gap-2">
         {Array.from({ length: maxStars }, (_, i) => i + 1).map((n) => (
@@ -197,16 +207,30 @@ export function FieldRenderer({ field, value, onChange, readOnly }: FieldRendere
             >
               <div
                 className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                  selected ? "bg-stone-900 border-stone-900" : "border-gray-300 dark:border-gray-600"
+                  selected
+                    ? "bg-stone-900 border-stone-900"
+                    : "border-gray-300 dark:border-gray-600"
                 }`}
                 onClick={() => {
                   if (readOnly) return;
-                  onChange(selected ? arrVal.filter((v) => v !== opt.value) : [...arrVal, opt.value]);
+                  onChange(
+                    selected ? arrVal.filter((v) => v !== opt.value) : [...arrVal, opt.value],
+                  );
                 }}
               >
                 {selected && (
-                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-3 h-3 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={3}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 )}
               </div>
@@ -224,7 +248,7 @@ export function FieldRenderer({ field, value, onChange, readOnly }: FieldRendere
 /** Evaluate conditional logic for a field */
 export function shouldShowField(
   field: FormField,
-  answers: Record<string, string | string[]>
+  answers: Record<string, string | string[]>,
 ): boolean {
   const logic = field.conditionalLogic;
   if (!logic?.showIf) return true;

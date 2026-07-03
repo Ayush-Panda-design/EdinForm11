@@ -17,7 +17,6 @@
     "test": "turbo run test",
     "test:ci": "turbo run test -- --reporter=verbose"
   },
-
   "devDependencies": {
     "drizzle-kit": "^0.31.1",
     "husky": "^9.0.0",
@@ -26,27 +25,22 @@
     "turbo": "^2.10.2",
     "typescript": "5.9.3"
   },
-
   "dependencies": {
     "dotenv-cli": "^11.0.0"
   },
-
   "packageManager": "pnpm@9.0.0",
-
   "engines": {
     "node": ">=18"
   },
-
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix",
+    "apps/web/**/*.{ts,tsx}": [
+      "eslint --fix --max-warnings 0 --config apps/web/eslint.config.js",
       "prettier --write"
     ],
     "*.{json,md,yaml,yml}": [
       "prettier --write"
     ]
   },
-
   "pnpm": {
     "overrides": {
       "drizzle-orm": "0.43.1"
