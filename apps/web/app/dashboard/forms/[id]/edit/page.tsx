@@ -34,15 +34,33 @@ import {
   type ConditionalLogic,
 } from "~/components/forms/conditional-logic-editor";
 import { DndFieldList } from "~/components/forms/dnd-field-list";
-import { FormField as PreviewField } from "~/components/forms/field-renderer";
-import type { FormField, FieldOption } from "@repo/types/forms";
-import type { UpdateFormFieldInput } from "@repo/validators/forms";
-
-type FieldSaveUpdates = Pick<
-  UpdateFormFieldInput,
-  "label" | "placeholder" | "helpText" | "required" | "options" | "conditionalLogic"
->;
+import { FormField as PreviewField, type FieldOption } from "~/components/forms/field-renderer";
 import { Lock as LockIcon } from "lucide-react";
+
+type EditorFormField = {
+  id: string;
+  formId: string;
+  pageId: string | null;
+  type: string;
+  label: string;
+  placeholder: string | null;
+  helpText: string | null;
+  required: boolean;
+  order: number;
+  options: FieldOption[] | null;
+  validationRules: Record<string, unknown> | null;
+  conditionalLogic: ConditionalLogic | null;
+  isLocked: boolean;
+};
+
+type FieldSaveUpdates = {
+  label: string;
+  placeholder?: string;
+  helpText?: string;
+  required: boolean;
+  options?: FieldOption[];
+  conditionalLogic?: ConditionalLogic | null;
+};
 
 type FieldType =
   | "short_text"
@@ -1508,8 +1526,8 @@ function FieldExpander({
   onSave,
   isSaving,
 }: {
-  field: FormField;
-  allFields: FormField[];
+  field: EditorFormField;
+  allFields: EditorFormField[];
   onSave: (updates: FieldSaveUpdates) => void;
   isSaving: boolean;
 }) {
@@ -1628,7 +1646,7 @@ function FieldExpander({
             helpText: helpText || undefined,
             required,
             options: parsedOptions,
-            conditionalLogic: logic,
+            conditionalLogic: logic ?? undefined,
           });
         }}
         disabled={isSaving}

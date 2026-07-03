@@ -217,9 +217,17 @@ CREATE INDEX IF NOT EXISTS "idx_audit_logs_entity" ON "audit_logs"("entity_type"
 -- Backfill missing columns on users table (starter migration was minimal)
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "password_hash" text;
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "google_id" varchar(255);
-DO $$ BEGIN
-  ALTER TABLE "users" ADD CONSTRAINT "users_google_id_unique" UNIQUE ("google_id");
-EXCEPTION WHEN duplicate_object THEN null;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM information_schema.table_constraints
+    WHERE constraint_schema = 'public'
+      AND table_name = 'users'
+      AND constraint_name = 'users_google_id_unique'
+  ) THEN
+    ALTER TABLE "users" ADD CONSTRAINT "users_google_id_unique" UNIQUE ("google_id");
+  END IF;
 END $$;
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "role" varchar(20) DEFAULT 'creator' NOT NULL;
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "is_active" boolean DEFAULT true NOT NULL;
