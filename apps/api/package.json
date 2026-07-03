@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "dotenv -e .env -- tsx watch src/index.ts",
     "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --external:sharp --external:pg-native",
+    "prestart": "pnpm db:migrate",
     "start": "node dist/index.js",
     "db:generate": "drizzle-kit generate --config ../../packages/database/drizzle.config.ts",
     "db:migrate": "tsx ../../packages/database/scripts/migrate-deploy.ts",
