@@ -4,7 +4,8 @@ import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import * as schema from "./schema";
 import {
   buildPgConnectionAttempts,
-  resolveEffectiveDatabaseUrl,
+  getDatabaseUrlCandidates,
+  parsePostgresHost,
 } from "./connection-config";
 
 type Database = NodePgDatabase<typeof schema>;
@@ -13,36 +14,50 @@ let pool: Pool | undefined;
 let dbInstance: Database | undefined;
 
 export async function initDatabase(): Promise<void> {
-  const databaseUrl = resolveEffectiveDatabaseUrl();
+  const candidates = getDatabaseUrlCandidates();
+  if (candidates.length === 0) {
+    throw new Error("DATABASE_URL is not set");
+  }
+
   let lastError: unknown;
 
-  for (const attempt of buildPgConnectionAttempts(databaseUrl)) {
-    const candidate = new Pool(attempt.config);
+  for (const databaseUrl of candidates) {
+    for (const attempt of buildPgConnectionAttempts(databaseUrl)) {
+      const candidate = new Pool(attempt.config);
 
-    try {
-      const client = await candidate.connect();
-      await client.query("SELECT 1");
-      client.release();
+      try {
+        const client = await candidate.connect();
+        await client.query("SELECT 1");
+        client.release();
 
-      if (pool) {
-        await pool.end().catch(() => undefined);
+        if (pool) {
+          await pool.end().catch(() => undefined);
+        }
+
+        pool = candidate;
+        dbInstance = drizzle(pool, { schema });
+        console.log(
+          `[database] Connected (${attempt.label}, host ${parsePostgresHost(databaseUrl)})`
+        );
+        return;
+      } catch (error) {
+        lastError = error;
+        console.warn(
+          `[database] ${attempt.label} failed:`,
+          error instanceof Error ? error.message : error
+        );
+        await candidate.end().catch(() => undefined);
       }
-
-      pool = candidate;
-      dbInstance = drizzle(pool, { schema });
-      console.log(`[database] Connected (${attempt.label})`);
-      return;
-    } catch (error) {
-      lastError = error;
-      console.warn(
-        `[database] ${attempt.label} failed:`,
-        error instanceof Error ? error.message : error
-      );
-      await candidate.end().catch(() => undefined);
     }
   }
 
-  throw lastError ?? new Error("Database connection failed");
+  throw (
+    lastError ??
+    new Error(
+      `[database] Could not connect (${candidates.map(parsePostgresHost).join(", ")}). ` +
+        "Verify DATABASE_URL in Render matches Postgres → Connect → External."
+    )
+  );
 }
 
 function getDb(): Database {

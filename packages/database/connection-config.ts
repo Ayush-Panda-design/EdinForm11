@@ -143,9 +143,8 @@ export function getDatabaseUrlCandidates(rawUrl?: string): string[] {
 }
 
 /**
- * Pick the first DATABASE_URL candidate whose hostname resolves.
- * Fixes Render ENOTFOUND when API and Postgres are in different regions
- * (internal hostname only works on the private network in the same region).
+ * Pick the best DATABASE_URL candidate.
+ * External URLs are used as-is — DNS preflight is unreliable in esbuild bundles on Render.
  */
 export function resolveEffectiveDatabaseUrl(rawUrl?: string): string {
   const candidates = getDatabaseUrlCandidates(rawUrl);
@@ -153,15 +152,22 @@ export function resolveEffectiveDatabaseUrl(rawUrl?: string): string {
     throw new Error("DATABASE_URL is not set");
   }
 
-  const primaryHost = parsePostgresHost(candidates[0]!);
+  const primary = candidates[0]!;
+  const primaryHost = parsePostgresHost(primary);
+
+  if (!isRenderInternalHost(primaryHost)) {
+    return primary;
+  }
+
+  const primaryHostLabel = primaryHost;
 
   for (const url of candidates) {
     const host = parsePostgresHost(url);
     if (!hostResolves(host)) continue;
 
-    if (url !== candidates[0]) {
+    if (url !== primary) {
       console.warn(
-        `[database] "${primaryHost}" did not resolve; using "${host}" instead. ` +
+        `[database] "${primaryHostLabel}" did not resolve; using "${host}" instead. ` +
           "For a stable setup on Render, set DATABASE_URL to the External Database URL " +
           "or deploy API and Postgres in the same region."
       );
@@ -170,11 +176,7 @@ export function resolveEffectiveDatabaseUrl(rawUrl?: string): string {
     return url;
   }
 
-  throw new Error(
-    `[database] Could not resolve any database hostname (${candidates.map(parsePostgresHost).join(", ")}). ` +
-      "On Render: copy the current External Database URL into DATABASE_URL, " +
-      "or ensure the API service and Postgres are in the same region."
-  );
+  return primary;
 }
 
 export function needsTls(url: string): boolean {
