@@ -1,14 +1,16 @@
 /** Shared Postgres connection helpers for Render / managed hosts. */
 
+export type PgSslConfig = false | { rejectUnauthorized: boolean };
+
 /** Strip sslmode from URL — pg v8 treats require as verify-full and drops some connections. */
-export function normalizeDatabaseUrl(url) {
+export function normalizeDatabaseUrl(url: string): string {
   let normalized = url.replace(/([?&])sslmode=[^&]*/gi, "$1");
   normalized = normalized.replace(/[?&]$/, "");
   normalized = normalized.replace(/\?&/, "?");
   return normalized;
 }
 
-export function parsePostgresHost(url) {
+export function parsePostgresHost(url: string): string {
   try {
     const parsed = new URL(url.replace(/^postgres(ql)?:/, "https:"));
     return parsed.hostname;
@@ -18,16 +20,16 @@ export function parsePostgresHost(url) {
   }
 }
 
-export function isLocalDatabase(url) {
+export function isLocalDatabase(url: string): boolean {
   return /(?:localhost|127\.0\.0\.1)/i.test(url);
 }
 
 /** Render internal URLs use short private-network hostnames (e.g. dpg-abc123-a). */
-export function isRenderInternalHost(host) {
+export function isRenderInternalHost(host: string): boolean {
   return /^dpg-[a-z0-9]+-[a-z0-9]+$/i.test(host);
 }
 
-export function resolvePgSsl(url, rawUrl = url) {
+export function resolvePgSsl(url: string, rawUrl: string = url): PgSslConfig {
   if (isLocalDatabase(url)) return false;
 
   const host = parsePostgresHost(url);
@@ -50,10 +52,13 @@ export function resolvePgSsl(url, rawUrl = url) {
   return { rejectUnauthorized: false };
 }
 
-export function getSslCandidates(url, rawUrl = url) {
+export function getSslCandidates(url: string, rawUrl: string = url): PgSslConfig[] {
   const primary = resolvePgSsl(url, rawUrl);
-  const candidates = [primary, primary === false ? { rejectUnauthorized: false } : false];
-  const seen = new Set();
+  const candidates: PgSslConfig[] = [
+    primary,
+    primary === false ? { rejectUnauthorized: false } : false,
+  ];
+  const seen = new Set<string>();
 
   return candidates.filter((ssl) => {
     const key = JSON.stringify(ssl);
@@ -63,6 +68,6 @@ export function getSslCandidates(url, rawUrl = url) {
   });
 }
 
-export function describeSsl(ssl) {
+export function describeSsl(ssl: PgSslConfig): string {
   return ssl === false ? "disabled" : "enabled (rejectUnauthorized: false)";
 }

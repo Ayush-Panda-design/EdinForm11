@@ -4,7 +4,7 @@ import path from "path";
 import {
   normalizeDatabaseUrl,
   resolvePgSsl,
-} from "./connection-config.mjs";
+} from "./connection-config";
 
 const envPath = path.resolve(__dirname, "../../.env");
 

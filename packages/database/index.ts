@@ -6,7 +6,7 @@ import * as schema from "./schema";
 import {
   normalizeDatabaseUrl,
   resolvePgSsl,
-} from "./connection-config.mjs";
+} from "./connection-config";
 
 const databaseUrl = normalizeDatabaseUrl(env.DATABASE_URL);
 

@@ -17,7 +17,7 @@ import {
   getSslCandidates,
   normalizeDatabaseUrl,
   parsePostgresHost,
-} from "../connection-config.mjs";
+} from "../connection-config";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pkgRoot = path.resolve(__dirname, "..");
@@ -42,8 +42,8 @@ process.env.DATABASE_URL = DATABASE_URL;
 const dbHost = parsePostgresHost(DATABASE_URL);
 console.log(`Database host: ${dbHost}`);
 
-async function tableExists(client, tableName) {
-  const { rows } = await client.query(
+async function tableExists(client: pg.PoolClient, tableName: string) {
+  const { rows } = await client.query<{ exists: boolean }>(
     `SELECT EXISTS (
        SELECT 1 FROM information_schema.tables
        WHERE table_schema = 'public' AND table_name = $1
@@ -53,8 +53,8 @@ async function tableExists(client, tableName) {
   return Boolean(rows[0]?.exists);
 }
 
-async function resolveMigrationsTable(client) {
-  const { rows } = await client.query(
+async function resolveMigrationsTable(client: pg.PoolClient) {
+  const { rows } = await client.query<{ exists: boolean }>(
     `SELECT EXISTS (
        SELECT 1 FROM information_schema.tables
        WHERE table_schema = $1 AND table_name = $2
@@ -66,8 +66,7 @@ async function resolveMigrationsTable(client) {
     return MIGRATIONS_QUALIFIED;
   }
 
-  // Legacy: table may exist in drizzle schema from older drizzle-kit defaults
-  const { rows: legacyRows } = await client.query(
+  const { rows: legacyRows } = await client.query<{ exists: boolean }>(
     `SELECT EXISTS (
        SELECT 1 FROM information_schema.tables
        WHERE table_schema = 'drizzle' AND table_name = '__drizzle_migrations'
@@ -82,7 +81,7 @@ async function resolveMigrationsTable(client) {
   return MIGRATIONS_QUALIFIED;
 }
 
-async function ensureMigrationsTable(client, qualified) {
+async function ensureMigrationsTable(client: pg.PoolClient, qualified: string) {
   const schema = qualified.split(".")[0]?.replace(/"/g, "") ?? MIGRATIONS_SCHEMA;
   await client.query(`CREATE SCHEMA IF NOT EXISTS ${schema}`);
   await client.query(`
@@ -94,14 +93,14 @@ async function ensureMigrationsTable(client, qualified) {
   `);
 }
 
-async function migrationCount(client, qualified) {
-  const { rows } = await client.query(
+async function migrationCount(client: pg.PoolClient, qualified: string) {
+  const { rows } = await client.query<{ count: number }>(
     `SELECT COUNT(*)::int AS count FROM ${qualified}`
   );
   return rows[0]?.count ?? 0;
 }
 
-async function baselineIfNeeded(client) {
+async function baselineIfNeeded(client: pg.PoolClient) {
   const usersExists = await tableExists(client, "users");
   const formsExists = await tableExists(client, "forms");
 
@@ -140,7 +139,7 @@ async function baselineIfNeeded(client) {
 
     const journal = JSON.parse(
       readFileSync(path.join(pkgRoot, "drizzle/meta/_journal.json"), "utf8")
-    );
+    ) as { entries: Array<{ tag: string; when: number }> };
 
     for (const entry of journal.entries) {
       const sqlPath = path.join(pkgRoot, `drizzle/${entry.tag}.sql`);
@@ -161,7 +160,7 @@ async function baselineIfNeeded(client) {
 
 async function connectWithRetry() {
   const sslCandidates = getSslCandidates(DATABASE_URL, rawDatabaseUrl);
-  let lastError;
+  let lastError: unknown;
 
   for (const ssl of sslCandidates) {
     console.log(`Trying connection (ssl: ${describeSsl(ssl)})...`);
