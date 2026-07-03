@@ -28,6 +28,26 @@ export async function initDatabase(): Promise<void> {
       try {
         const client = await candidate.connect();
         await client.query("SELECT 1");
+
+        const { rows } = await client.query<{ users: boolean; sessions: boolean }>(`
+          SELECT
+            EXISTS (
+              SELECT 1 FROM information_schema.tables
+              WHERE table_schema = 'public' AND table_name = 'users'
+            ) AS users,
+            EXISTS (
+              SELECT 1 FROM information_schema.tables
+              WHERE table_schema = 'public' AND table_name = 'sessions'
+            ) AS sessions
+        `);
+
+        if (!rows[0]?.users || !rows[0]?.sessions) {
+          throw new Error(
+            "Database schema is missing (users/sessions tables). " +
+              "Run: pnpm --filter @repo/database db:migrate"
+          );
+        }
+
         client.release();
 
         if (pool) {
