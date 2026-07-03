@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useState, useEffect } from "react";
+import Link from "next/link";
 import { trpc } from "~/trpc/client";
 import { toast } from "sonner";
 import {
@@ -12,22 +13,12 @@ import {
   Lock,
   Sparkles,
 } from "lucide-react";
-import {
-  FieldRenderer,
-  shouldShowField,
-  type FormField,
-} from "~/components/forms/field-renderer";
+import { FieldRenderer, shouldShowField, type FormField } from "~/components/forms/field-renderer";
 
-export default function PublicFormPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default function PublicFormPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
 
-  const [answers, setAnswers] = useState<
-    Record<string, string | string[]>
-  >({});
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [submitted, setSubmitted] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [currentStep, setCurrentStep] = useState(-1);
@@ -40,23 +31,18 @@ export default function PublicFormPage({
   const [passwordError, setPasswordError] = useState("");
   const [verifyingPassword, setVerifyingPassword] = useState(false);
 
-  const { data: form, isLoading, error } =
-    trpc.public.getFormBySlug.useQuery({ slug });
+  const { data: form, isLoading, error } = trpc.public.getFormBySlug.useQuery({ slug });
 
-  const verifyPasswordMutation =
-    trpc.public.verifyFormPassword.useMutation();
+  const verifyPasswordMutation = trpc.public.verifyFormPassword.useMutation();
 
-  const {
-    data: unlockedForm,
-    refetch: refetchWithPassword,
-  } = trpc.public.getFormBySlug.useQuery(
+  const { data: unlockedForm, refetch: refetchWithPassword } = trpc.public.getFormBySlug.useQuery(
     {
       slug,
       password: passwordInput,
     },
     {
       enabled: false,
-    }
+    },
   );
 
   const submitMutation = trpc.responses.submit.useMutation({
@@ -64,8 +50,7 @@ export default function PublicFormPage({
       setSuccessMsg(data.successMessage);
       setSubmitted(true);
     },
-    onError: (e) =>
-      toast.error(e.message || "Submission failed"),
+    onError: (e) => toast.error(e.message || "Submission failed"),
   });
 
   // Keyboard navigation
@@ -86,10 +71,7 @@ export default function PublicFormPage({
     return () => document.removeEventListener("keydown", handle);
   });
 
-  const updateAnswer = (
-    fieldId: string,
-    value: string | string[]
-  ) => {
+  const updateAnswer = (fieldId: string, value: string | string[]) => {
     setAnswers((prev) => ({
       ...prev,
       [fieldId]: value,
@@ -108,24 +90,19 @@ export default function PublicFormPage({
     setPasswordError("");
 
     try {
-      const result =
-        await verifyPasswordMutation.mutateAsync({
-          formId: form.id,
-          password: passwordInput,
-        });
+      const result = await verifyPasswordMutation.mutateAsync({
+        formId: form.id,
+        password: passwordInput,
+      });
 
       if (result.success) {
         setPasswordVerified(true);
         await refetchWithPassword();
       } else {
-        setPasswordError(
-          "Incorrect password. Please try again."
-        );
+        setPasswordError("Incorrect password. Please try again.");
       }
     } catch {
-      setPasswordError(
-        "Incorrect password. Please try again."
-      );
+      setPasswordError("Incorrect password. Please try again.");
     } finally {
       setVerifyingPassword(false);
     }
@@ -141,9 +118,7 @@ export default function PublicFormPage({
             <Loader2 className="w-6 h-6 text-blue-400 animate-spin" />
           </div>
 
-          <p className="text-sm text-slate-400 tracking-wide">
-            Loading form...
-          </p>
+          <p className="text-sm text-slate-400 tracking-wide">Loading form...</p>
         </div>
       </div>
     );
@@ -158,22 +133,19 @@ export default function PublicFormPage({
             <AlertCircle className="w-10 h-10 text-red-400" />
           </div>
 
-          <h1 className="text-3xl font-bold text-white mb-3">
-            Form not available
-          </h1>
+          <h1 className="text-3xl font-bold text-white mb-3">Form not available</h1>
 
           <p className="text-slate-400 leading-relaxed">
-            {error?.message ||
-              "This form doesn't exist or is no longer accepting responses."}
+            {error?.message || "This form doesn't exist or is no longer accepting responses."}
           </p>
 
-          <a
+          <Link
             href="/"
             className="inline-flex items-center gap-2 mt-10 text-sm text-slate-500 hover:text-slate-300 transition-colors"
           >
             <Sparkles className="w-4 h-4" />
             Powered by EdinForm
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -190,9 +162,7 @@ export default function PublicFormPage({
               <Lock className="w-7 h-7 text-blue-300" />
             </div>
 
-            <h1 className="text-3xl font-bold text-white mb-2">
-              {form.title}
-            </h1>
+            <h1 className="text-3xl font-bold text-white mb-2">{form.title}</h1>
 
             <p className="text-slate-400 text-sm mb-7 leading-relaxed">
               This form is protected with a password.
@@ -206,9 +176,7 @@ export default function PublicFormPage({
                   setPasswordInput(e.target.value);
                   setPasswordError("");
                 }}
-                onKeyDown={(e) =>
-                  e.key === "Enter" && handleVerifyPassword()
-                }
+                onKeyDown={(e) => e.key === "Enter" && handleVerifyPassword()}
                 placeholder="Enter password"
                 autoFocus
                 className="w-full h-14 rounded-2xl border border-white/10 bg-white/[0.05] backdrop-blur-xl px-5 text-white placeholder:text-slate-500 outline-none focus:border-blue-400/40 focus:ring-4 focus:ring-blue-500/10 transition-all"
@@ -231,7 +199,6 @@ export default function PublicFormPage({
                 ) : (
                   <Lock className="w-5 h-5" />
                 )}
-
                 Unlock Form
               </button>
             </div>
@@ -240,33 +207,19 @@ export default function PublicFormPage({
       </div>
     );
 
-  const activeForm =
-    passwordVerified && unlockedForm
-      ? unlockedForm
-      : form;
+  const activeForm = passwordVerified && unlockedForm ? unlockedForm : form;
 
   const visibleFields = activeForm.fields
-    .filter((f) =>
-      shouldShowField(f as FormField, answers)
-    )
+    .filter((f) => shouldShowField(f as FormField, answers))
     .sort((a, b) => a.order - b.order);
 
   const totalSteps = visibleFields.length;
 
-  const isLastStep =
-    currentStep === totalSteps - 1;
+  const isLastStep = currentStep === totalSteps - 1;
 
-  const progress =
-    currentStep < 0
-      ? 0
-      : Math.round(
-          ((currentStep + 1) / totalSteps) * 100
-        );
+  const progress = currentStep < 0 ? 0 : Math.round(((currentStep + 1) / totalSteps) * 100);
 
-  const currentField =
-    currentStep >= 0
-      ? visibleFields[currentStep]
-      : null;
+  const currentField = currentStep >= 0 ? visibleFields[currentStep] : null;
 
   const validateCurrentStep = (): boolean => {
     if (!currentField) return true;
@@ -282,21 +235,16 @@ export default function PublicFormPage({
         (Array.isArray(ans) && ans.length === 0);
 
       if (isEmpty) {
-        setValidationError(
-          `Please answer "${currentField.label}" before continuing`
-        );
+        setValidationError(`Please answer "${currentField.label}" before continuing`);
 
         return false;
       }
 
       if (currentField.type === "email") {
-        const emailRegex =
-          /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         if (!emailRegex.test(String(ans))) {
-          setValidationError(
-            "Please enter a valid email address"
-          );
+          setValidationError("Please enter a valid email address");
 
           return false;
         }
@@ -328,48 +276,33 @@ export default function PublicFormPage({
   const handleBack = () => {
     setValidationError(null);
 
-    setCurrentStep((s) =>
-      Math.max(-1, s - 1)
-    );
+    setCurrentStep((s) => Math.max(-1, s - 1));
   };
 
   const handleSubmit = () => {
-    const missingRequired = visibleFields.filter(
-      (f) => {
-        if (!f.required) return false;
+    const missingRequired = visibleFields.filter((f) => {
+      if (!f.required) return false;
 
-        const ans = answers[f.id];
+      const ans = answers[f.id];
 
-        return (
-          !ans ||
-          (Array.isArray(ans)
-            ? ans.length === 0
-            : ans === "" || ans === "false")
-        );
-      }
-    );
+      return !ans || (Array.isArray(ans) ? ans.length === 0 : ans === "" || ans === "false");
+    });
 
     if (missingRequired.length > 0) {
       const firstMissing = missingRequired[0];
 
       if (firstMissing) {
-        const idx = visibleFields.findIndex(
-          (f) => f.id === firstMissing.id
-        );
+        const idx = visibleFields.findIndex((f) => f.id === firstMissing.id);
 
         setCurrentStep(idx);
 
-        setValidationError(
-          `Please answer "${firstMissing.label}"`
-        );
+        setValidationError(`Please answer "${firstMissing.label}"`);
       }
 
       return;
     }
 
-    const completionTimeSeconds = Math.round(
-      (Date.now() - startTime) / 1000
-    );
+    const completionTimeSeconds = Math.round((Date.now() - startTime) / 1000);
 
     const formattedAnswers = visibleFields
       .map((f) => {
@@ -380,12 +313,7 @@ export default function PublicFormPage({
             fieldId: f.id,
             valueArray: raw as string[],
           };
-        } else if (
-          !Array.isArray(raw) &&
-          raw !== undefined &&
-          raw !== "" &&
-          raw !== null
-        ) {
+        } else if (!Array.isArray(raw) && raw !== undefined && raw !== "" && raw !== null) {
           return {
             fieldId: f.id,
             value: String(raw),
@@ -394,10 +322,7 @@ export default function PublicFormPage({
 
         return null;
       })
-      .filter(
-        (a): a is NonNullable<typeof a> =>
-          a !== null
-      );
+      .filter((a): a is NonNullable<typeof a> => a !== null);
 
     submitMutation.mutate({
       formId: form.id,
@@ -417,21 +342,17 @@ export default function PublicFormPage({
             <CheckCircle2 className="w-12 h-12 text-green-400" />
           </div>
 
-          <h1 className="text-4xl font-bold text-white mb-4">
-            {successMsg || "Thank you!"}
-          </h1>
+          <h1 className="text-4xl font-bold text-white mb-4">{successMsg || "Thank you!"}</h1>
 
-          <p className="text-slate-400 text-lg">
-            Your response has been recorded.
-          </p>
+          <p className="text-slate-400 text-lg">Your response has been recorded.</p>
 
-          <a
+          <Link
             href="/"
             className="inline-flex items-center gap-2 mt-12 text-sm text-slate-500 hover:text-slate-300 transition-colors"
           >
             <Sparkles className="w-4 h-4" />
             Powered by EdinForm
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -471,23 +392,17 @@ export default function PublicFormPage({
               className="group inline-flex items-center gap-3 h-16 px-8 rounded-2xl bg-gradient-to-r from-blue-500 to-violet-500 text-white font-semibold text-lg shadow-[0_12px_40px_rgba(59,130,246,0.35)] hover:scale-[1.03] transition-all"
             >
               Start form
-
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
 
-            <p className="mt-5 text-sm text-slate-500">
-              Press Enter ↵
-            </p>
+            <p className="mt-5 text-sm text-slate-500">Press Enter ↵</p>
           </div>
         </div>
 
         <footer className="relative z-10 text-center py-6">
-          <a
-            href="/"
-            className="text-sm text-slate-600 hover:text-slate-400 transition-colors"
-          >
+          <Link href="/" className="text-sm text-slate-600 hover:text-slate-400 transition-colors">
             Powered by EdinForm
-          </a>
+          </Link>
         </footer>
       </div>
     );
@@ -536,17 +451,11 @@ export default function PublicFormPage({
               <h2 className="text-3xl sm:text-4xl font-bold text-white leading-tight">
                 {currentField?.label}
 
-                {currentField?.required && (
-                  <span className="text-blue-400 ml-2">
-                    *
-                  </span>
-                )}
+                {currentField?.required && <span className="text-blue-400 ml-2">*</span>}
               </h2>
 
               {currentField?.helpText && (
-                <p className="mt-4 text-slate-400 leading-relaxed">
-                  {currentField.helpText}
-                </p>
+                <p className="mt-4 text-slate-400 leading-relaxed">{currentField.helpText}</p>
               )}
             </div>
 
@@ -554,15 +463,8 @@ export default function PublicFormPage({
               {currentField && (
                 <FieldRenderer
                   field={currentField as FormField}
-                  value={
-                    answers[currentField.id] ?? ""
-                  }
-                  onChange={(v) =>
-                    updateAnswer(
-                      currentField.id,
-                      v
-                    )
-                  }
+                  value={answers[currentField.id] ?? ""}
+                  onChange={(v) => updateAnswer(currentField.id, v)}
                 />
               )}
             </div>
@@ -584,31 +486,23 @@ export default function PublicFormPage({
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                   <>
-                    {isLastStep
-                      ? form.submitButtonText ||
-                        "Submit"
-                      : "Continue"}
+                    {isLastStep ? form.submitButtonText || "Submit" : "Continue"}
 
                     <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                   </>
                 )}
               </button>
 
-              <p className="text-sm text-slate-500">
-                Press Enter ↵
-              </p>
+              <p className="text-sm text-slate-500">Press Enter ↵</p>
             </div>
           </div>
         </div>
       </div>
 
       <footer className="relative z-10 text-center py-6">
-        <a
-          href="/"
-          className="text-sm text-slate-600 hover:text-slate-400 transition-colors"
-        >
+        <Link href="/" className="text-sm text-slate-600 hover:text-slate-400 transition-colors">
           Powered by EdinForm
-        </a>
+        </Link>
       </footer>
     </div>
   );

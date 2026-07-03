@@ -5,20 +5,14 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { trpc } from "~/trpc/client";
-import {
-  Loader2,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
+import { Loader2, CheckCircle, XCircle } from "lucide-react";
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
 
   const token = searchParams.get("token") ?? "";
 
-  const [status, setStatus] = useState<
-    "pending" | "success" | "error"
-  >("pending");
+  const [status, setStatus] = useState<"pending" | "success" | "error">("pending");
 
   const [message, setMessage] = useState("");
 
@@ -41,7 +35,7 @@ function VerifyEmailContent() {
       setStatus("error");
       setMessage("No verification token found.");
     }
-  }, [token]);
+  }, [token, mutation]);
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4">
@@ -75,9 +69,7 @@ function VerifyEmailContent() {
                   Verifying
                 </h1>
 
-                <p className="mt-4 text-sm text-muted-foreground">
-                  Confirming your email address…
-                </p>
+                <p className="mt-4 text-sm text-muted-foreground">Confirming your email address…</p>
               </>
             )}
 
@@ -94,9 +86,7 @@ function VerifyEmailContent() {
                   Email verified
                 </h1>
 
-                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  {message}
-                </p>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{message}</p>
 
                 <Link
                   href="/dashboard"
@@ -120,9 +110,7 @@ function VerifyEmailContent() {
                   Verification failed
                 </h1>
 
-                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  {message}
-                </p>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{message}</p>
 
                 <Link
                   href="/auth/login"
@@ -163,9 +151,7 @@ export default function VerifyEmailPage() {
           <div className="relative z-10 flex items-center gap-3 rounded-2xl border border-border bg-card/60 px-5 py-4 backdrop-blur-xl">
             <Loader2 className="h-5 w-5 animate-spin text-[var(--accent-amber)]" />
 
-            <span className="text-sm text-muted-foreground">
-              Loading verification…
-            </span>
+            <span className="text-sm text-muted-foreground">Loading verification…</span>
           </div>
         </div>
       }
