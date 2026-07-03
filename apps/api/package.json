@@ -7,7 +7,7 @@
     "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --external:sharp --external:pg-native",
     "start": "node dist/index.js",
     "db:generate": "drizzle-kit generate --config ../../packages/database/drizzle.config.ts",
-    "db:migrate": "node ../../packages/database/scripts/migrate-deploy.mjs",
+    "db:migrate": "tsx ../../packages/database/scripts/migrate-deploy.ts",
     "db:studio": "drizzle-kit studio --config ../../packages/database/drizzle.config.ts",
     "db:push": "drizzle-kit push --config ../../packages/database/drizzle.config.ts",
     "seed": "dotenv -e .env -- tsx src/seed/index.ts",
