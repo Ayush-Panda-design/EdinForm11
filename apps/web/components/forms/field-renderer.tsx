@@ -26,15 +26,26 @@ interface FieldRendererProps {
   field: FormField;
   value: string | string[];
   onChange: (value: string | string[]) => void;
+  onBlur?: () => void;
   readOnly?: boolean;
+  variant?: "default" | "typeform";
 }
 
-export function FieldRenderer({ field, value, onChange, readOnly }: FieldRendererProps) {
+export function FieldRenderer({
+  field,
+  value,
+  onChange,
+  onBlur,
+  readOnly,
+  variant = "default",
+}: FieldRendererProps) {
   const strVal = Array.isArray(value) ? "" : (value ?? "");
   const arrVal = Array.isArray(value) ? value : [];
+  const isTf = variant === "typeform";
 
-  const inputClass =
-    "w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 dark:focus:border-cyan-400 transition-colors disabled:opacity-60 disabled:cursor-not-allowed";
+  const inputClass = isTf
+    ? "tf-input disabled:opacity-60 disabled:cursor-not-allowed"
+    : "w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors disabled:opacity-60 disabled:cursor-not-allowed";
 
   if (field.type === "short_text") {
     return (
@@ -42,8 +53,10 @@ export function FieldRenderer({ field, value, onChange, readOnly }: FieldRendere
         type="text"
         value={strVal}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
         placeholder={field.placeholder ?? "Your answer..."}
         disabled={readOnly}
+        autoComplete="on"
         className={inputClass}
       />
     );
@@ -54,6 +67,7 @@ export function FieldRenderer({ field, value, onChange, readOnly }: FieldRendere
       <textarea
         value={strVal}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
         placeholder={field.placeholder ?? "Your answer..."}
         rows={4}
         disabled={readOnly}
@@ -68,8 +82,10 @@ export function FieldRenderer({ field, value, onChange, readOnly }: FieldRendere
         type="email"
         value={strVal}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
         placeholder={field.placeholder ?? "your@email.com"}
         disabled={readOnly}
+        autoComplete="email"
         className={inputClass}
       />
     );
@@ -81,8 +97,10 @@ export function FieldRenderer({ field, value, onChange, readOnly }: FieldRendere
         type="number"
         value={strVal}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
         placeholder={field.placeholder ?? "0"}
         disabled={readOnly}
+        inputMode="numeric"
         className={inputClass}
       />
     );
@@ -94,6 +112,7 @@ export function FieldRenderer({ field, value, onChange, readOnly }: FieldRendere
         type="date"
         value={strVal}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
         disabled={readOnly}
         className={inputClass}
       />

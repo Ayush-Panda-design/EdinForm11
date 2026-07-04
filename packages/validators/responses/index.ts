@@ -15,6 +15,19 @@ export const submitResponseSchema = z.object({
   completionTimeSeconds: z.number().int().nonnegative().max(86400).optional(),
   /** Hidden honeypot — bots fill this; humans leave it empty */
   honeypot: z.string().max(500).optional(),
+  /** Resume a previously saved draft */
+  draftResponseId: z.string().uuid().optional(),
+});
+
+export const saveDraftSchema = z.object({
+  formId: z.string().uuid(),
+  answers: z.array(answerSchema).min(0).max(200),
+  currentStep: z.number().int().min(-1).max(500).optional(),
+  draftResponseId: z.string().uuid().optional(),
+});
+
+export const getDraftSchema = z.object({
+  formId: z.string().uuid(),
 });
 
 export const listResponsesSchema = paginationSchema.extend({
@@ -27,6 +40,7 @@ export const listResponsesSchema = paginationSchema.extend({
 
 export type SubmitResponseInput = z.infer<typeof submitResponseSchema>;
 export type ListResponsesInput = z.infer<typeof listResponsesSchema>;
+export type SaveDraftInput = z.infer<typeof saveDraftSchema>;
 
 export * from "./conditional";
 export * from "./dynamic-schema";

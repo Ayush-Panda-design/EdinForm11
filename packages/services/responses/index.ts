@@ -6,7 +6,11 @@ import db, {
   formResponsesTable,
   responseAnswersTable,
 } from "@repo/database";
-import type { SubmitResponseInput, ListResponsesInput } from "@repo/validators/responses";
+import type {
+  SubmitResponseInput,
+  ListResponsesInput,
+  SaveDraftInput,
+} from "@repo/validators/responses";
 import { validateSubmissionAnswers, type DynamicField } from "@repo/validators/responses";
 import type { FormResponse, PaginatedResponses } from "@repo/types/responses";
 
@@ -178,12 +182,17 @@ export class ResponsesService {
           }
         }
 
-        // Check max responses limit
+        // Check max responses limit (completed only)
         if (form.maxResponses) {
           const [countResult] = await db
             .select({ total: sql<number>`count(*)::int` })
             .from(formResponsesTable)
-            .where(eq(formResponsesTable.formId, input.formId));
+            .where(
+              and(
+                eq(formResponsesTable.formId, input.formId),
+                eq(formResponsesTable.status, "completed"),
+              ),
+            );
 
           if ((countResult?.total ?? 0) >= form.maxResponses) {
             throw new Error("FORM_RESPONSE_LIMIT_REACHED");
@@ -261,46 +270,239 @@ export class ResponsesService {
           }
         }
 
-        // Insert response record
-        const [response] = await db
-          .insert(formResponsesTable)
-          .values({
-            formId: input.formId,
-            respondentEmail: input.respondentEmail,
-            respondentName: input.respondentName,
-            completionTimeSeconds: input.completionTimeSeconds,
-            ipAddress: meta?.ipAddress,
-            userAgent: meta?.userAgent,
-            referrer: meta?.referrer,
-            browserFingerprint: fingerprint,
-            status: "completed",
-          })
-          .returning();
+        // Complete an existing draft, or insert a new completed response
+        let responseId = input.draftResponseId;
+        if (responseId) {
+          const [draft] = await db
+            .select()
+            .from(formResponsesTable)
+            .where(
+              and(
+                eq(formResponsesTable.id, responseId),
+                eq(formResponsesTable.formId, input.formId),
+                eq(formResponsesTable.status, "in_progress"),
+              ),
+            )
+            .limit(1);
 
-        if (!response) throw new Error("FAILED_TO_CREATE_RESPONSE");
+          if (draft) {
+            await db
+              .update(formResponsesTable)
+              .set({
+                status: "completed",
+                respondentEmail: input.respondentEmail,
+                respondentName: input.respondentName,
+                completionTimeSeconds: input.completionTimeSeconds,
+                ipAddress: meta?.ipAddress,
+                userAgent: meta?.userAgent,
+                referrer: meta?.referrer,
+                browserFingerprint: fingerprint,
+                submittedAt: new Date(),
+              })
+              .where(eq(formResponsesTable.id, draft.id));
 
-        // Insert answers
+            await db
+              .delete(responseAnswersTable)
+              .where(eq(responseAnswersTable.responseId, draft.id));
+          } else {
+            responseId = undefined;
+          }
+        }
+
+        if (!responseId) {
+          const [response] = await db
+            .insert(formResponsesTable)
+            .values({
+              formId: input.formId,
+              respondentEmail: input.respondentEmail,
+              respondentName: input.respondentName,
+              completionTimeSeconds: input.completionTimeSeconds,
+              ipAddress: meta?.ipAddress,
+              userAgent: meta?.userAgent,
+              referrer: meta?.referrer,
+              browserFingerprint: fingerprint,
+              status: "completed",
+            })
+            .returning();
+
+          if (!response) throw new Error("FAILED_TO_CREATE_RESPONSE");
+          responseId = response.id;
+        }
+
         const validAnswers = input.answers.filter((a) => validFieldIds.has(a.fieldId));
         if (validAnswers.length > 0) {
           await db.insert(responseAnswersTable).values(
             validAnswers.map((a) => ({
-              responseId: response.id,
+              responseId: responseId!,
               fieldId: a.fieldId,
               formId: input.formId,
               value: a.value,
               valueArray: a.valueArray ?? undefined,
-            }))
+            })),
           );
         }
 
         return {
-          responseId: response.id,
+          responseId,
           successMessage: form.successMessage ?? "Thank you for your response!",
         };
       });
     } finally {
       await releaseLock(lockKey);
     }
+  }
+
+  /** Save partial progress so respondents can resume later */
+  async saveDraft(
+    input: SaveDraftInput,
+    meta?: { ipAddress?: string; userAgent?: string },
+  ): Promise<{ draftResponseId: string }> {
+    const [form] = await db
+      .select()
+      .from(formsTable)
+      .where(eq(formsTable.id, input.formId))
+      .limit(1);
+
+    if (!form) throw new Error("FORM_NOT_FOUND");
+    if (form.visibility === "unpublished" || form.isArchived) {
+      throw new Error("FORM_NOT_ACCEPTING_RESPONSES");
+    }
+
+    const fingerprint = computeFingerprint({
+      formId: input.formId,
+      ipAddress: meta?.ipAddress,
+      userAgent: meta?.userAgent,
+    });
+
+    const fields = await db
+      .select({ id: formFieldsTable.id })
+      .from(formFieldsTable)
+      .where(eq(formFieldsTable.formId, input.formId));
+    const validFieldIds = new Set(fields.map((f) => f.id));
+    const validAnswers = input.answers.filter((a) => validFieldIds.has(a.fieldId));
+
+    let draftId = input.draftResponseId;
+
+    if (draftId) {
+      const [existing] = await db
+        .select({ id: formResponsesTable.id })
+        .from(formResponsesTable)
+        .where(
+          and(
+            eq(formResponsesTable.id, draftId),
+            eq(formResponsesTable.formId, input.formId),
+            eq(formResponsesTable.status, "in_progress"),
+          ),
+        )
+        .limit(1);
+      if (!existing) draftId = undefined;
+    }
+
+    if (!draftId) {
+      const [byFp] = await db
+        .select({ id: formResponsesTable.id })
+        .from(formResponsesTable)
+        .where(
+          and(
+            eq(formResponsesTable.formId, input.formId),
+            eq(formResponsesTable.browserFingerprint, fingerprint),
+            eq(formResponsesTable.status, "in_progress"),
+          ),
+        )
+        .limit(1);
+      draftId = byFp?.id;
+    }
+
+    if (draftId) {
+      await db
+        .update(formResponsesTable)
+        .set({
+          submittedAt: new Date(),
+          ipAddress: meta?.ipAddress,
+          userAgent: meta?.userAgent,
+          browserFingerprint: fingerprint,
+        })
+        .where(eq(formResponsesTable.id, draftId));
+
+      await db.delete(responseAnswersTable).where(eq(responseAnswersTable.responseId, draftId));
+    } else {
+      const [created] = await db
+        .insert(formResponsesTable)
+        .values({
+          formId: input.formId,
+          status: "in_progress",
+          ipAddress: meta?.ipAddress,
+          userAgent: meta?.userAgent,
+          browserFingerprint: fingerprint,
+          submittedAt: new Date(),
+        })
+        .returning();
+      if (!created) throw new Error("FAILED_TO_CREATE_RESPONSE");
+      draftId = created.id;
+    }
+
+    if (validAnswers.length > 0) {
+      await db.insert(responseAnswersTable).values(
+        validAnswers.map((a) => ({
+          responseId: draftId!,
+          fieldId: a.fieldId,
+          formId: input.formId,
+          value: a.value,
+          valueArray: a.valueArray ?? undefined,
+        })),
+      );
+    }
+
+    return { draftResponseId: draftId };
+  }
+
+  /** Load an in-progress draft for this browser fingerprint */
+  async getDraft(
+    formId: string,
+    meta?: { ipAddress?: string; userAgent?: string },
+  ): Promise<{
+    draftResponseId: string;
+    answers: Array<{ fieldId: string; value: string | null; valueArray: string[] | null }>;
+    savedAt: Date | null;
+  } | null> {
+    const fingerprint = computeFingerprint({
+      formId,
+      ipAddress: meta?.ipAddress,
+      userAgent: meta?.userAgent,
+    });
+
+    const [draft] = await db
+      .select()
+      .from(formResponsesTable)
+      .where(
+        and(
+          eq(formResponsesTable.formId, formId),
+          eq(formResponsesTable.browserFingerprint, fingerprint),
+          eq(formResponsesTable.status, "in_progress"),
+        ),
+      )
+      .limit(1);
+
+    if (!draft) return null;
+
+    const answers = await db
+      .select({
+        fieldId: responseAnswersTable.fieldId,
+        value: responseAnswersTable.value,
+        valueArray: responseAnswersTable.valueArray,
+      })
+      .from(responseAnswersTable)
+      .where(eq(responseAnswersTable.responseId, draft.id));
+
+    return {
+      draftResponseId: draft.id,
+      answers: answers.map((a) => ({
+        fieldId: a.fieldId,
+        value: a.value,
+        valueArray: (a.valueArray as string[] | null) ?? null,
+      })),
+      savedAt: draft.submittedAt,
+    };
   }
 
   /** List responses for a form (creator only) */

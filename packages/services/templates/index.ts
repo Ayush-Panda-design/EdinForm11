@@ -1,69 +1,149 @@
 import { eq, and, desc, sql } from "@repo/database";
 import db, { templatesTable, formsTable, formFieldsTable } from "@repo/database";
+import {
+  BUILTIN_TEMPLATES,
+  getBuiltinTemplate,
+  listBuiltinTemplates,
+  TEMPLATE_CATEGORIES,
+  type BuiltinTemplate,
+} from "./builtin";
+
+export { TEMPLATE_CATEGORIES, BUILTIN_TEMPLATES };
+
+export type TemplateListItem = {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  previewImageUrl: string | null;
+  isPublic: boolean;
+  usageCount: string | null;
+  createdAt: Date | null;
+  tags?: string[];
+  estimatedMinutes?: number;
+  fieldCount?: number;
+  isBuiltin?: boolean;
+  formSnapshot?: BuiltinTemplate["formSnapshot"];
+};
+
+function mapBuiltin(t: BuiltinTemplate): TemplateListItem {
+  return {
+    id: t.id,
+    name: t.name,
+    description: t.description,
+    category: t.category,
+    previewImageUrl: null,
+    isPublic: true,
+    usageCount: "0",
+    createdAt: null,
+    tags: t.tags,
+    estimatedMinutes: t.estimatedMinutes,
+    fieldCount: t.fieldCount,
+    isBuiltin: true,
+    formSnapshot: t.formSnapshot,
+  };
+}
 
 export class TemplatesService {
   async listPublicTemplates(opts: {
     category?: string;
+    search?: string;
     page: number;
     limit: number;
-  }): Promise<{ data: typeof templatesTable.$inferSelect[]; total: number }> {
+  }): Promise<{ data: TemplateListItem[]; total: number; categories: string[] }> {
+    const builtins = listBuiltinTemplates({
+      category: opts.category,
+      search: opts.search,
+    }).map(mapBuiltin);
+
     const conditions = [eq(templatesTable.isPublic, true)];
-    if (opts.category) {
+    if (opts.category && opts.category !== "All") {
       conditions.push(eq(templatesTable.category, opts.category));
     }
 
+    let dbTemplates: TemplateListItem[] = [];
+    try {
+      const rows = await db
+        .select()
+        .from(templatesTable)
+        .where(and(...conditions))
+        .orderBy(desc(templatesTable.createdAt));
+
+      dbTemplates = rows
+        .filter((t) => {
+          if (!opts.search?.trim()) return true;
+          const q = opts.search.toLowerCase();
+          return (
+            t.name.toLowerCase().includes(q) ||
+            (t.description ?? "").toLowerCase().includes(q) ||
+            (t.category ?? "").toLowerCase().includes(q)
+          );
+        })
+        .map((t) => {
+          const snap = t.formSnapshot as { fields?: unknown[] };
+          return {
+            id: t.id,
+            name: t.name,
+            description: t.description,
+            category: t.category,
+            previewImageUrl: t.previewImageUrl,
+            isPublic: t.isPublic,
+            usageCount: t.usageCount,
+            createdAt: t.createdAt,
+            fieldCount: Array.isArray(snap?.fields) ? snap.fields.length : 0,
+            isBuiltin: false,
+          };
+        });
+    } catch {
+      dbTemplates = [];
+    }
+
+    const merged = [...builtins, ...dbTemplates];
+    const total = merged.length;
     const offset = (opts.page - 1) * opts.limit;
+    const data = merged.slice(offset, offset + opts.limit);
 
-    const [countResult] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(templatesTable)
-      .where(and(...conditions));
-
-    const data = await db
-      .select()
-      .from(templatesTable)
-      .where(and(...conditions))
-      .orderBy(desc(templatesTable.createdAt))
-      .limit(opts.limit)
-      .offset(offset);
-
-    return { data, total: countResult?.count ?? 0 };
+    return {
+      data,
+      total,
+      categories: [...TEMPLATE_CATEGORIES],
+    };
   }
 
-  async getTemplateById(
-    id: string
-  ): Promise<typeof templatesTable.$inferSelect | null> {
+  async getTemplateById(id: string): Promise<TemplateListItem | null> {
+    if (id.startsWith("builtin:")) {
+      const t = getBuiltinTemplate(id);
+      return t ? mapBuiltin(t) : null;
+    }
+
     const [template] = await db
       .select()
       .from(templatesTable)
       .where(eq(templatesTable.id, id))
       .limit(1);
 
-    return template ?? null;
+    if (!template) return null;
+    const snap = template.formSnapshot as BuiltinTemplate["formSnapshot"];
+    return {
+      id: template.id,
+      name: template.name,
+      description: template.description,
+      category: template.category,
+      previewImageUrl: template.previewImageUrl,
+      isPublic: template.isPublic,
+      usageCount: template.usageCount,
+      createdAt: template.createdAt,
+      formSnapshot: snap,
+      fieldCount: snap?.fields?.length ?? 0,
+      isBuiltin: false,
+    };
   }
 
-  /**
-   * Create a form from a template — copies form snapshot and fields
-   */
-  async createFormFromTemplate(
-    templateId: string,
-    creatorId: string
-  ): Promise<string> {
+  async createFormFromTemplate(templateId: string, creatorId: string): Promise<string> {
     const template = await this.getTemplateById(templateId);
-    if (!template) throw new Error("TEMPLATE_NOT_FOUND");
+    if (!template?.formSnapshot) throw new Error("TEMPLATE_NOT_FOUND");
 
-    const snapshot = template.formSnapshot as {
-      title: string;
-      description?: string;
-      fields: Array<{
-        type: string;
-        label: string;
-        required: boolean;
-        order: number;
-        placeholder?: string;
-        options?: { value: string; label: string }[];
-      }>;
-    };
+    const snapshot = template.formSnapshot;
 
     const slug = `${snapshot.title
       .toLowerCase()
@@ -80,6 +160,9 @@ export class TemplatesService {
         description: snapshot.description,
         slug,
         visibility: "unpublished",
+        submitButtonText: snapshot.submitButtonText ?? "Submit",
+        successMessage: snapshot.successMessage ?? "Thank you for your response!",
+        showProgressBar: snapshot.showProgressBar ?? true,
       })
       .returning();
 
@@ -87,25 +170,28 @@ export class TemplatesService {
 
     if (snapshot.fields?.length > 0) {
       await db.insert(formFieldsTable).values(
-        snapshot.fields.map((f: typeof snapshot.fields[number]) => ({
+        snapshot.fields.map((f) => ({
           formId: form.id,
           type: f.type as typeof formFieldsTable.$inferInsert["type"],
           label: f.label,
           required: f.required,
           order: f.order,
           placeholder: f.placeholder,
+          helpText: f.helpText,
           options: f.options ?? undefined,
-        }))
+          validationRules: f.validationRules ?? undefined,
+        })),
       );
     }
 
-    // Increment usage count
-    await db
-      .update(templatesTable)
-      .set({
-        usageCount: sql`(${templatesTable.usageCount}::int + 1)::text`,
-      })
-      .where(eq(templatesTable.id, templateId));
+    if (!templateId.startsWith("builtin:")) {
+      await db
+        .update(templatesTable)
+        .set({
+          usageCount: sql`(${templatesTable.usageCount}::int + 1)::text`,
+        })
+        .where(eq(templatesTable.id, templateId));
+    }
 
     return form.id;
   }

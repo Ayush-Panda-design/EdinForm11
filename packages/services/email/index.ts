@@ -134,20 +134,77 @@ export class EmailService {
     formId: string;
     responseId: string;
     respondentEmail?: string;
+    answerSummary?: Array<{ label: string; value: string }>;
   }): Promise<EmailResult> {
-    const dashUrl = `${process.env.APP_URL ?? "http://localhost:3000"}/forms/${opts.formId}/responses/${opts.responseId}`;
+    const dashUrl = `${process.env.APP_URL ?? "http://localhost:3000"}/dashboard/forms/${opts.formId}/responses/${opts.responseId}`;
+    const answersHtml =
+      opts.answerSummary && opts.answerSummary.length > 0
+        ? `<table style="width:100%;border-collapse:collapse;margin:20px 0">
+            ${opts.answerSummary
+              .map(
+                (a) => `
+              <tr>
+                <td style="padding:8px 12px;border-bottom:1px solid #eee;color:#5f6368;font-size:13px;width:40%">${escapeHtml(a.label)}</td>
+                <td style="padding:8px 12px;border-bottom:1px solid #eee;color:#202124;font-size:13px;font-weight:500">${escapeHtml(a.value)}</td>
+              </tr>`,
+              )
+              .join("")}
+          </table>`
+        : "";
+
     return this.send({
       to: opts.creatorEmail,
       subject: `New response for "${opts.formTitle}"`,
       html: `
         <div style="font-family:sans-serif;max-width:560px;margin:auto">
-          <h2 style="color:#6366f1">You have a new response!</h2>
-          <p>Hi ${opts.creatorName},</p>
-          <p>Someone just submitted a response to your form <strong>${opts.formTitle}</strong>.</p>
-          ${opts.respondentEmail ? `<p>Respondent: ${opts.respondentEmail}</p>` : ""}
+          <h2 style="color:#1a73e8">You have a new response</h2>
+          <p>Hi ${escapeHtml(opts.creatorName)},</p>
+          <p>Someone just submitted a response to <strong>${escapeHtml(opts.formTitle)}</strong>.</p>
+          ${opts.respondentEmail ? `<p style="color:#5f6368">From: ${escapeHtml(opts.respondentEmail)}</p>` : ""}
+          ${answersHtml}
           <a href="${dashUrl}"
-            style="display:inline-block;background:#6366f1;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">
-            View Response
+            style="display:inline-block;background:#1a73e8;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">
+            View full response
+          </a>
+        </div>
+      `,
+    });
+  }
+
+  async sendDailyDigest(opts: {
+    creatorEmail: string;
+    creatorName: string;
+    totalResponses: number;
+    forms: Array<{ title: string; count: number; formId: string }>;
+  }): Promise<EmailResult> {
+    const rows = opts.forms
+      .map(
+        (f) =>
+          `<tr>
+            <td style="padding:8px 12px;border-bottom:1px solid #eee">${escapeHtml(f.title)}</td>
+            <td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:600">${f.count}</td>
+          </tr>`,
+      )
+      .join("");
+
+    return this.send({
+      to: opts.creatorEmail,
+      subject: `You got ${opts.totalResponses} response${opts.totalResponses === 1 ? "" : "s"} today`,
+      html: `
+        <div style="font-family:sans-serif;max-width:560px;margin:auto">
+          <h2 style="color:#1a73e8">Daily digest</h2>
+          <p>Hi ${escapeHtml(opts.creatorName)},</p>
+          <p>Here's what came in over the last 24 hours:</p>
+          <table style="width:100%;border-collapse:collapse;margin:20px 0">
+            <tr>
+              <th style="text-align:left;padding:8px 12px;border-bottom:2px solid #eee;color:#5f6368">Form</th>
+              <th style="text-align:left;padding:8px 12px;border-bottom:2px solid #eee;color:#5f6368">Responses</th>
+            </tr>
+            ${rows}
+          </table>
+          <a href="${process.env.APP_URL ?? "http://localhost:3000"}/dashboard/analytics"
+            style="display:inline-block;background:#1a73e8;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">
+            Open analytics
           </a>
         </div>
       `,
@@ -180,6 +237,14 @@ export class EmailService {
     const resetUrl = `${process.env.APP_URL ?? "http://localhost:3000"}/reset-password?token=${resetToken}`;
     return this.sendPasswordReset({ to, fullName: "there", resetUrl });
   }
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 export const emailService = new EmailService();

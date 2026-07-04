@@ -18,24 +18,21 @@ import {
   ExternalLink,
   Loader2,
   QrCode,
-  Layers,
   TrendingUp,
-  Zap,
-  Shield,
-  GitBranch,
-  MousePointer2,
   ArrowUpRight,
-  ChevronRight,
-  Sparkles,
-  Users,
-  CheckCircle2,
-  Activity,
-  Calendar,
-  Download,
+  Pencil,
+  Inbox,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { QRShareModal } from "~/components/forms/qr-share-modal";
+import {
+  HeroWorkspaceArt,
+  EmptyFormsArt,
+  AnalyticsSparkArt,
+  FlowDiagramArt,
+} from "~/components/dashboard/illustrations";
+import { HelpTip } from "~/components/help/help-tip";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -87,979 +84,376 @@ export default function DashboardPage() {
     onError: (e) => toast.error(e.message),
   });
 
-  const stats = [
+  const firstName = user?.fullName?.split(" ")[0] ?? "there";
+  const formList = forms ?? [];
+  const publishedCount = formList.filter((f) => f.visibility !== "unpublished").length;
+
+  const kpis = [
     {
-      label: "Total Forms",
-      value: dashboard?.totalForms ?? 0,
+      label: "Forms",
+      value: dashboard?.totalForms ?? formList.length,
       icon: FileText,
-      suffix: "",
-      delta: "+2 this week",
-      deltaUp: true,
+      hint: `${publishedCount} live`,
     },
     {
-      label: "Total Views",
+      label: "Views",
       value: dashboard?.totalViews ?? 0,
       icon: Eye,
-      suffix: "",
-      delta: "+12% vs last week",
-      deltaUp: true,
+      hint: "All time",
     },
     {
       label: "Responses",
       value: dashboard?.totalResponses ?? 0,
-      icon: BarChart3,
-      suffix: "",
-      delta: "+8 today",
-      deltaUp: true,
+      icon: Inbox,
+      hint: "Collected",
     },
     {
-      label: "Avg Completion",
-      value: dashboard ? dashboard.avgConversionRate.toFixed(1) : "0",
+      label: "Completion",
+      value: dashboard ? `${dashboard.avgConversionRate.toFixed(1)}%` : "0%",
       icon: TrendingUp,
-      suffix: "%",
-      delta: "Average is 3.2%",
-      deltaUp: false,
+      hint: "Avg rate",
     },
   ];
 
-  const features = [
-    {
-      icon: GitBranch,
-      title: "Smart Branching",
-      desc: "Show or hide questions based on previous answers. Build forms that feel like a natural conversation and keep people engaged to the end.",
-    },
-    {
-      icon: MousePointer2,
-      title: "One Question at a Time",
-      desc: "Present each question on its own screen with smooth transitions and keyboard support. Designed to keep people focused and boost completion rates.",
-    },
-    {
-      icon: QrCode,
-      title: "QR Code Sharing",
-      desc: "Every published form gets a downloadable QR code. Perfect for printed materials, events, and bringing people online from the physical world.",
-    },
-    {
-      icon: Shield,
-      title: "Response Limits & Closing Dates",
-      desc: "Set a maximum number of responses or a close date. EdinForm enforces both automatically so you never over-collect.",
-    },
-    {
-      icon: Eye,
-      title: "Live Preview",
-      desc: "See exactly how your form will look before you share it — in both single-question and classic layouts. No surprises.",
-    },
-    {
-      icon: Download,
-      title: "Export to Spreadsheet",
-      desc: "Download all your responses as a spreadsheet file with one click. Open it straight in Excel, Google Sheets, or any other tool you use.",
-    },
+  const coverGradients = [
+    "linear-gradient(135deg, var(--dash-accent) 0%, var(--dash-accent-2) 100%)",
+    "linear-gradient(135deg, #22d3ee 0%, #34d399 100%)",
+    "linear-gradient(135deg, #facc15 0%, #e11d8f 100%)",
+    "linear-gradient(135deg, #34d399 0%, #22d3ee 100%)",
   ];
 
-  const visibilityBadge = (v: string) => {
-    if (v === "public")
+  const statusBadge = (visibility: string) => {
+    if (visibility === "unpublished") {
       return (
-        <span
-          className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium uppercase"
-          style={{
-            background: "rgba(88,116,92,0.18)",
-            color: "#7EB884",
-            border: "1px solid rgba(88,116,92,0.3)",
-            letterSpacing: "0.1em",
-          }}
-        >
-          <Globe className="w-2.5 h-2.5" /> Public
+        <span className="kpi-chip" style={{ opacity: 0.75 }}>
+          Draft
         </span>
       );
-    if (v === "unlisted")
+    }
+    if (visibility === "public") {
       return (
-        <span
-          className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium uppercase"
-          style={{
-            background: "rgba(34,211,238,0.12)",
-            color: "#22d3ee",
-            border: "1px solid rgba(34,211,238,0.25)",
-            letterSpacing: "0.1em",
-          }}
-        >
-          <Lock className="w-2.5 h-2.5" /> Unlisted
+        <span className="kpi-chip">
+          <Globe className="w-3 h-3" /> Public
         </span>
       );
+    }
     return (
-      <span
-        className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium uppercase"
-        style={{
-          background: "rgba(255,255,255,0.04)",
-          color: "var(--muted-foreground)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          letterSpacing: "0.1em",
-        }}
-      >
-        Draft
+      <span className="kpi-chip">
+        <Lock className="w-3 h-3" /> Unlisted
       </span>
     );
   };
 
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif" }}>
-      {/* ── Mobile-responsive styles ── */}
-      <style>{`
-        @media (max-width: 768px) {
-          .dashboard-header { flex-direction: column !important; gap: 1rem !important; }
-          .dashboard-header-actions { margin-top: 0 !important; width: 100%; }
-          .dashboard-header-actions a { flex: 1; justify-content: center; }
-          .stats-grid { grid-template-columns: 1fr 1fr !important; }
-          .banner-inner { flex-direction: column !important; gap: 1rem !important; }
-          .banner-links { width: 100%; }
-          .banner-links a { flex: 1; justify-content: center; }
-          .two-col { grid-template-columns: 1fr !important; }
-          .feature-grid { grid-template-columns: 1fr 1fr !important; }
-          .status-strip { flex-direction: column !important; gap: 0.75rem !important; align-items: flex-start !important; }
-        }
-        @media (max-width: 480px) {
-          .stats-grid { grid-template-columns: 1fr !important; }
-          .feature-grid { grid-template-columns: 1fr !important; }
-          .form-row-meta { flex-wrap: wrap; gap: 0.5rem !important; }
-          .form-row-actions { gap: 0 !important; }
-        }
-      `}</style>
-
-      {/* ── Page header ── */}
-      <div
-        className="dashboard-header"
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          marginBottom: "2rem",
-        }}
-      >
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 mb-2 font-medium">
-            Portfolio overview
-          </p>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            Welcome back, <span className="text-[#00e5c2]">{user?.fullName?.split(" ")[0]}</span>
-          </h1>
-          <p className="mt-2 text-sm text-zinc-400 max-w-md">
-            Your forms, responses, and conversion metrics — all in one crypto-style command center.
-          </p>
-        </div>
-        <div
-          className="dashboard-header-actions"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            flexShrink: 0,
-            marginTop: "4px",
-          }}
-        >
-          <Link
-            href="/dashboard/analytics"
-            className="ef-btn-ghost inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm border border-white/10"
-          >
-            <Activity className="w-4 h-4" /> Analytics
-          </Link>
-          <Link
-            href="/dashboard/forms/new"
-            className="ef-btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold"
-          >
-            <Plus className="w-4 h-4" /> New Form
-          </Link>
-        </div>
-      </div>
-
-      {/* ── Bento stats ── */}
-      <div className="ef-bento-grid" style={{ marginBottom: "1.5rem" }}>
-        {stats.map((s, i) => (
-          <div
-            key={s.label}
-            className={`ef-bento ef-bento-span-3 ef-fade-up ef-delay-${Math.min(i + 1, 4)}`}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-medium">
-                {s.label}
-              </span>
-              <s.icon className="w-4 h-4 text-[#00e5c2] opacity-80" />
+    <div className="space-y-8">
+      {/* Hero */}
+      <section className="ef-bento !p-0 overflow-hidden relative">
+        <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-0 items-stretch">
+          <div className="p-6 sm:p-8 lg:p-10 flex flex-col justify-center">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="kpi-chip w-fit">Your workspace</span>
+              <HelpTip section="home" />
             </div>
-            <p className="dash-stat-value">
-              {s.value}
-              <span className="text-base text-[#00e5c2]">{s.suffix}</span>
+            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight dash-text leading-[1.1]">
+              Welcome back, <span className="dash-accent">{firstName}</span>
+            </h1>
+            <p className="mt-3 text-sm sm:text-base dash-muted max-w-md leading-relaxed">
+              Create forms, share them anywhere, and watch responses land in real time.
             </p>
-            <p
-              className={`mt-2 text-xs flex items-center gap-1 ${s.deltaUp ? "text-[#39ff88]" : "text-zinc-500"}`}
-            >
-              {s.deltaUp && <ArrowUpRight className="w-3 h-3" />}
-              {s.delta}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Platform banner bento ── */}
-      <div
-        className="ef-bento ef-bento-span-12"
-        style={{ marginBottom: "1.5rem", position: "relative", overflow: "hidden" }}
-      >
-        <div
-          className="absolute inset-0 opacity-30 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(circle at 20% 50%, rgba(0,229,194,0.15), transparent 50%), radial-gradient(circle at 80% 50%, rgba(167,139,250,0.12), transparent 50%)",
-          }}
-        />
-        <div className="banner-inner relative flex flex-wrap items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center border border-[#00e5c2]/20 bg-[#00e5c2]/10">
-              <Sparkles className="w-5 h-5 text-[#00e5c2]" />
-            </div>
-            <div>
-              <p className="text-base font-semibold text-white mb-1">EdinForm command center</p>
-              <p className="text-sm text-zinc-400 max-w-lg">
-                Build smart forms, share via QR, cap responses, and track every submission in real
-                time.
-              </p>
-            </div>
-          </div>
-          <div className="banner-links flex gap-2">
-            <Link
-              href="/explore"
-              className="ef-btn-ghost inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm border border-white/10"
-            >
-              Browse forms <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-            <Link
-              href="/docs"
-              className="ef-btn-ghost inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm border border-white/10"
-            >
-              API docs <ExternalLink className="w-3 h-3" />
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Bento main grid ── */}
-      <div className="ef-bento-grid two-col" style={{ alignItems: "start" }}>
-        {/* LEFT — Forms list */}
-        <div className="ef-bento-span-8">
-          <div className="ef-bento h-full" style={{ overflow: "hidden", padding: 0 }}>
-            <div
-              style={{
-                padding: "1rem 1.5rem",
-                borderBottom: "1px solid var(--border)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <div>
-                <span
-                  style={{
-                    fontSize: "11px",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.28em",
-                    color: "var(--muted-foreground)",
-                  }}
-                >
-                  Your Forms
-                </span>
-                {forms && forms.length > 0 && (
-                  <span
-                    style={{
-                      marginLeft: "10px",
-                      fontSize: "11px",
-                      background: "rgba(34,211,238,0.12)",
-                      color: "#22d3ee",
-                      border: "1px solid rgba(34,211,238,0.2)",
-                      borderRadius: "20px",
-                      padding: "1px 8px",
-                    }}
-                  >
-                    {forms.length}
-                  </span>
-                )}
-              </div>
+            <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href="/dashboard/forms/new"
-                className="ef-btn-ghost inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs"
+                className="ef-btn-primary rounded-full px-5 py-2.5 text-sm inline-flex items-center gap-2"
               >
-                <Plus className="w-3 h-3" /> New
+                <Plus className="w-4 h-4" /> Create form
+              </Link>
+              <Link
+                href="/dashboard/templates"
+                className="ef-btn-ghost rounded-full px-5 py-2.5 text-sm inline-flex items-center gap-2"
+              >
+                Templates
+              </Link>
+              <Link
+                href="/dashboard/help"
+                className="ef-btn-ghost rounded-full px-5 py-2.5 text-sm inline-flex items-center gap-2"
+              >
+                Guide
               </Link>
             </div>
-
-            {isLoading && (
-              <div style={{ padding: "4rem", display: "flex", justifyContent: "center" }}>
-                <Loader2
-                  className="animate-spin"
-                  style={{ width: 20, height: 20, color: "#22d3ee" }}
-                />
-              </div>
-            )}
-
-            {!isLoading && forms?.length === 0 && (
-              <div style={{ padding: "4rem 2rem", textAlign: "center" }}>
-                <div
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: "50%",
-                    background: "rgba(34,211,238,0.08)",
-                    border: "1px solid rgba(34,211,238,0.15)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    margin: "0 auto 1.25rem",
-                  }}
-                >
-                  <FileText style={{ width: 22, height: 22, color: "#22d3ee" }} />
-                </div>
-                <p
-                  style={{
-                    fontFamily: "'Cormorant Garamond', serif",
-                    fontSize: "1.4rem",
-                    color: "var(--foreground)",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  No forms yet.
-                </p>
-                <p
-                  style={{
-                    fontSize: "13px",
-                    color: "var(--muted-foreground)",
-                    marginBottom: "1.5rem",
-                  }}
-                >
-                  Write your first question. It only takes a minute.
-                </p>
-                <Link
-                  href="/dashboard/forms/new"
-                  className="ef-btn-primary inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm"
-                >
-                  <Plus className="w-4 h-4" /> Create a form
-                </Link>
-              </div>
-            )}
-
-            {!isLoading && forms && forms.length > 0 && (
-              <div>
-                {forms.map((form, idx) => (
-                  <div
-                    key={form.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "1rem",
-                      padding: "1rem 1.5rem",
-                      borderBottom: idx < forms.length - 1 ? "1px solid var(--border)" : "none",
-                      transition: "background 0.2s",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.025)";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = "transparent";
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: "10px",
-                        background: "rgba(34,211,238,0.08)",
-                        border: "1px solid rgba(34,211,238,0.12)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <FileText style={{ width: 15, height: 15, color: "#22d3ee" }} />
-                    </div>
-
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                          flexWrap: "wrap",
-                          marginBottom: "3px",
-                        }}
-                      >
-                        <Link
-                          href={`/dashboard/forms/${form.id}/edit`}
-                          style={{
-                            fontFamily: "'Cormorant Garamond', serif",
-                            fontSize: "1.05rem",
-                            color: "var(--foreground)",
-                            textDecoration: "none",
-                            transition: "color 0.2s",
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            maxWidth: "240px",
-                          }}
-                          onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLElement).style.color = "#22d3ee";
-                          }}
-                          onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
-                          }}
-                        >
-                          {form.title}
-                        </Link>
-                        {visibilityBadge(form.visibility)}
-                      </div>
-                      <div
-                        className="form-row-meta"
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "1rem",
-                          fontSize: "11px",
-                          color: "var(--muted-foreground)",
-                          fontFamily: "monospace",
-                          letterSpacing: "0.04em",
-                        }}
-                      >
-                        <span>{form.responseCount} replies</span>
-                        <span>{form.viewCount} views</span>
-                        {form.conversionRate > 0 && (
-                          <span>{form.conversionRate.toFixed(0)}% completed</span>
-                        )}
-                        {form.createdAt && (
-                          <span>{formatDistanceToNow(new Date(form.createdAt))} ago</span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div
-                      className="form-row-actions"
-                      style={{ display: "flex", alignItems: "center", gap: "2px", flexShrink: 0 }}
-                    >
-                      {form.visibility !== "unpublished" && (
-                        <button
-                          onClick={() => setQrForm({ title: form.title, slug: form.slug })}
-                          title="Share QR"
-                          className="ef-btn-ghost"
-                          style={{ padding: "7px", borderRadius: "8px", display: "flex" }}
-                        >
-                          <QrCode style={{ width: 15, height: 15 }} />
-                        </button>
-                      )}
-                      <Link
-                        href={`/dashboard/forms/${form.id}/responses`}
-                        title="Responses"
-                        className="ef-btn-ghost"
-                        style={{ padding: "7px", borderRadius: "8px", display: "flex" }}
-                      >
-                        <BarChart3 style={{ width: 15, height: 15 }} />
-                      </Link>
-
-                      {/* ── Dropdown trigger ── */}
-                      <button
-                        onClick={(e) => {
-                          if (openMenu === form.id) {
-                            closeMenu();
-                            return;
-                          }
-                          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                          const right = window.innerWidth - rect.right;
-                          const spaceBelow = window.innerHeight - rect.bottom;
-                          setMenuPos(
-                            spaceBelow < 270
-                              ? { bottom: window.innerHeight - rect.top + 6, right }
-                              : { top: rect.bottom + 6, right },
-                          );
-                          setOpenMenu(form.id);
-                        }}
-                        className="ef-btn-ghost"
-                        style={{ padding: "7px", borderRadius: "8px", display: "flex" }}
-                      >
-                        <MoreHorizontal style={{ width: 15, height: 15 }} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+          </div>
+          <div className="hidden lg:flex items-end justify-end pr-4 pb-2">
+            <HeroWorkspaceArt className="w-full max-w-[380px] h-auto" />
           </div>
         </div>
+      </section>
 
-        {/* RIGHT — Sidebar bento tiles */}
-        <div
-          className="ef-bento-span-4"
-          style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-        >
-          <div className="ef-bento" style={{ overflow: "hidden", padding: 0 }}>
-            <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid var(--border)" }}>
-              <span
-                style={{
-                  fontSize: "11px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.28em",
-                  color: "var(--muted-foreground)",
-                }}
-              >
-                Quick Actions
+      {/* KPI row */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {kpis.map((k) => (
+          <div key={k.label} className="ef-bento">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] uppercase tracking-[0.16em] font-semibold dash-faint">
+                {k.label}
               </span>
+              <k.icon className="w-4 h-4 dash-accent" />
             </div>
-            <div style={{ padding: "0.5rem" }}>
-              {[
-                {
-                  icon: Plus,
-                  label: "New form",
-                  sub: "Start from scratch",
-                  href: "/dashboard/forms/new",
-                },
-                {
-                  icon: Users,
-                  label: "View responses",
-                  sub: "All recent submissions",
-                  href: "/dashboard/analytics",
-                },
-                {
-                  icon: Globe,
-                  label: "Browse forms",
-                  sub: "Explore the public library",
-                  href: "/explore",
-                },
-                {
-                  icon: Calendar,
-                  label: "Set a close date",
-                  sub: "Manage limits & expiry",
-                  href: "/dashboard/settings",
-                },
-              ].map(({ icon: Icon, label, sub, href }) => (
-                <Link
-                  key={label}
-                  href={href}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "10px 12px",
-                    borderRadius: "8px",
-                    textDecoration: "none",
-                    transition: "background 0.15s",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = "transparent";
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 30,
-                      height: 30,
-                      borderRadius: "8px",
-                      background: "rgba(34,211,238,0.08)",
-                      border: "1px solid rgba(34,211,238,0.12)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Icon style={{ width: 13, height: 13, color: "#22d3ee" }} />
-                  </div>
-                  <div>
-                    <p
-                      style={{
-                        fontSize: "13px",
-                        color: "var(--foreground)",
-                        marginBottom: "1px",
-                        fontWeight: 500,
-                      }}
-                    >
-                      {label}
-                    </p>
-                    <p style={{ fontSize: "11px", color: "var(--muted-foreground)" }}>{sub}</p>
-                  </div>
-                  <ChevronRight
-                    style={{
-                      width: 13,
-                      height: 13,
-                      color: "var(--muted-foreground)",
-                      marginLeft: "auto",
-                    }}
-                  />
-                </Link>
-              ))}
-            </div>
+            <p className="dash-stat-value">{k.value}</p>
+            <p className="mt-1 text-xs dash-muted">{k.hint}</p>
           </div>
+        ))}
+      </section>
 
-          <div className="ef-bento" style={{ overflow: "hidden", padding: 0 }}>
-            <div
-              style={{ padding: "1rem 1.25rem", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
-            >
-              <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-medium">
-                What's Included
-              </span>
-            </div>
-            <div style={{ padding: "0.75rem 1.25rem 1rem" }}>
-              {[
-                "One-question-at-a-time form layout",
-                "Branching questions based on answers",
-                "QR code sharing & image download",
-                "Response caps & closing dates",
-                "Live preview before publishing",
-                "Export all responses to spreadsheet",
-                "Charts and insights dashboard",
-                "Full developer documentation",
-                "Spam & abuse protection built in",
-                "Secure login with access tokens",
-              ].map((feat) => (
-                <div
-                  key={feat}
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: "8px",
-                    padding: "5px 0",
-                  }}
-                >
-                  <CheckCircle2
-                    style={{
-                      width: 13,
-                      height: 13,
-                      color: "#7EB884",
-                      marginTop: "2px",
-                      flexShrink: 0,
-                    }}
-                  />
-                  <span
-                    style={{ fontSize: "12px", color: "var(--muted-foreground)", lineHeight: 1.4 }}
-                  >
-                    {feat}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div
-            className="ef-bento"
-            style={{
-              padding: "1.25rem",
-              background: "rgba(0,229,194,0.04)",
-              borderColor: "rgba(0,229,194,0.15)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-              <Zap style={{ width: 14, height: 14, color: "#00e5c2" }} />
-              <span className="text-xs font-semibold text-[#00e5c2] uppercase tracking-wider">
-                Developer Access
-              </span>
-            </div>
-            <p
-              style={{
-                fontSize: "12px",
-                color: "var(--muted-foreground)",
-                lineHeight: 1.6,
-                marginBottom: "12px",
-              }}
-            >
-              Connect EdinForm directly to your own apps and tools. Full documentation with live
-              examples is available online.
+      {/* Workflow diagram */}
+      <section className="ef-bento !py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2 px-1">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.16em] font-semibold dash-faint">
+              How it works
             </p>
-
-            <a
-              href="https://edinform11-2.onrender.com/docs"
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                fontSize: "12px",
-                color: "#22d3ee",
-                textDecoration: "none",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.textDecoration = "underline";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.textDecoration = "none";
-              }}
-            >
-              Open documentation <ExternalLink style={{ width: 11, height: 11 }} />
-            </a>
-
-            <a
-              href="https://edinform11-2.onrender.com/openapi.json"
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                fontSize: "12px",
-                color: "var(--muted-foreground)",
-                textDecoration: "none",
-                marginLeft: "12px",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.textDecoration = "underline";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.textDecoration = "none";
-              }}
-            >
-              API reference <ExternalLink style={{ width: 11, height: 11 }} />
-            </a>
+            <p className="text-sm font-semibold dash-text mt-0.5">Build → Share → Analyze</p>
           </div>
+          <AnalyticsSparkArt className="w-28 h-12 hidden sm:block" />
         </div>
-      </div>
+        <FlowDiagramArt className="w-full max-w-xl mx-auto h-auto" />
+      </section>
 
-      {/* ── Divider ── */}
-      <div className="ef-divider my-10" />
-
-      {/* ── Feature grid ── */}
-      <div style={{ marginBottom: "3rem" }}>
-        <div style={{ marginBottom: "1.5rem" }}>
-          <p
-            style={{
-              fontSize: "11px",
-              textTransform: "uppercase",
-              letterSpacing: "0.28em",
-              color: "var(--muted-foreground)",
-              marginBottom: "6px",
-            }}
+      {/* Forms library */}
+      <section>
+        <div className="flex items-end justify-between gap-4 mb-4">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.16em] font-semibold dash-faint">
+              Library
+            </p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <h2 className="text-xl font-semibold dash-text">Your forms</h2>
+              <HelpTip section="home" />
+            </div>
+          </div>
+          <Link
+            href="/dashboard/forms/new"
+            className="text-sm font-semibold dash-accent inline-flex items-center gap-1"
           >
-            Features
-          </p>
-          <h2
-            style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: "clamp(1.4rem, 2.5vw, 2rem)",
-              fontWeight: 400,
-              color: "var(--foreground)",
-            }}
-          >
-            Everything you need to build great forms.
-          </h2>
-          <p
-            style={{
-              marginTop: "6px",
-              fontSize: "14px",
-              color: "var(--muted-foreground)",
-              maxWidth: "480px",
-              lineHeight: 1.6,
-            }}
-          >
-            EdinForm pairs a beautiful experience for your respondents with a solid set of tools on
-            your end — spam protection, automatic closing, branching logic, and a full insights
-            suite.
-          </p>
+            New form <ArrowUpRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
-        <div
-          className="feature-grid"
-          style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}
-        >
-          {features.map((f, i) => (
-            <div
-              key={f.title}
-              className="ef-card p-5"
-              style={{
-                borderRadius: "1rem",
-                animationDelay: `${i * 50}ms`,
-                animation: "ef-fade-up .6s cubic-bezier(.2,.7,.2,1) both",
-              }}
+
+        {isLoading ? (
+          <div className="ef-bento flex items-center justify-center py-16">
+            <Loader2 className="w-6 h-6 animate-spin dash-accent" />
+          </div>
+        ) : formList.length === 0 ? (
+          <div className="ef-bento flex flex-col items-center text-center py-12 px-6">
+            <EmptyFormsArt className="w-48 h-auto mb-4" />
+            <h3 className="text-lg font-bold dash-text">No forms yet</h3>
+            <p className="mt-2 text-sm dash-muted max-w-sm">
+              Start with a blank form or pick a structure. You can publish, share a QR code, and
+              track responses in minutes.
+            </p>
+            <Link
+              href="/dashboard/forms/new"
+              className="ef-btn-primary mt-6 rounded-full px-6 py-2.5 text-sm inline-flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" /> Create your first form
+            </Link>
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {formList.map((form, i) => (
+              <article key={form.id} className="form-card group">
+                <div
+                  className="form-card-cover"
+                  style={{ background: coverGradients[i % coverGradients.length] }}
+                >
+                  <div
+                    className="absolute inset-0 opacity-30"
+                    style={{
+                      backgroundImage:
+                        "radial-gradient(circle at 20% 30%, #fff 0, transparent 40%), radial-gradient(circle at 80% 70%, #fff 0, transparent 35%)",
+                    }}
+                  />
+                  <div className="absolute top-3 left-3">{statusBadge(form.visibility)}</div>
+                  <button
+                    type="button"
+                    className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-black/20 backdrop-blur-sm text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                      const spaceBelow = window.innerHeight - rect.bottom;
+                      setMenuPos(
+                        spaceBelow < 220
+                          ? {
+                              bottom: window.innerHeight - rect.top + 6,
+                              right: window.innerWidth - rect.right,
+                            }
+                          : { top: rect.bottom + 6, right: window.innerWidth - rect.right },
+                      );
+                      setOpenMenu(openMenu === form.id ? null : form.id);
+                    }}
+                  >
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="p-4">
+                  <Link href={`/dashboard/forms/${form.id}/edit`}>
+                    <h3 className="font-bold dash-text text-base leading-snug line-clamp-1 group-hover:opacity-80">
+                      {form.title || "Untitled form"}
+                    </h3>
+                  </Link>
+                  <p className="mt-1 text-xs dash-muted line-clamp-2 min-h-[2rem]">
+                    {form.description || "No description"}
+                  </p>
+
+                  <div className="mt-4 flex items-center gap-3 text-xs dash-faint">
+                    <span className="inline-flex items-center gap-1">
+                      <Eye className="w-3 h-3" /> {form.viewCount ?? 0}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Inbox className="w-3 h-3" /> {form.responseCount ?? 0}
+                    </span>
+                    <span className="ml-auto">
+                      {form.updatedAt
+                        ? formatDistanceToNow(new Date(form.updatedAt), { addSuffix: true })
+                        : "—"}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t dash-border flex items-center gap-2">
+                    <Link
+                      href={`/dashboard/forms/${form.id}/edit`}
+                      className="ef-btn-ghost flex-1 rounded-lg py-2 text-xs font-semibold inline-flex items-center justify-center gap-1"
+                    >
+                      <Pencil className="w-3 h-3" /> Edit
+                    </Link>
+                    <Link
+                      href={`/dashboard/forms/${form.id}/analytics`}
+                      className="ef-btn-ghost flex-1 rounded-lg py-2 text-xs font-semibold inline-flex items-center justify-center gap-1"
+                    >
+                      <BarChart3 className="w-3 h-3" /> Stats
+                    </Link>
+                    {form.visibility !== "unpublished" && form.slug && (
+                      <button
+                        type="button"
+                        className="ef-btn-ghost rounded-lg w-9 h-9 inline-flex items-center justify-center"
+                        onClick={() => setQrForm({ title: form.title, slug: form.slug })}
+                        title="QR code"
+                      >
+                        <QrCode className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </article>
+            ))}
+
+            {/* Create card */}
+            <Link
+              href="/dashboard/forms/new"
+              className="form-card flex flex-col items-center justify-center min-h-[280px] border-dashed !shadow-none"
+              style={{ borderStyle: "dashed", borderWidth: 2 }}
             >
               <div
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: "10px",
-                  background: "rgba(34,211,238,0.08)",
-                  border: "1px solid rgba(34,211,238,0.12)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginBottom: "1rem",
-                }}
+                className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
+                style={{ background: "var(--dash-accent-soft)", color: "var(--dash-accent)" }}
               >
-                <f.icon style={{ width: 16, height: 16, color: "#22d3ee" }} />
+                <Plus className="w-6 h-6" />
               </div>
-              <p
-                style={{
-                  fontFamily: "'Cormorant Garamond', serif",
-                  fontSize: "1.05rem",
-                  color: "var(--foreground)",
-                  marginBottom: "6px",
-                }}
-              >
-                {f.title}
-              </p>
-              <p style={{ fontSize: "12px", color: "var(--muted-foreground)", lineHeight: 1.6 }}>
-                {f.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
+              <p className="font-bold dash-text">Create new form</p>
+              <p className="text-xs dash-muted mt-1">Blank or from template</p>
+            </Link>
+          </div>
+        )}
+      </section>
 
-      {/* ── Status strip ── */}
-      <div
-        className="ef-card status-strip"
-        style={{
-          borderRadius: "1rem",
-          padding: "1.25rem 1.75rem",
-          display: "flex",
-          alignItems: "center",
-          gap: "1rem",
-          flexWrap: "wrap",
-          justifyContent: "space-between",
-        }}
-      >
-        <div>
-          <p
-            style={{
-              fontSize: "11px",
-              textTransform: "uppercase",
-              letterSpacing: "0.28em",
-              color: "var(--muted-foreground)",
-              marginBottom: "4px",
-            }}
-          >
-            EdinForm
-          </p>
-          <p style={{ fontSize: "13px", color: "var(--foreground)", lineHeight: 1.5 }}>
-            Build, share, and understand your forms — all in one place.
-          </p>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#7EB884" }} />
-          <span style={{ fontSize: "12px", color: "var(--muted-foreground)" }}>
-            All systems running normally
-          </span>
-        </div>
-      </div>
-
-      {/* ── Portal dropdown — rendered directly into document.body ── */}
+      {/* Action menu portal */}
       {openMenu &&
         menuPos &&
         typeof document !== "undefined" &&
         createPortal(
           <>
-            {/* Backdrop: closes menu on outside click */}
-            <div style={{ position: "fixed", inset: 0, zIndex: 9990 }} onClick={closeMenu} />
-            {/* Menu panel */}
+            <div className="fixed inset-0 z-40" onClick={closeMenu} />
             <div
+              className="fixed z-50 ef-card !p-1.5 w-48 text-sm shadow-xl"
               style={{
-                position: "fixed",
-                ...(menuPos.top !== undefined ? { top: menuPos.top } : {}),
-                ...(menuPos.bottom !== undefined ? { bottom: menuPos.bottom } : {}),
+                top: menuPos.top,
+                bottom: menuPos.bottom,
                 right: menuPos.right,
-                width: 210,
-                zIndex: 9999,
-                borderRadius: "12px",
-                padding: "4px",
-                background: "var(--card, #1c1c1c)",
-                border: "1px solid rgba(255,255,255,0.09)",
-                boxShadow: "0 16px 48px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4)",
               }}
-              onClick={(e) => e.stopPropagation()}
             >
-              {forms
-                ?.filter((f) => f.id === openMenu)
-                .map((form) => (
-                  <div key={form.id}>
+              {(() => {
+                const form = formList.find((f) => f.id === openMenu);
+                if (!form) return null;
+                return (
+                  <>
                     <Link
                       href={`/dashboard/forms/${form.id}/edit`}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg dash-text hover:opacity-80"
                       onClick={closeMenu}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        padding: "9px 14px",
-                        borderRadius: "8px",
-                        fontSize: "13px",
-                        color: "var(--foreground)",
-                        textDecoration: "none",
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.background =
-                          "rgba(255,255,255,0.07)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.background = "transparent";
-                      }}
                     >
-                      <Layers style={{ width: 14, height: 14, color: "#22d3ee", flexShrink: 0 }} />
-                      Edit &amp; Preview
+                      <Pencil className="w-3.5 h-3.5" /> Edit
                     </Link>
-
+                    <Link
+                      href={`/dashboard/forms/${form.id}/responses`}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg dash-text hover:opacity-80"
+                      onClick={closeMenu}
+                    >
+                      <Inbox className="w-3.5 h-3.5" /> Responses
+                    </Link>
+                    {form.visibility !== "unpublished" && form.slug && (
+                      <a
+                        href={`/forms/${form.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg dash-text hover:opacity-80"
+                        onClick={closeMenu}
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" /> Open live
+                      </a>
+                    )}
+                    <button
+                      type="button"
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg dash-text"
+                      onClick={() => duplicateMutation.mutate({ id: form.id })}
+                    >
+                      <Copy className="w-3.5 h-3.5" /> Duplicate
+                    </button>
                     {form.visibility !== "unpublished" ? (
-                      <MenuBtn
-                        icon={Lock}
-                        label="Unpublish"
+                      <button
+                        type="button"
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg dash-text"
                         onClick={() => unpublishMutation.mutate({ id: form.id })}
-                      />
+                      >
+                        <Lock className="w-3.5 h-3.5" /> Unpublish
+                      </button>
                     ) : (
-                      <MenuBtn
-                        icon={Globe}
-                        label="Publish"
+                      <button
+                        type="button"
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg dash-text"
                         onClick={() =>
                           publishMutation.mutate({ id: form.id, visibility: "public" })
                         }
-                      />
+                      >
+                        <Globe className="w-3.5 h-3.5" /> Publish
+                      </button>
                     )}
-
-                    <MenuBtn
-                      icon={Copy}
-                      label="Duplicate"
-                      onClick={() => duplicateMutation.mutate({ id: form.id })}
-                    />
-
-                    {form.visibility !== "unpublished" && (
-                      <>
-                        <MenuBtn
-                          icon={Copy}
-                          label="Copy Link"
-                          onClick={() => {
-                            navigator.clipboard.writeText(
-                              window.location.origin + "/forms/" + form.slug,
-                            );
-                            toast.success("Link copied!");
-                            closeMenu();
-                          }}
-                        />
-                        <MenuAnchor
-                          icon={ExternalLink}
-                          label="Open Form"
-                          href={`/forms/${form.slug}`}
-                          onNavigate={closeMenu}
-                        />
-                      </>
-                    )}
-
-                    <div
-                      style={{ margin: "4px 8px", borderTop: "1px solid rgba(255,255,255,0.07)" }}
-                    />
-
-                    <MenuBtn
-                      icon={Trash2}
-                      label="Delete"
-                      danger
+                    <div className="border-t dash-border my-1" />
+                    <button
+                      type="button"
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-red-500"
                       onClick={() => {
-                        closeMenu();
-                        if (confirm("Delete this form and all its responses?"))
-                          deleteMutation.mutate({ id: form.id });
+                        if (confirm("Delete this form?")) deleteMutation.mutate({ id: form.id });
                       }}
-                    />
-                  </div>
-                ))}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> Delete
+                    </button>
+                  </>
+                );
+              })()}
             </div>
           </>,
           document.body,
         )}
 
-      {/* QR Modal */}
       {qrForm && (
         <QRShareModal
           open={!!qrForm}
@@ -1069,95 +463,5 @@ export default function DashboardPage() {
         />
       )}
     </div>
-  );
-}
-
-/* ── helpers ── */
-function MenuBtn({
-  icon: Icon,
-  label,
-  onClick,
-  danger = false,
-}: {
-  icon: React.ElementType;
-  label: string;
-  onClick: () => void;
-  danger?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        width: "100%",
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        padding: "9px 14px",
-        borderRadius: "8px",
-        fontSize: "13px",
-        color: danger ? "#e05555" : "var(--foreground)",
-        background: "transparent",
-        border: "none",
-        cursor: "pointer",
-        textAlign: "left",
-        fontFamily: "inherit",
-        transition: "background 0.12s",
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.background = danger
-          ? "rgba(224,85,85,0.1)"
-          : "rgba(255,255,255,0.07)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.background = "transparent";
-      }}
-    >
-      <Icon
-        style={{ width: 14, height: 14, color: danger ? "#e05555" : "#22d3ee", flexShrink: 0 }}
-      />
-      {label}
-    </button>
-  );
-}
-
-function MenuAnchor({
-  icon: Icon,
-  label,
-  href,
-  onNavigate,
-}: {
-  icon: React.ElementType;
-  label: string;
-  href: string;
-  onNavigate?: () => void;
-}) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      onClick={onNavigate}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        padding: "9px 14px",
-        borderRadius: "8px",
-        fontSize: "13px",
-        color: "var(--foreground)",
-        textDecoration: "none",
-        transition: "background 0.12s",
-        fontFamily: "inherit",
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.07)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.background = "transparent";
-      }}
-    >
-      <Icon style={{ width: 14, height: 14, color: "#22d3ee", flexShrink: 0 }} />
-      {label}
-    </a>
   );
 }

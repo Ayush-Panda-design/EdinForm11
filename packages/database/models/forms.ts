@@ -76,6 +76,10 @@ export const formsTable = pgTable(
       .default(false)
       .notNull(),
     confirmationEmailField: uuid("confirmation_email_field"),
+    /** Slack / Discord / Zapier webhook URL for new responses */
+    webhookUrl: text("webhook_url"),
+    /** Include this form in the creator's daily digest email */
+    digestEnabled: boolean("digest_enabled").default(false).notNull(),
 
     // Password protection
     isPasswordProtected: boolean("is_password_protected").default(false).notNull(),

@@ -11,34 +11,31 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: "light",
+  theme: "dark",
   toggleTheme: () => {},
   setTheme: () => {},
 });
 
-const STORAGE_KEY = "formcraft_theme";
+const STORAGE_KEY = "edinform_theme";
+
+function applyTheme(t: Theme) {
+  const root = document.documentElement;
+  root.classList.remove("dark", "light");
+  root.classList.add(t);
+  root.style.colorScheme = t;
+}
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
+  const [theme, setThemeState] = useState<Theme>("dark");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Read persisted preference on mount
     const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    const initial = saved === "dark" ? "dark" : "light";
+    const initial = saved === "light" || saved === "dark" ? saved : "dark";
     setThemeState(initial);
     applyTheme(initial);
     setMounted(true);
   }, []);
-
-  function applyTheme(t: Theme) {
-    const root = document.documentElement;
-    if (t === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-  }
 
   function setTheme(t: Theme) {
     setThemeState(t);
@@ -50,7 +47,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(theme === "dark" ? "light" : "dark");
   }
 
-  // Prevent flash: hide content until theme is applied
   if (!mounted) {
     return <div style={{ visibility: "hidden" }}>{children}</div>;
   }
