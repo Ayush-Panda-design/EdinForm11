@@ -24,7 +24,7 @@ export function HelpTip({
   size = "sm",
   align = "right",
 }: HelpTipProps) {
-  const content = contentProp ?? (section ? SECTION_HELP[section] : null);
+  const content: HelpTipContent | null = contentProp ?? (section ? SECTION_HELP[section] : null);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
