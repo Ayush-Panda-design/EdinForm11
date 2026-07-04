@@ -4,6 +4,7 @@ import { useAuth } from "~/providers/auth-provider";
 import { useTheme } from "~/providers/theme-provider";
 import { User, Mail, Shield, Bell, Sun, Moon } from "lucide-react";
 import { DashPageHeader, DashPanel } from "~/components/dashboard/page-chrome";
+import { BackendStatusCard } from "~/components/help/backend-status";
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -93,9 +94,11 @@ export default function SettingsPage() {
       <DashPanel title="Notifications">
         <div className="p-5 flex items-center gap-3 text-sm dash-muted">
           <Bell className="w-4 h-4 dash-faint" />
-          Email alerts for new responses — coming soon.
+          Per-form email, webhook, and digest settings live in each form&apos;s Settings tab.
         </div>
       </DashPanel>
+
+      <BackendStatusCard />
     </div>
   );
 }

@@ -1,0 +1,23 @@
+# Render Blueprint (optional).
+# Free web services sleep after ~15m idle — we fight that with:
+#   1) In-process keep-alive scheduler (apps/api/src/jobs)
+#   2) GitHub Actions .github/workflows/keep-alive.yml (every 10 minutes)
+#
+# Set on the web service:
+#   CRON_SECRET, BASE_URL, APP_URL, DATABASE_URL, JWT_SECRET
+# Set as GitHub repo secrets:
+#   API_BASE_URL (e.g. https://edinform11-2.onrender.com)
+#   CRON_SECRET  (same value as Render)
+
+services:
+  - type: web
+    name: edinform-api
+    runtime: node
+    plan: free
+    rootDir: .
+    buildCommand: pnpm install --no-frozen-lockfile --prod=false && pnpm --filter @repo/api build
+    startCommand: pnpm --filter @repo/api start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production

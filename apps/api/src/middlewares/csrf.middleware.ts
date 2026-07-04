@@ -25,6 +25,7 @@ const PUBLIC_PATHS = [
   "/api/responses.submit",
   "/trpc/responses.submit",
   "/api/public",
+  "/internal/", // cron / keep-alive (secured by CRON_SECRET)
 ];
 
 export function csrfMiddleware(req: Request, res: Response, next: NextFunction): void {

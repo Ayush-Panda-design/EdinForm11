@@ -15,7 +15,13 @@ async function main() {
     logger.info(`Scalar docs: http://localhost:${PORT}/docs`);
     logger.info(`tRPC endpoint: http://localhost:${PORT}/trpc`);
     logger.info(`REST endpoint: http://localhost:${PORT}/api`);
+    logger.info(`Status: http://localhost:${PORT}/status`);
     logger.info(`Google OAuth redirect: ${env.BASE_URL}/auth/google/callback`);
+
+    // Keep-alive + digest + draft cleanup (in-process)
+    void import("./jobs/scheduler").then(({ startScheduler }) => {
+      startScheduler(env.BASE_URL);
+    });
   });
 }
 

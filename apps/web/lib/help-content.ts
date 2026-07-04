@@ -254,4 +254,17 @@ export const FULL_GUIDE: GuideSection[] = [
       "Monitor overall platform analytics",
     ],
   },
+  {
+    id: "reliability",
+    title: "Reliability & never-sleep",
+    summary: "The API stays warm with keep-alive jobs and scheduled maintenance.",
+    steps: [
+      "In-process scheduler pings /health every 10 minutes",
+      "GitHub Actions also wakes the API every 10 minutes (free-tier safe)",
+      "Daily digest emails run around 09:00 UTC",
+      "Old abandoned drafts are cleaned up automatically",
+      "Check live status anytime at /status on the API",
+    ],
+    tips: ["Set CRON_SECRET and API_BASE_URL so external cron can trigger jobs securely."],
+  },
 ];
