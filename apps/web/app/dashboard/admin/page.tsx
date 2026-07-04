@@ -32,6 +32,7 @@ import {
 import { format, parseISO, subDays } from "date-fns";
 import { useAuth } from "~/providers/auth-provider";
 import { useRouter } from "next/navigation";
+import { HelpTip } from "~/components/help/help-tip";
 
 type AdminTab = "overview" | "users" | "forms" | "sessions" | "analytics";
 
@@ -305,6 +306,7 @@ export default function AdminDashboardPage() {
           >
             <ShieldCheck style={{ width: 22, height: 22, color: "#22d3ee" }} />
             Admin <em style={{ color: "#22d3ee" }}>Dashboard</em>
+            <HelpTip section="admin" size="md" />
           </h1>
           <p style={{ marginTop: "6px", fontSize: "13px", color: "var(--muted-foreground)" }}>
             Manage users, sessions, forms, and platform-wide analytics.

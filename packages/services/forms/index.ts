@@ -66,6 +66,9 @@ function mapForm(row: typeof formsTable.$inferSelect): Form {
     maxResponses: row.maxResponses ?? null,
     closeAfterDate: row.closeAfterDate ?? null,
     isPasswordProtected: row.isPasswordProtected ?? false,
+    notifyCreatorOnSubmission: row.notifyCreatorOnSubmission ?? true,
+    webhookUrl: row.webhookUrl ?? null,
+    digestEnabled: row.digestEnabled ?? false,
     publishedAt: row.publishedAt ?? null,
     createdAt: row.createdAt ?? null,
     updatedAt: row.updatedAt ?? null,
@@ -232,6 +235,12 @@ export class FormsService {
       .update(formsTable)
       .set({
         ...input,
+        webhookUrl:
+          input.webhookUrl === ""
+            ? null
+            : input.webhookUrl !== undefined
+              ? input.webhookUrl
+              : undefined,
         closeAfterDate: input.closeAfterDate
           ? new Date(input.closeAfterDate)
           : undefined,

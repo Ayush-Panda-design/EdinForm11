@@ -65,6 +65,9 @@ export interface Form {
   maxResponses: number | null;
   closeAfterDate: Date | null;
   isPasswordProtected: boolean;
+  notifyCreatorOnSubmission?: boolean;
+  webhookUrl?: string | null;
+  digestEnabled?: boolean;
   publishedAt: Date | null;
   createdAt: Date | null;
   updatedAt: Date | null;

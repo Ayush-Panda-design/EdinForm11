@@ -14,6 +14,7 @@ import {
   Heart,
   Users,
 } from "lucide-react";
+import { HelpTip } from "~/components/help/help-tip";
 
 import {
   AreaChart,
@@ -134,7 +135,10 @@ export default function FormAnalyticsPage({ params }: { params: Promise<{ id: st
         </Link>
 
         <div>
-          <h1 className="text-3xl font-display text-foreground">{form?.title ?? "Analytics"}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-semibold text-foreground">{form?.title ?? "Analytics"}</h1>
+            <HelpTip section="formAnalytics" size="md" />
+          </div>
 
           <p className="text-sm text-muted-foreground mt-1">
             Performance overview from the last 30 days

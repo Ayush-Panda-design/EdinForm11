@@ -4,6 +4,9 @@ import { nextJsConfig } from "@repo/eslint-config/next-js";
 export default [
   ...nextJsConfig,
   {
+    ignores: ["public/**"],
+  },
+  {
     rules: {
       // TypeScript handles prop validation; shadcn UI components trigger false positives
       "react/prop-types": "off",

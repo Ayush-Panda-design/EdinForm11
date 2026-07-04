@@ -1,10 +1,10 @@
 "use client";
 
-import { use, useState, useEffect, useMemo } from "react";
+import { use, useState, useEffect, useMemo, useCallback, useRef } from "react";
 import Link from "next/link";
 import { trpc } from "~/trpc/client";
 import { toast } from "sonner";
-import { validateSubmissionAnswers } from "@repo/validators/responses";
+import { validateSubmissionAnswers, validateSingleField } from "@repo/validators/responses";
 import type { DynamicField } from "@repo/validators/responses";
 import {
   Loader2,
@@ -16,6 +16,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { FieldRenderer, shouldShowField, type FormField } from "~/components/forms/field-renderer";
+import { loadLocalDraft, saveLocalDraft, clearLocalDraft } from "~/lib/form-draft";
 
 type ThemeConfig = {
   primaryColor?: string;
@@ -62,6 +63,10 @@ function formatAnswerForValidation(
 
 export default function PublicFormPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
+  const [isEmbed, setIsEmbed] = useState(false);
+  useEffect(() => {
+    setIsEmbed(new URLSearchParams(window.location.search).get("embed") === "1");
+  }, []);
 
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -70,6 +75,14 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
   const [validationError, setValidationError] = useState<string | null>(null);
   const [startTime] = useState(Date.now());
   const [honeypot, setHoneypot] = useState("");
+  const [draftResponseId, setDraftResponseId] = useState<string | undefined>();
+  const [showResumeBanner, setShowResumeBanner] = useState(false);
+  const [pendingResume, setPendingResume] = useState<{
+    answers: Record<string, string | string[]>;
+    currentStep: number;
+    draftResponseId?: string;
+  } | null>(null);
+  const draftRestored = useRef(false);
 
   // Password gate
   const [passwordInput, setPasswordInput] = useState("");
@@ -91,8 +104,11 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
     },
   );
 
+  const saveDraftMutation = trpc.responses.saveDraft.useMutation();
+
   const submitMutation = trpc.responses.submit.useMutation({
     onSuccess: (data) => {
+      if (form?.id) clearLocalDraft(form.id);
       setSuccessMsg(data.successMessage);
       setSubmitted(true);
     },
@@ -107,6 +123,58 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
         activeForm ? (activeForm as { theme?: { config: ThemeConfig } | null }).theme : null,
       ),
     [activeForm],
+  );
+
+  // Restore draft from localStorage (and optionally server)
+  useEffect(() => {
+    if (!form?.id || draftRestored.current) return;
+    draftRestored.current = true;
+
+    const local = loadLocalDraft(form.id);
+    if (local && Object.keys(local.answers).length > 0) {
+      setPendingResume({
+        answers: local.answers,
+        currentStep: local.currentStep,
+        draftResponseId: local.draftResponseId,
+      });
+      setShowResumeBanner(true);
+    }
+  }, [form?.id]);
+
+  const persistDraft = useCallback(
+    (nextAnswers: Record<string, string | string[]>, step: number) => {
+      if (!form?.id) return;
+      const payload = {
+        answers: nextAnswers,
+        currentStep: step,
+        draftResponseId,
+        savedAt: new Date().toISOString(),
+      };
+      saveLocalDraft(form.id, payload);
+
+      const answerList = Object.entries(nextAnswers).map(([fieldId, value]) =>
+        Array.isArray(value) ? { fieldId, valueArray: value } : { fieldId, value: String(value) },
+      );
+
+      saveDraftMutation.mutate(
+        {
+          formId: form.id,
+          answers: answerList,
+          currentStep: step,
+          draftResponseId,
+        },
+        {
+          onSuccess: (data) => {
+            setDraftResponseId(data.draftResponseId);
+            saveLocalDraft(form.id, {
+              ...payload,
+              draftResponseId: data.draftResponseId,
+            });
+          },
+        },
+      );
+    },
+    [form?.id, draftResponseId, saveDraftMutation],
   );
 
   // Keyboard navigation
@@ -128,12 +196,44 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
   });
 
   const updateAnswer = (fieldId: string, value: string | string[]) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [fieldId]: value,
-    }));
+    setAnswers((prev) => {
+      const next = { ...prev, [fieldId]: value };
+      if (form?.id) {
+        saveLocalDraft(form.id, {
+          answers: next,
+          currentStep,
+          draftResponseId,
+          savedAt: new Date().toISOString(),
+        });
+      }
+      return next;
+    });
 
     setValidationError(null);
+  };
+
+  const validateFieldBlur = (field: FormField) => {
+    const err = validateSingleField(
+      toDynamicField(field),
+      formatAnswerForValidation(field, answers[field.id]),
+    );
+    setValidationError(err);
+  };
+
+  const applyResume = () => {
+    if (!pendingResume) return;
+    setAnswers(pendingResume.answers);
+    setCurrentStep(pendingResume.currentStep);
+    setDraftResponseId(pendingResume.draftResponseId);
+    setShowResumeBanner(false);
+    setPendingResume(null);
+  };
+
+  const discardResume = () => {
+    if (form?.id) clearLocalDraft(form.id);
+    setShowResumeBanner(false);
+    setPendingResume(null);
+    setDraftResponseId(undefined);
   };
 
   const handleVerifyPassword = async () => {
@@ -301,12 +401,14 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
         handleSubmit();
         return;
       }
-
       setCurrentStep(0);
+      persistDraft(answers, 0);
     } else if (isLastStep) {
       handleSubmit();
     } else {
-      setCurrentStep((s) => s + 1);
+      const next = currentStep + 1;
+      setCurrentStep(next);
+      persistDraft(answers, next);
     }
   };
 
@@ -357,6 +459,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
       answers: submitAnswers,
       completionTimeSeconds,
       honeypot: honeypot || undefined,
+      draftResponseId,
     });
   };
 
@@ -424,6 +527,32 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
               </p>
             )}
 
+            {showResumeBanner && pendingResume && (
+              <div className="mb-8 mx-auto max-w-md rounded-2xl border border-white/15 bg-white/10 p-4 text-left backdrop-blur">
+                <p className="text-sm font-medium text-white">Continue where you left off?</p>
+                <p className="mt-1 text-xs text-slate-300">
+                  We saved your progress on this device.
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={applyResume}
+                    className="rounded-lg px-3 py-2 text-xs font-semibold text-white"
+                    style={{ background: theme.primary }}
+                  >
+                    Continue
+                  </button>
+                  <button
+                    type="button"
+                    onClick={discardResume}
+                    className="rounded-lg border border-white/20 px-3 py-2 text-xs text-slate-300"
+                  >
+                    Start over
+                  </button>
+                </div>
+              </div>
+            )}
+
             <button
               onClick={handleNext}
               className="group inline-flex items-center gap-3 h-16 px-8 rounded-2xl text-white font-semibold text-lg hover:scale-[1.03] transition-all"
@@ -441,11 +570,16 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
           </div>
         </div>
 
-        <footer className="relative z-10 text-center py-6">
-          <Link href="/" className="text-sm text-slate-600 hover:text-slate-400 transition-colors">
-            Powered by EdinForm
-          </Link>
-        </footer>
+        {!isEmbed && (
+          <footer className="relative z-10 text-center py-6">
+            <Link
+              href="/"
+              className="text-sm text-slate-600 hover:text-slate-400 transition-colors"
+            >
+              Powered by EdinForm
+            </Link>
+          </footer>
+        )}
       </div>
     );
 
@@ -528,13 +662,14 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
                   field={currentField as FormField}
                   value={answers[currentField.id] ?? ""}
                   onChange={(v) => updateAnswer(currentField.id, v)}
+                  onBlur={() => validateFieldBlur(currentField as FormField)}
                 />
               )}
             </div>
 
             {validationError && (
-              <div className="mb-6 flex items-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-red-300">
-                <AlertCircle className="w-4 h-4" />
+              <div className="mb-6 flex items-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-red-300 text-sm">
+                <AlertCircle className="w-4 h-4 shrink-0" />
                 {validationError}
               </div>
             )}
@@ -562,11 +697,13 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
         </div>
       </div>
 
-      <footer className="relative z-10 text-center py-6">
-        <Link href="/" className="text-sm text-slate-600 hover:text-slate-400 transition-colors">
-          Powered by EdinForm
-        </Link>
-      </footer>
+      {!isEmbed && (
+        <footer className="relative z-10 text-center py-6">
+          <Link href="/" className="text-sm text-slate-600 hover:text-slate-400 transition-colors">
+            Powered by EdinForm
+          </Link>
+        </footer>
+      )}
     </div>
   );
 }

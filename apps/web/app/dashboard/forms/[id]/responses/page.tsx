@@ -5,6 +5,7 @@ import Link from "next/link";
 import { trpc } from "~/trpc/client";
 import { ArrowLeft, Download, Loader2, User, Clock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { HelpTip } from "~/components/help/help-tip";
 
 export default function ResponsesPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -68,9 +69,12 @@ export default function ResponsesPage({ params }: { params: Promise<{ id: string
         </Link>
 
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-semibold text-foreground truncate">
-            Responses — {form?.title}
-          </h1>
+          <div className="flex items-center gap-2 min-w-0">
+            <h1 className="text-2xl font-semibold text-foreground truncate">
+              Responses — {form?.title}
+            </h1>
+            <HelpTip section="responses" size="md" className="shrink-0" />
+          </div>
 
           <p className="text-sm text-muted-foreground mt-1">
             {responsesData?.total ?? 0} total responses

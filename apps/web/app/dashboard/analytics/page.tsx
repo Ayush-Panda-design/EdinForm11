@@ -19,6 +19,7 @@ import {
   Clock,
   User,
   Zap,
+  Plus,
 } from "lucide-react";
 import {
   AreaChart,
@@ -30,12 +31,21 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { format, parseISO, subDays, formatDistanceToNow } from "date-fns";
-
-/* ── shared tokens ── */
-const CYAN = "#00e5c2";
-const GREEN = "#39ff88";
+import { useTheme } from "~/providers/theme-provider";
+import { AnalyticsSparkArt, EmptyFormsArt } from "~/components/dashboard/illustrations";
+import { HelpTip } from "~/components/help/help-tip";
 
 export default function AnalyticsDashboardPage() {
+  const { theme } = useTheme();
+  const accent = theme === "light" ? "#e11d8f" : "#22d3ee";
+  const accent2 = theme === "light" ? "#22d3ee" : "#34d399";
+  const gridStroke = theme === "light" ? "rgba(15,23,42,0.08)" : "rgba(255,255,255,0.06)";
+  const tooltipBg = theme === "light" ? "#ffffff" : "#0c0c0e";
+  const tooltipText = theme === "light" ? "#1e293b" : "#fafafa";
+  const tooltipBorder = theme === "light" ? "rgba(225,29,143,0.25)" : "rgba(34,211,238,0.25)";
+  const hoverBg = theme === "light" ? "rgba(15,23,42,0.03)" : "rgba(255,255,255,0.03)";
+  const trackBg = theme === "light" ? "rgba(15,23,42,0.08)" : "rgba(255,255,255,0.08)";
+
   const { data: dashboard, isLoading } = trpc.analytics.dashboard.useQuery(undefined, {
     refetchInterval: 1000,
     refetchOnWindowFocus: true,
@@ -53,10 +63,8 @@ export default function AnalyticsDashboardPage() {
 
   if (isLoading) {
     return (
-      <div
-        style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "8rem" }}
-      >
-        <Loader2 className="animate-spin" style={{ width: 28, height: 28, color: CYAN }} />
+      <div className="flex items-center justify-center py-32">
+        <Loader2 className="w-7 h-7 animate-spin dash-accent" />
       </div>
     );
   }
@@ -69,8 +77,8 @@ export default function AnalyticsDashboardPage() {
   const sortedBreakdown = [...(dashboard?.formBreakdown ?? [])]
     .filter((f) => f.title.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort((a, b) => {
-      const vA = a[sortField],
-        vB = b[sortField];
+      const vA = a[sortField];
+      const vB = b[sortField];
       return sortOrder === "asc" ? vA - vB : vB - vA;
     });
 
@@ -94,7 +102,7 @@ export default function AnalyticsDashboardPage() {
     },
     {
       label: "Avg Conversion",
-      value: dashboard ? dashboard.avgConversionRate.toFixed(1) + "%" : "0%",
+      value: dashboard ? `${dashboard.avgConversionRate.toFixed(1)}%` : "0%",
       icon: TrendingUp,
       desc: "Views to conversion",
     },
@@ -108,161 +116,55 @@ export default function AnalyticsDashboardPage() {
     }
   };
 
-  /* ── shared section card style ── */
-  const card: React.CSSProperties = {
-    background: "#0c0c0e",
-    border: "1px solid rgba(255,255,255,0.06)",
-    borderRadius: "16px",
-  };
-
-  const th: React.CSSProperties = {
-    padding: "10px 16px",
-    fontSize: "10px",
-    textTransform: "uppercase",
-    letterSpacing: "0.28em",
-    color: "var(--muted-foreground)",
-    fontFamily: "'Inter', sans-serif",
-    fontWeight: 500,
-    borderBottom: "1px solid var(--border)",
-    textAlign: "left",
-    background: "rgba(255,255,255,0.02)",
-  };
-
-  const td: React.CSSProperties = {
-    padding: "12px 16px",
-    fontSize: "13px",
-    color: "var(--foreground)",
-    fontFamily: "'Inter', sans-serif",
-    borderBottom: "1px solid var(--border)",
-  };
-
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "2rem",
-        fontFamily: "'Inter', sans-serif",
-      }}
-    >
-      {/* ── Header ── */}
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          gap: "1rem",
-        }}
-      >
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p
-            style={{
-              fontSize: "11px",
-              textTransform: "uppercase",
-              letterSpacing: "0.28em",
-              color: "var(--muted-foreground)",
-              marginBottom: "6px",
-            }}
-          >
+          <p className="text-[11px] uppercase tracking-[0.2em] font-semibold dash-faint mb-2">
             Analytics
           </p>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <h1
-              style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: "clamp(1.8rem, 3vw, 2.4rem)",
-                fontWeight: 400,
-                color: "var(--foreground)",
-                lineHeight: 1.1,
-              }}
-            >
-              Workspace <em style={{ color: CYAN }}>Overview</em>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-3xl font-semibold tracking-tight dash-text">
+              Workspace <span className="dash-accent">Overview</span>
             </h1>
-            {/* live dot */}
+            <HelpTip section="analytics" size="md" />
             <span
+              className="kpi-chip"
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "3px 10px",
-                borderRadius: "999px",
-                fontSize: "11px",
-                fontWeight: 600,
-                letterSpacing: "0.08em",
-                background: "rgba(88,116,92,0.15)",
-                color: "#7EB884",
-                border: "1px solid rgba(88,116,92,0.25)",
-                marginTop: "4px",
+                color: "var(--dash-success)",
+                borderColor: "color-mix(in srgb, var(--dash-success) 30%, transparent)",
+                background: "color-mix(in srgb, var(--dash-success) 12%, transparent)",
               }}
             >
-              <span style={{ position: "relative", display: "flex", width: 8, height: 8 }}>
-                <span
-                  className="animate-ping"
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    borderRadius: "50%",
-                    background: "#7EB884",
-                    opacity: 0.6,
-                  }}
-                />
-                <span
-                  style={{
-                    position: "relative",
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    background: "#7EB884",
-                    display: "block",
-                  }}
-                />
+              <span className="relative flex w-2 h-2">
+                <span className="animate-ping absolute inset-0 rounded-full bg-[var(--dash-success)] opacity-60" />
+                <span className="relative w-2 h-2 rounded-full bg-[var(--dash-success)]" />
               </span>
               Live
             </span>
           </div>
-          <p style={{ fontSize: "13px", color: "var(--muted-foreground)", marginTop: "5px" }}>
+          <p className="mt-2 text-sm dash-muted">
             Real-time insights across your EdinForm workspace.
           </p>
         </div>
 
-        {/* Days filter */}
         <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid var(--border)",
-            borderRadius: "12px",
-            padding: "4px",
-          }}
+          className="flex items-center gap-1 rounded-xl border dash-border p-1"
+          style={{ background: "var(--dash-card)" }}
         >
-          <Calendar
-            style={{
-              width: 13,
-              height: 13,
-              color: "var(--muted-foreground)",
-              marginLeft: "6px",
-              marginRight: "2px",
-            }}
-          />
+          <Calendar className="w-3.5 h-3.5 dash-faint ml-2" />
           {([7, 30, 90] as const).map((days) => (
             <button
               key={days}
+              type="button"
               onClick={() => setDaysFilter(days)}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
               style={{
-                padding: "6px 12px",
-                borderRadius: "8px",
-                fontSize: "12px",
-                fontFamily: "'Inter', sans-serif",
-                border: "none",
-                cursor: "pointer",
-                transition: "all 0.18s",
-                background: daysFilter === days ? "rgba(34,211,238,0.12)" : "transparent",
-                color: daysFilter === days ? CYAN : "var(--muted-foreground)",
-                boxShadow: daysFilter === days ? "inset 0 0 0 1px rgba(34,211,238,0.2)" : "none",
-                fontWeight: daysFilter === days ? 600 : 400,
+                background: daysFilter === days ? "var(--dash-accent-soft)" : "transparent",
+                color: daysFilter === days ? "var(--dash-accent)" : "var(--dash-muted)",
+                boxShadow:
+                  daysFilter === days ? "inset 0 0 0 1px var(--dash-accent-border)" : "none",
               }}
             >
               {days}d
@@ -271,462 +173,219 @@ export default function AnalyticsDashboardPage() {
         </div>
       </div>
 
-      {/* ── Stats ── */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-          gap: "1rem",
-        }}
-      >
-        {stats.map(({ label, value, icon: Icon, desc }, i) => (
-          <div
-            key={label}
-            className="ef-card"
-            style={{ padding: "1.25rem", animation: `ef-fade-up .6s ease ${i * 60}ms both` }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "1rem",
-              }}
-            >
-              <span
-                style={{
-                  fontSize: "10px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.28em",
-                  color: "var(--muted-foreground)",
-                }}
-              >
+      {/* KPI cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {stats.map(({ label, value, icon: Icon, desc }) => (
+          <div key={label} className="ef-bento">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] uppercase tracking-[0.18em] font-semibold dash-faint">
                 {label}
               </span>
-              <Icon style={{ width: 13, height: 13, color: CYAN, opacity: 0.7 }} />
+              <Icon className="w-4 h-4 dash-accent" />
             </div>
-            <p
-              style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: "2rem",
-                color: "var(--foreground)",
-                lineHeight: 1,
-              }}
-            >
-              {value}
-            </p>
-            <p style={{ fontSize: "11px", color: "var(--muted-foreground)", marginTop: "4px" }}>
-              {desc}
-            </p>
+            <p className="dash-stat-value">{value}</p>
+            <p className="mt-1 text-xs dash-muted">{desc}</p>
           </div>
         ))}
       </div>
 
-      {/* ── Chart + Top Forms ── */}
-      <div
-        style={{ display: "grid", gridTemplateColumns: "1fr", gap: "1.5rem" }}
-        className="lg:grid-cols-3-custom"
-      >
-        <div
-          style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1.5rem" }}
-          className="analytics-grid"
-        >
-          {/* Area chart */}
-          <div style={{ ...card, padding: "1.5rem", gridColumn: "1" }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                justifyContent: "space-between",
-                marginBottom: "1.5rem",
-              }}
-            >
-              <div>
-                <p
-                  style={{
-                    fontSize: "11px",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.28em",
-                    color: "var(--muted-foreground)",
-                    marginBottom: "4px",
-                  }}
-                >
-                  Performance
-                </p>
-                <h2
-                  style={{
-                    fontFamily: "'Cormorant Garamond', serif",
-                    fontSize: "1.3rem",
-                    color: "var(--foreground)",
-                  }}
-                >
-                  Workspace Trend
-                </h2>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "16px",
-                  fontSize: "11px",
-                  color: "var(--muted-foreground)",
-                }}
-              >
-                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <span
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: "50%",
-                      background: CYAN,
-                      display: "inline-block",
-                    }}
-                  />{" "}
-                  Views
-                </span>
-                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <span
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: "50%",
-                      background: GREEN,
-                      display: "inline-block",
-                    }}
-                  />{" "}
-                  Submissions
-                </span>
-              </div>
+      {/* Chart + Top forms */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        <div className="ef-bento lg:col-span-2">
+          <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.18em] font-semibold dash-faint mb-1">
+                Performance
+              </p>
+              <h2 className="text-lg font-bold dash-text">Workspace trend</h2>
             </div>
-
-            <div style={{ height: 260 }}>
-              {filteredTrend.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={filteredTrend}
-                    margin={{ top: 8, right: 8, left: -24, bottom: 0 }}
-                  >
-                    <defs>
-                      <linearGradient id="gViews" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={CYAN} stopOpacity={0.18} />
-                        <stop offset="95%" stopColor={CYAN} stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="gSubs" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={GREEN} stopOpacity={0.18} />
-                        <stop offset="95%" stopColor={GREEN} stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="rgba(255,255,255,0.05)"
-                      vertical={false}
-                    />
-                    <XAxis
-                      dataKey="date"
-                      tickFormatter={(s) => {
-                        try {
-                          return format(parseISO(s), "MMM d");
-                        } catch {
-                          return s;
-                        }
-                      }}
-                      tick={{
-                        fontSize: 10,
-                        fill: "var(--muted-foreground)",
-                        fontFamily: "monospace",
-                      }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tick={{
-                        fontSize: 10,
-                        fill: "var(--muted-foreground)",
-                        fontFamily: "monospace",
-                      }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        background: "rgba(15,15,17,0.95)",
-                        borderRadius: "12px",
-                        border: "1px solid rgba(34,211,238,0.2)",
-                        color: "#F5F1EA",
-                        fontSize: "12px",
-                        fontFamily: "'Inter', sans-serif",
-                      }}
-                      labelFormatter={(l) => {
-                        try {
-                          return format(parseISO(l), "MMMM d, yyyy");
-                        } catch {
-                          return l;
-                        }
-                      }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="views"
-                      stroke={CYAN}
-                      strokeWidth={1.5}
-                      fill="url(#gViews)"
-                      name="Views"
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="submissions"
-                      stroke={GREEN}
-                      strokeWidth={1.5}
-                      fill="url(#gSubs)"
-                      name="Submissions"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <div
-                  style={{
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "var(--muted-foreground)",
-                  }}
-                >
-                  <BarChart3 style={{ width: 32, height: 32, marginBottom: "8px", opacity: 0.4 }} />
-                  <p style={{ fontSize: "13px" }}>No activity in this range</p>
-                </div>
-              )}
+            <div className="flex items-center gap-4 text-xs dash-muted">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full" style={{ background: accent }} /> Views
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full" style={{ background: accent2 }} />{" "}
+                Submissions
+              </span>
             </div>
           </div>
 
-          {/* Top forms */}
-          <div style={{ ...card, padding: "1.5rem", display: "flex", flexDirection: "column" }}>
-            <div
-              style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "1.25rem" }}
-            >
-              <Sparkles style={{ width: 15, height: 15, color: CYAN }} />
-              <p
-                style={{
-                  fontSize: "11px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.28em",
-                  color: "var(--muted-foreground)",
-                }}
-              >
-                Top Forms
-              </p>
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", flex: 1 }}>
-              {topForms.length > 0 ? (
-                topForms.map((form, idx) => (
-                  <div
-                    key={form.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "12px",
-                      borderRadius: "12px",
-                      background: "rgba(255,255,255,0.025)",
-                      border: "1px solid rgba(255,255,255,0.06)",
-                      transition: "border-color 0.2s",
+          <div className="h-[260px]">
+            {filteredTrend.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={filteredTrend} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="gViews" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={accent} stopOpacity={0.2} />
+                      <stop offset="95%" stopColor={accent} stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="gSubs" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={accent2} stopOpacity={0.2} />
+                      <stop offset="95%" stopColor={accent2} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={(s) => {
+                      try {
+                        return format(parseISO(s), "MMM d");
+                      } catch {
+                        return s;
+                      }
                     }}
-                    onMouseEnter={(e) =>
-                      ((e.currentTarget as HTMLElement).style.borderColor = "rgba(34,211,238,0.2)")
-                    }
-                    onMouseLeave={(e) =>
-                      ((e.currentTarget as HTMLElement).style.borderColor =
-                        "rgba(255,255,255,0.06)")
-                    }
-                  >
-                    <div style={{ minWidth: 0, flex: 1, paddingRight: "8px" }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          marginBottom: "3px",
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: "10px",
-                            fontWeight: 700,
-                            fontFamily: "monospace",
-                            color: CYAN,
-                            background: "rgba(34,211,238,0.1)",
-                            padding: "1px 6px",
-                            borderRadius: "4px",
-                          }}
-                        >
-                          #{idx + 1}
-                        </span>
-                        <p
-                          style={{
-                            fontSize: "13px",
-                            color: "var(--foreground)",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {form.title}
-                        </p>
-                      </div>
-                      <p
-                        style={{
-                          fontSize: "11px",
-                          color: "var(--muted-foreground)",
-                          fontFamily: "monospace",
-                        }}
-                      >
-                        {form.responses} replies · {form.conversionRate.toFixed(0)}% CR
-                      </p>
-                    </div>
-                    <Link
-                      href={`/dashboard/forms/${form.id}/analytics`}
-                      style={{
-                        padding: "6px",
-                        borderRadius: "8px",
-                        display: "flex",
-                        color: "var(--muted-foreground)",
-                        textDecoration: "none",
-                        background: "rgba(255,255,255,0.03)",
-                        border: "1px solid var(--border)",
-                        transition: "color 0.15s, background 0.15s",
-                        flexShrink: 0,
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.color = CYAN;
-                        (e.currentTarget as HTMLElement).style.background = "rgba(34,211,238,0.08)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
-                        (e.currentTarget as HTMLElement).style.background =
-                          "rgba(255,255,255,0.03)";
-                      }}
-                    >
-                      <ChevronRight style={{ width: 14, height: 14 }} />
-                    </Link>
-                  </div>
-                ))
-              ) : (
+                    tick={{ fontSize: 10, fill: "var(--dash-faint)" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: "var(--dash-faint)" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: tooltipBg,
+                      borderRadius: 12,
+                      border: `1px solid ${tooltipBorder}`,
+                      color: tooltipText,
+                      fontSize: 12,
+                      boxShadow: "var(--dash-shadow)",
+                    }}
+                    labelFormatter={(l) => {
+                      try {
+                        return format(parseISO(l), "MMMM d, yyyy");
+                      } catch {
+                        return l;
+                      }
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="views"
+                    stroke={accent}
+                    strokeWidth={2}
+                    fill="url(#gViews)"
+                    name="Views"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="submissions"
+                    stroke={accent2}
+                    strokeWidth={2}
+                    fill="url(#gSubs)"
+                    name="Submissions"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center dash-muted">
+                <AnalyticsSparkArt className="w-32 h-14 mb-3 opacity-70" />
+                <p className="text-sm font-medium dash-text">No activity in this range</p>
+                <p className="text-xs mt-1">Publish a form and share it to see trends here.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="ef-bento flex flex-col">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-4 h-4 dash-accent" />
+            <p className="text-[10px] uppercase tracking-[0.18em] font-semibold dash-faint">
+              Top forms
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-2.5 flex-1">
+            {topForms.length > 0 ? (
+              topForms.map((form, idx) => (
                 <div
-                  style={{
-                    flex: 1,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "var(--muted-foreground)",
-                    fontSize: "13px",
-                  }}
+                  key={form.id}
+                  className="flex items-center justify-between gap-2 p-3 rounded-xl border dash-border"
+                  style={{ background: "var(--dash-accent-soft)" }}
                 >
-                  No forms yet
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="kpi-chip !py-0.5 !px-1.5 text-[10px]">#{idx + 1}</span>
+                      <p className="text-sm font-semibold dash-text truncate">{form.title}</p>
+                    </div>
+                    <p className="text-xs dash-muted">
+                      {form.responses} replies · {form.conversionRate.toFixed(0)}% CR
+                    </p>
+                  </div>
+                  <Link
+                    href={`/dashboard/forms/${form.id}/analytics`}
+                    className="ef-btn-ghost rounded-lg w-8 h-8 inline-flex items-center justify-center shrink-0"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
                 </div>
-              )}
-            </div>
+              ))
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center text-center py-6">
+                <EmptyFormsArt className="w-36 h-auto mb-3 opacity-80" />
+                <p className="text-sm font-semibold dash-text">No forms yet</p>
+                <p className="text-xs dash-muted mt-1 mb-4">
+                  Create a form to start tracking performance.
+                </p>
+                <Link
+                  href="/dashboard/forms/new"
+                  className="ef-btn-primary rounded-full px-4 py-2 text-xs inline-flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" /> New form
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* ── Live Feed ── */}
-      <div style={{ ...card, overflow: "hidden" }}>
-        <div
-          style={{
-            padding: "1.25rem 1.5rem",
-            borderBottom: "1px solid var(--border)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+      {/* Live feed */}
+      <div className="ef-bento !p-0 overflow-hidden">
+        <div className="px-5 py-4 border-b dash-border flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
             <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center"
               style={{
-                width: 36,
-                height: 36,
-                borderRadius: "10px",
-                background: "rgba(88,116,92,0.12)",
-                border: "1px solid rgba(88,116,92,0.2)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                background: "color-mix(in srgb, var(--dash-success) 12%, transparent)",
+                border: "1px solid color-mix(in srgb, var(--dash-success) 25%, transparent)",
               }}
             >
-              <Zap style={{ width: 15, height: 15, color: "#7EB884" }} />
+              <Zap className="w-4 h-4" style={{ color: "var(--dash-success)" }} />
             </div>
             <div>
-              <p style={{ fontSize: "14px", color: "var(--foreground)", marginBottom: "1px" }}>
-                Live Submission Feed
-              </p>
-              <p style={{ fontSize: "11px", color: "var(--muted-foreground)" }}>
-                Updates every 3 seconds — no refresh needed
-              </p>
+              <p className="text-sm font-semibold dash-text">Live submission feed</p>
+              <p className="text-xs dash-muted">Updates every 3 seconds</p>
             </div>
           </div>
           <span
+            className="kpi-chip"
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "3px 10px",
-              borderRadius: "999px",
-              fontSize: "11px",
-              fontWeight: 600,
-              background: "rgba(88,116,92,0.15)",
-              color: "#7EB884",
-              border: "1px solid rgba(88,116,92,0.25)",
+              color: "var(--dash-success)",
+              borderColor: "color-mix(in srgb, var(--dash-success) 30%, transparent)",
+              background: "color-mix(in srgb, var(--dash-success) 12%, transparent)",
             }}
           >
-            <span style={{ position: "relative", display: "flex", width: 7, height: 7 }}>
-              <span
-                className="animate-ping"
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  borderRadius: "50%",
-                  background: "#7EB884",
-                  opacity: 0.6,
-                }}
-              />
-              <span
-                style={{
-                  position: "relative",
-                  width: 7,
-                  height: 7,
-                  borderRadius: "50%",
-                  background: "#7EB884",
-                  display: "block",
-                }}
-              />
-            </span>
             Live
           </span>
         </div>
 
         {isLoadingRecent ? (
-          <div style={{ display: "flex", justifyContent: "center", padding: "3rem" }}>
-            <Loader2 className="animate-spin" style={{ width: 20, height: 20, color: CYAN }} />
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-5 h-5 animate-spin dash-accent" />
           </div>
         ) : !recentSubmissions || recentSubmissions.length === 0 ? (
-          <div style={{ padding: "4rem 2rem", textAlign: "center" }}>
+          <div className="py-14 px-6 text-center">
             <div
+              className="w-11 h-11 rounded-full mx-auto mb-3 flex items-center justify-center"
               style={{
-                width: 44,
-                height: 44,
-                borderRadius: "50%",
-                background: "rgba(34,211,238,0.08)",
-                border: "1px solid rgba(34,211,238,0.12)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                margin: "0 auto 1rem",
+                background: "var(--dash-accent-soft)",
+                border: "1px solid var(--dash-accent-border)",
               }}
             >
-              <Mail style={{ width: 18, height: 18, color: CYAN }} />
+              <Mail className="w-4 h-4 dash-accent" />
             </div>
-            <p style={{ fontSize: "13px", color: "var(--muted-foreground)" }}>
+            <p className="text-sm dash-muted">
               No submissions yet — share your forms to start collecting responses.
             </p>
           </div>
@@ -735,139 +394,50 @@ export default function AnalyticsDashboardPage() {
             {recentSubmissions.map((sub, idx) => (
               <div
                 key={sub.responseId}
+                className="flex items-center gap-4 px-5 py-3.5 transition-colors"
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "1rem",
-                  padding: "14px 24px",
                   borderBottom:
-                    idx < recentSubmissions.length - 1 ? "1px solid var(--border)" : "none",
-                  transition: "background 0.15s",
+                    idx < recentSubmissions.length - 1 ? "1px solid var(--dash-border)" : "none",
                 }}
-                onMouseEnter={(e) =>
-                  ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.02)")
-                }
-                onMouseLeave={(e) =>
-                  ((e.currentTarget as HTMLElement).style.background = "transparent")
-                }
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = hoverBg;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "transparent";
+                }}
               >
                 <div
+                  className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
                   style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: "50%",
-                    background: "rgba(34,211,238,0.08)",
-                    border: "1px solid rgba(34,211,238,0.12)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
+                    background: "var(--dash-accent-soft)",
+                    border: "1px solid var(--dash-accent-border)",
                   }}
                 >
-                  <User style={{ width: 14, height: 14, color: CYAN }} />
+                  <User className="w-3.5 h-3.5 dash-accent" />
                 </div>
 
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      flexWrap: "wrap",
-                      marginBottom: "2px",
-                    }}
-                  >
-                    {sub.respondentEmail ? (
-                      <span
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "5px",
-                          fontSize: "13px",
-                          color: "var(--foreground)",
-                        }}
-                      >
-                        <Mail style={{ width: 11, height: 11, color: "var(--muted-foreground)" }} />
-                        {sub.respondentEmail}
-                      </span>
-                    ) : sub.respondentName ? (
-                      <span style={{ fontSize: "13px", color: "var(--foreground)" }}>
-                        {sub.respondentName}
-                      </span>
-                    ) : (
-                      <span
-                        style={{
-                          fontSize: "13px",
-                          color: "var(--muted-foreground)",
-                          fontStyle: "italic",
-                        }}
-                      >
-                        Anonymous
-                      </span>
-                    )}
-                  </div>
-                  <p
-                    style={{
-                      fontSize: "11px",
-                      color: "var(--muted-foreground)",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {sub.formTitle}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium dash-text truncate">
+                    {sub.respondentEmail || sub.respondentName || "Anonymous"}
                   </p>
+                  <p className="text-xs dash-muted truncate">{sub.formTitle}</p>
                 </div>
 
-                <div style={{ flexShrink: 0, textAlign: "right" }}>
-                  <p
-                    style={{
-                      fontSize: "11px",
-                      color: "var(--muted-foreground)",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
-                      justifyContent: "flex-end",
-                      marginBottom: "2px",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    <Clock style={{ width: 10, height: 10 }} />
+                <div className="shrink-0 text-right hidden sm:block">
+                  <p className="text-xs dash-muted inline-flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
                     {formatDistanceToNow(new Date(sub.submittedAt), { addSuffix: true })}
                   </p>
-                  <p
-                    style={{
-                      fontSize: "10px",
-                      color: "var(--muted-foreground)",
-                      fontFamily: "monospace",
-                      opacity: 0.7,
-                    }}
-                  >
+                  <p className="text-[10px] dash-faint mt-0.5">
                     {format(new Date(sub.submittedAt), "MMM d · h:mm a")}
                   </p>
                 </div>
 
                 <Link
                   href={`/dashboard/forms/${sub.formId}/responses/${sub.responseId}`}
-                  style={{
-                    padding: "6px",
-                    borderRadius: "8px",
-                    display: "flex",
-                    color: "var(--muted-foreground)",
-                    textDecoration: "none",
-                    flexShrink: 0,
-                    transition: "color 0.15s, background 0.15s",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = CYAN;
-                    (e.currentTarget as HTMLElement).style.background = "rgba(34,211,238,0.08)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
-                    (e.currentTarget as HTMLElement).style.background = "transparent";
-                  }}
+                  className="ef-btn-ghost rounded-lg w-8 h-8 inline-flex items-center justify-center shrink-0"
                 >
-                  <ChevronRight style={{ width: 14, height: 14 }} />
+                  <ChevronRight className="w-4 h-4" />
                 </Link>
               </div>
             ))}
@@ -875,95 +445,48 @@ export default function AnalyticsDashboardPage() {
         )}
       </div>
 
-      {/* ── Per-form breakdown table ── */}
-      <div style={{ ...card, overflow: "hidden" }}>
-        <div
-          style={{
-            padding: "1.25rem 1.5rem",
-            borderBottom: "1px solid var(--border)",
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "1rem",
-          }}
-        >
+      {/* Breakdown table */}
+      <div className="ef-bento !p-0 overflow-hidden">
+        <div className="px-5 py-4 border-b dash-border flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p
-              style={{
-                fontSize: "11px",
-                textTransform: "uppercase",
-                letterSpacing: "0.28em",
-                color: "var(--muted-foreground)",
-                marginBottom: "4px",
-              }}
-            >
+            <p className="text-[10px] uppercase tracking-[0.18em] font-semibold dash-faint mb-1">
               Breakdown
             </p>
-            <h2
-              style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: "1.2rem",
-                color: "var(--foreground)",
-              }}
-            >
-              Form Performance
-            </h2>
+            <h2 className="text-lg font-bold dash-text">Form performance</h2>
           </div>
-          <div style={{ position: "relative" }}>
-            <Search
-              style={{
-                width: 13,
-                height: 13,
-                position: "absolute",
-                left: 10,
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "var(--muted-foreground)",
-              }}
-            />
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 dash-faint" />
             <input
               type="text"
               placeholder="Search forms…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="ef-input"
-              style={{
-                paddingLeft: "30px",
-                paddingRight: "12px",
-                paddingTop: "8px",
-                paddingBottom: "8px",
-                borderRadius: "10px",
-                fontSize: "13px",
-                fontFamily: "'Inter', sans-serif",
-                width: "220px",
-              }}
+              className="ef-input rounded-xl pl-9 pr-3 py-2 text-sm w-[220px]"
             />
           </div>
         </div>
 
         {sortedBreakdown.length > 0 ? (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
               <thead>
-                <tr>
+                <tr style={{ background: "var(--dash-accent-soft)" }}>
                   {[
                     { label: "Form", field: null },
-                    { label: "Views", field: "views" },
-                    { label: "Submissions", field: "responses" },
-                    { label: "Conversion", field: "conversionRate" },
+                    { label: "Views", field: "views" as const },
+                    { label: "Submissions", field: "responses" as const },
+                    { label: "Conversion", field: "conversionRate" as const },
                     { label: "", field: null },
                   ].map(({ label, field }, i) => (
                     <th
                       key={i}
-                      style={{ ...th, cursor: field ? "pointer" : "default" }}
-                      onClick={() =>
-                        field && handleSort(field as "views" | "responses" | "conversionRate")
-                      }
+                      className="px-4 py-3 text-left text-[10px] uppercase tracking-[0.16em] font-semibold dash-faint"
+                      style={{ cursor: field ? "pointer" : "default" }}
+                      onClick={() => field && handleSort(field)}
                     >
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      <span className="inline-flex items-center gap-1">
                         {label}
-                        {field && <ArrowUpDown style={{ width: 11, height: 11, opacity: 0.5 }} />}
+                        {field && <ArrowUpDown className="w-3 h-3 opacity-50" />}
                       </span>
                     </th>
                   ))}
@@ -973,111 +496,53 @@ export default function AnalyticsDashboardPage() {
                 {sortedBreakdown.map((form) => (
                   <tr
                     key={form.id}
-                    onMouseEnter={(e) =>
-                      ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.02)")
-                    }
-                    onMouseLeave={(e) =>
-                      ((e.currentTarget as HTMLElement).style.background = "transparent")
-                    }
-                    style={{ transition: "background 0.15s" }}
+                    className="border-t dash-border transition-colors"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = hoverBg;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                    }}
                   >
-                    <td
-                      style={{
-                        ...td,
-                        fontFamily: "'Cormorant Garamond', serif",
-                        fontSize: "1rem",
-                        maxWidth: "240px",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
+                    <td className="px-4 py-3 text-sm font-semibold dash-text max-w-[240px] truncate">
                       {form.title}
                     </td>
-                    <td style={{ ...td, fontFamily: "monospace", fontSize: "12px" }}>
-                      {form.views}
-                    </td>
-                    <td style={{ ...td, fontFamily: "monospace", fontSize: "12px" }}>
-                      {form.responses}
-                    </td>
-                    <td style={td}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <span style={{ fontFamily: "monospace", fontSize: "12px" }}>
+                    <td className="px-4 py-3 text-sm dash-muted tabular-nums">{form.views}</td>
+                    <td className="px-4 py-3 text-sm dash-muted tabular-nums">{form.responses}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm dash-text tabular-nums">
                           {form.conversionRate.toFixed(1)}%
                         </span>
                         <div
-                          style={{
-                            width: 56,
-                            height: 3,
-                            background: "rgba(255,255,255,0.07)",
-                            borderRadius: "999px",
-                            overflow: "hidden",
-                          }}
+                          className="w-14 h-1.5 rounded-full overflow-hidden"
+                          style={{ background: trackBg }}
                         >
                           <div
+                            className="h-full rounded-full"
                             style={{
                               width: `${Math.min(form.conversionRate, 100)}%`,
-                              height: "100%",
-                              background: CYAN,
-                              borderRadius: "999px",
+                              background: accent,
                             }}
                           />
                         </div>
                       </div>
                     </td>
-                    <td style={{ ...td, textAlign: "right" }}>
-                      <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+                    <td className="px-4 py-3 text-right">
+                      <div className="inline-flex items-center gap-2">
                         <a
                           href={`/forms/${form.slug}`}
                           target="_blank"
                           rel="noreferrer"
-                          style={{
-                            padding: "5px",
-                            borderRadius: "7px",
-                            display: "flex",
-                            color: "var(--muted-foreground)",
-                            textDecoration: "none",
-                            transition: "color 0.15s, background 0.15s",
-                          }}
-                          onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLElement).style.color = CYAN;
-                            (e.currentTarget as HTMLElement).style.background =
-                              "rgba(34,211,238,0.08)";
-                          }}
-                          onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLElement).style.color =
-                              "var(--muted-foreground)";
-                            (e.currentTarget as HTMLElement).style.background = "transparent";
-                          }}
+                          className="ef-btn-ghost rounded-lg w-8 h-8 inline-flex items-center justify-center"
                         >
-                          <ExternalLink style={{ width: 14, height: 14 }} />
+                          <ExternalLink className="w-3.5 h-3.5" />
                         </a>
                         <Link
                           href={`/dashboard/forms/${form.id}/analytics`}
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "5px",
-                            padding: "4px 10px",
-                            borderRadius: "8px",
-                            fontSize: "11px",
-                            textDecoration: "none",
-                            fontFamily: "'Inter', sans-serif",
-                            color: CYAN,
-                            background: "rgba(34,211,238,0.08)",
-                            border: "1px solid rgba(34,211,238,0.15)",
-                            transition: "background 0.15s",
-                          }}
-                          onMouseEnter={(e) =>
-                            ((e.currentTarget as HTMLElement).style.background =
-                              "rgba(34,211,238,0.15)")
-                          }
-                          onMouseLeave={(e) =>
-                            ((e.currentTarget as HTMLElement).style.background =
-                              "rgba(34,211,238,0.08)")
-                          }
+                          className="kpi-chip !rounded-lg"
                         >
-                          Full Analytics
+                          Full analytics
                         </Link>
                       </div>
                     </td>
@@ -1087,20 +552,12 @@ export default function AnalyticsDashboardPage() {
             </table>
           </div>
         ) : (
-          <div
-            style={{ padding: "4rem 2rem", textAlign: "center", color: "var(--muted-foreground)" }}
-          >
-            <Search style={{ width: 28, height: 28, margin: "0 auto 8px", opacity: 0.4 }} />
-            <p style={{ fontSize: "13px" }}>No forms match your search</p>
+          <div className="py-14 text-center dash-muted">
+            <Search className="w-7 h-7 mx-auto mb-2 opacity-40" />
+            <p className="text-sm">No forms match your search</p>
           </div>
         )}
       </div>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .analytics-grid { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
     </div>
   );
 }

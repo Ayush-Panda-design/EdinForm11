@@ -16,37 +16,48 @@ const templateOutput = z.object({
   isPublic: z.boolean(),
   usageCount: z.string().nullable(),
   createdAt: z.date().nullable(),
+  tags: z.array(z.string()).optional(),
+  estimatedMinutes: z.number().optional(),
+  fieldCount: z.number().optional(),
+  isBuiltin: z.boolean().optional(),
+  formSnapshot: z.any().optional(),
 });
 
 export const templatesRouter = router({
-  /** GET /templates */
   list: publicProcedure
     .meta({ openapi: { method: "GET", path: getPath("/"), tags: TAGS } })
-    .input(z.object({
-      category: z.string().optional(),
-      page: z.coerce.number().int().min(1).default(1),
-      limit: z.coerce.number().int().min(1).max(50).default(12),
-    }))
-    .output(z.object({ data: z.array(templateOutput), total: z.number() }))
+    .input(
+      z.object({
+        category: z.string().optional(),
+        search: z.string().max(100).optional(),
+        page: z.coerce.number().int().min(1).default(1),
+        limit: z.coerce.number().int().min(1).max(50).default(24),
+      }),
+    )
+    .output(
+      z.object({
+        data: z.array(templateOutput),
+        total: z.number(),
+        categories: z.array(z.string()),
+      }),
+    )
     .query(async ({ input }) => {
       return templatesService.listPublicTemplates(input);
     }),
 
-  /** GET /templates/:id */
   getById: publicProcedure
     .meta({ openapi: { method: "GET", path: getPath("/{id}"), tags: TAGS } })
-    .input(z.object({ id: z.string().uuid() }))
-    .output(templateOutput.extend({ formSnapshot: z.any() }))
+    .input(z.object({ id: z.string().min(1) }))
+    .output(templateOutput)
     .query(async ({ input }) => {
       const t = await templatesService.getTemplateById(input.id);
       if (!t) throw new TRPCError({ code: "NOT_FOUND", message: "Template not found." });
       return t;
     }),
 
-  /** POST /templates/:id/use — create a form from a template */
   useTemplate: protectedProcedure
     .meta({ openapi: { method: "POST", path: getPath("/{id}/use"), tags: TAGS } })
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.string().min(1) }))
     .output(z.object({ formId: z.string() }))
     .mutation(async ({ input, ctx }) => {
       try {

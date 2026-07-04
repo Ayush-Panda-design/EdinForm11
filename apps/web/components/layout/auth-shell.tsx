@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { EdinFormLogo } from "~/components/brand/logo";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Sun, Moon } from "lucide-react";
+import { useTheme } from "~/providers/theme-provider";
 
 export function AuthShell({
   title,
@@ -13,6 +14,8 @@ export function AuthShell({
   subtitle: string;
   children: React.ReactNode;
 }) {
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <div className="app-auth min-h-screen grid lg:grid-cols-2">
       <div className="auth-hero hidden lg:flex flex-col justify-between p-10 xl:p-14">
@@ -21,7 +24,7 @@ export function AuthShell({
           <p className="text-xs uppercase tracking-[0.25em] text-[var(--signal-accent)] font-semibold mb-4">
             Form intelligence
           </p>
-          <h2 className="text-4xl xl:text-5xl font-bold text-white leading-tight tracking-tight max-w-md">
+          <h2 className="text-4xl xl:text-5xl font-bold leading-tight tracking-tight max-w-md">
             Build forms that feel fast, clear, and professional.
           </h2>
           <p className="mt-4 text-zinc-400 max-w-md leading-relaxed">
@@ -40,7 +43,15 @@ export function AuthShell({
         <p className="text-xs text-zinc-600">© EdinForm</p>
       </div>
 
-      <div className="flex items-center justify-center p-6 sm:p-10">
+      <div className="flex items-center justify-center p-6 sm:p-10 relative">
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="absolute top-4 right-4 ef-btn-ghost rounded-lg w-9 h-9 inline-flex items-center justify-center"
+          aria-label="Toggle theme"
+        >
+          {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </button>
         <div className="w-full max-w-md">
           <div className="lg:hidden mb-8 flex justify-center">
             <EdinFormLogo href="/" />

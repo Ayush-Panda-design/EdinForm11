@@ -96,6 +96,8 @@ export const createFormSchema = z.object({
   redirectUrl: z.string().url().optional(),
   notifyCreatorOnSubmission: z.boolean().default(true),
   sendConfirmationEmail: z.boolean().default(false),
+  webhookUrl: z.string().url().max(2000).optional().or(z.literal("")),
+  digestEnabled: z.boolean().default(false),
 });
 
 export const updateFormSchema = createFormSchema.partial();

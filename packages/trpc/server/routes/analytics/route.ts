@@ -3,6 +3,8 @@ import { router, protectedProcedure } from "../../trpc";
 import { generatePath } from "../../utils/path-generator";
 import { analyticsService } from "@repo/services/analytics";
 import { analyticsQuerySchema } from "@repo/validators/analytics";
+import { emailService } from "@repo/services/email";
+import db, { formsTable, formResponsesTable, usersTable, eq, and, gte, sql } from "@repo/database";
 
 const TAGS = ["Analytics"];
 const getPath = generatePath("/analytics");
@@ -131,5 +133,66 @@ export const analyticsRouter = router({
         input.from ? new Date(input.from) : undefined,
         input.to ? new Date(input.to) : undefined
       );
+    }),
+
+  /** POST /analytics/send-digest — email today's response summary */
+  sendDailyDigest: protectedProcedure
+    .meta({ openapi: { method: "POST", path: getPath("/send-digest"), tags: TAGS } })
+    .input(z.object({}).optional())
+    .output(z.object({ sent: z.boolean(), totalResponses: z.number() }))
+    .mutation(async ({ ctx }) => {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const forms = await db
+        .select({
+          id: formsTable.id,
+          title: formsTable.title,
+          digestEnabled: formsTable.digestEnabled,
+        })
+        .from(formsTable)
+        .where(
+          and(eq(formsTable.creatorId, ctx.user.id), eq(formsTable.digestEnabled, true)),
+        );
+
+      const breakdown: Array<{ title: string; count: number; formId: string }> = [];
+      let totalResponses = 0;
+
+      for (const form of forms) {
+        const [row] = await db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(formResponsesTable)
+          .where(
+            and(
+              eq(formResponsesTable.formId, form.id),
+              eq(formResponsesTable.status, "completed"),
+              gte(formResponsesTable.submittedAt, since),
+            ),
+          );
+        const count = row?.count ?? 0;
+        if (count > 0) {
+          breakdown.push({ title: form.title, count, formId: form.id });
+          totalResponses += count;
+        }
+      }
+
+      if (totalResponses === 0) {
+        return { sent: false, totalResponses: 0 };
+      }
+
+      const [creator] = await db
+        .select({ email: usersTable.email, fullName: usersTable.fullName })
+        .from(usersTable)
+        .where(eq(usersTable.id, ctx.user.id))
+        .limit(1);
+
+      if (!creator) return { sent: false, totalResponses };
+
+      await emailService.sendDailyDigest({
+        creatorEmail: creator.email,
+        creatorName: creator.fullName,
+        totalResponses,
+        forms: breakdown,
+      });
+
+      return { sent: true, totalResponses };
     }),
 });

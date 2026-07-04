@@ -203,6 +203,27 @@ export function buildDynamicResponseSchema(
   return z.object(shape);
 }
 
+/** Validate a single field (for blur / inline UX). */
+export function validateSingleField(
+  field: DynamicField,
+  answer: SubmitAnswer | undefined,
+): string | null {
+  if (field.required && !hasAnswerValue(answer)) {
+    return `"${field.label}" is required`;
+  }
+  if (!hasAnswerValue(answer)) return null;
+
+  const rawValue =
+    field.type === "multi_select" ? (answer!.valueArray ?? []) : (answer!.value ?? "");
+
+  const schema = buildFieldAnswerSchema({ ...field, required: true });
+  const result = schema.safeParse(rawValue);
+  if (!result.success) {
+    return result.error.issues[0]?.message ?? `Invalid value for "${field.label}"`;
+  }
+  return null;
+}
+
 /** Validate submission answers against dynamic per-field Zod schemas. */
 export function validateSubmissionAnswers(
   fields: DynamicField[],
