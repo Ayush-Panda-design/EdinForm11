@@ -17,6 +17,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { FULL_GUIDE } from "~/lib/help-content";
+import { BackendStatusCard } from "~/components/help/backend-status";
 
 const QUICK_LINKS = [
   { href: "/dashboard", label: "Home", icon: LayoutDashboard },
@@ -88,6 +89,10 @@ export default function HelpPage() {
             ))}
           </div>
         </div>
+      </section>
+
+      <section className="mb-10">
+        <BackendStatusCard />
       </section>
 
       {/* Quick actions */}

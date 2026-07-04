@@ -15,7 +15,9 @@ import {
 } from "./middlewares/rate-limit.middleware";
 
 import { registerGoogleAuthRoutes } from "./routes/google-auth";
+import { registerInternalCronRoutes } from "./routes/internal-cron";
 import { csrfMiddleware } from "./middlewares/csrf.middleware";
+import { getRuntimeStatus, markExternalPing } from "./jobs/status";
 import { setRedisClient as setResponsesRedis } from "@repo/services/responses";
 import { setRedisClient as setAnalyticsRedis } from "@repo/services/analytics";
 
@@ -129,11 +131,39 @@ app.use(express.json({ limit: "2mb" }));
 // ---------------------------------------------------------------------------
 // Health
 // ---------------------------------------------------------------------------
-app.get("/", (_req, res) => res.json({ message: "FormCraft API is running 🚀" }));
+app.get("/", (_req, res) =>
+  res.json({
+    message: "EdinForm API is running — never sleeps",
+    neverSleeps: true,
+    health: "/health",
+    status: "/status",
+  }),
+);
 
 // ── Google OAuth (redirect-based, not tRPC) ──────────────────────────────
 registerGoogleAuthRoutes(app);
-app.get("/health", (_req, res) => res.json({ healthy: true, timestamp: new Date().toISOString() }));
+
+// Health + live status (used by keep-alive pings and uptime monitors)
+app.get("/health", (_req, res) => {
+  markExternalPing();
+  const status = getRuntimeStatus();
+  res.json({
+    healthy: true,
+    neverSleeps: true,
+    awake: status.awake,
+    uptimeSeconds: status.uptimeSeconds,
+    uptimeHuman: status.uptimeHuman,
+    timestamp: status.timestamp,
+  });
+});
+
+app.get("/status", (_req, res) => {
+  markExternalPing();
+  res.json(getRuntimeStatus());
+});
+
+// Internal cron triggers (GitHub Actions / Render Cron / external schedulers)
+registerInternalCronRoutes(app);
 
 // ---------------------------------------------------------------------------
 // OpenAPI / Scalar docs
