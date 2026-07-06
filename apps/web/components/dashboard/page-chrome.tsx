@@ -19,12 +19,12 @@ export function DashPageHeader({
     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
       <div>
         {eyebrow && (
-          <p className="text-[10px] uppercase tracking-[0.22em] dash-faint font-semibold mb-2">
+          <p className="text-[10px] uppercase tracking-[0.22em] dash-accent font-semibold mb-2">
             {eyebrow}
           </p>
         )}
         <div className="flex items-center gap-2.5">
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight dash-text">{title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight dash-text">{title}</h1>
           {helpSection && <HelpTip section={helpSection} size="md" />}
         </div>
         {description && <p className="mt-2 text-sm dash-muted max-w-xl">{description}</p>}
