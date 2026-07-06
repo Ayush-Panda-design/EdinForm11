@@ -73,7 +73,7 @@ export default function SettingsPage() {
           >
             <Sun className="w-5 h-5 dash-accent mb-2" />
             <p className="font-semibold dash-text text-sm">Light</p>
-            <p className="text-xs dash-muted mt-0.5">Landing-style bright UI</p>
+            <p className="text-xs dash-muted mt-0.5">Bright magenta + cyan UI</p>
           </button>
           <button
             type="button"

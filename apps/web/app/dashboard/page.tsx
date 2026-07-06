@@ -147,15 +147,28 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Hero */}
-      <section className="ef-bento !p-0 overflow-hidden relative">
-        <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-0 items-stretch">
+      <section className="ef-bento !p-0 overflow-hidden relative border-[var(--dash-accent-border)]">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-60"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 80% at 0% 50%, rgba(225,29,143,0.08), transparent 60%), radial-gradient(ellipse 50% 60% at 100% 20%, rgba(34,211,238,0.1), transparent 55%)",
+          }}
+        />
+        <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-0 items-stretch relative">
           <div className="p-6 sm:p-8 lg:p-10 flex flex-col justify-center">
             <div className="flex items-center gap-2 mb-4">
-              <span className="kpi-chip w-fit">Your workspace</span>
+              <span className="kpi-chip w-fit">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--dash-accent-2)] inline-block" />
+                Your workspace
+              </span>
               <HelpTip section="home" />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight dash-text leading-[1.1]">
-              Welcome back, <span className="dash-accent">{firstName}</span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight dash-text leading-[1.05]">
+              Welcome back,{" "}
+              <span className="dash-accent" style={{ fontStyle: "normal" }}>
+                {firstName}
+              </span>
             </h1>
             <p className="mt-3 text-sm sm:text-base dash-muted max-w-md leading-relaxed">
               Create forms, share them anywhere, and watch responses land in real time.
