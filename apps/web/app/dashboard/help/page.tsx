@@ -43,7 +43,7 @@ const SECTION_ICONS: Record<string, React.ElementType> = {
 
 export default function HelpPage() {
   return (
-    <div className="max-w-4xl mx-auto pb-16">
+    <div className="w-full pb-16">
       {/* Hero */}
       <section
         className="ef-bento !p-0 overflow-hidden mb-8"

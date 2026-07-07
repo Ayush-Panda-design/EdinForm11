@@ -27,7 +27,7 @@ export function DashPageHeader({
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight dash-text">{title}</h1>
           {helpSection && <HelpTip section={helpSection} size="md" />}
         </div>
-        {description && <p className="mt-2 text-sm dash-muted max-w-xl">{description}</p>}
+        {description && <p className="mt-2 text-sm dash-muted max-w-2xl">{description}</p>}
       </div>
       {actions && <div className="flex flex-wrap gap-2 shrink-0">{actions}</div>}
     </div>

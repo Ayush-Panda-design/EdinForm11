@@ -80,7 +80,7 @@ export default function ResponseDetailPage({
   }
 
   return (
-    <div className="relative max-w-3xl mx-auto">
+    <div className="relative w-full">
       {/* Cinematic ambient glow */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />

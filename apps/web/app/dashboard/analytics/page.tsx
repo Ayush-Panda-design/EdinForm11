@@ -47,13 +47,13 @@ export default function AnalyticsDashboardPage() {
   const trackBg = theme === "light" ? "rgba(15,23,42,0.08)" : "rgba(255,255,255,0.08)";
 
   const { data: dashboard, isLoading } = trpc.analytics.dashboard.useQuery(undefined, {
-    refetchInterval: 1000,
+    refetchInterval: 15000,
     refetchOnWindowFocus: true,
   });
   const { data: recentSubmissions, isLoading: isLoadingRecent } =
     trpc.analytics.recentSubmissions.useQuery(
       { limit: 20 },
-      { refetchInterval: 3000, refetchOnWindowFocus: true },
+      { refetchInterval: 15000, refetchOnWindowFocus: true },
     );
 
   const [daysFilter, setDaysFilter] = useState<7 | 30 | 90>(30);
@@ -355,7 +355,7 @@ export default function AnalyticsDashboardPage() {
             </div>
             <div>
               <p className="text-sm font-semibold dash-text">Live submission feed</p>
-              <p className="text-xs dash-muted">Updates every 3 seconds</p>
+              <p className="text-xs dash-muted">Instant via WebSocket · 15s fallback sync</p>
             </div>
           </div>
           <span

@@ -5,6 +5,7 @@ import { generatePath } from "../../utils/path-generator";
 import { responsesService } from "@repo/services/responses";
 import { analyticsService } from "@repo/services/analytics";
 import { emailService } from "@repo/services/email";
+import { emitAnalyticsUpdate } from "@repo/services/realtime";
 import {
   submitResponseSchema,
   listResponsesSchema,
@@ -63,6 +64,21 @@ export const responsesRouter = router({
             sendConfirmationIfEnabled(input.formId, input.respondentEmail, input.respondentName),
             fireWebhookIfEnabled(input.formId, result.responseId),
           ]).catch(() => {});
+
+          const [formRow] = await db
+            .select({ creatorId: formsTable.creatorId })
+            .from(formsTable)
+            .where(eq(formsTable.id, input.formId))
+            .limit(1);
+
+          if (formRow) {
+            emitAnalyticsUpdate({
+              creatorId: formRow.creatorId,
+              formId: input.formId,
+              reason: "response.submitted",
+              responseId: result.responseId,
+            });
+          }
         }
 
         return result;

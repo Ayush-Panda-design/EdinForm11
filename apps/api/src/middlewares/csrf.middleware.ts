@@ -18,10 +18,13 @@ const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 // Paths that are intentionally public (no CSRF check needed)
 const PUBLIC_PATHS = [
+  "/api/auth/sign-up",
+  "/api/auth/sign-in",
   "/api/auth.signUp",
   "/api/auth.signIn",
   "/trpc/auth.signUp",
   "/trpc/auth.signIn",
+  "/api/responses/submit",
   "/api/responses.submit",
   "/trpc/responses.submit",
   "/api/public",

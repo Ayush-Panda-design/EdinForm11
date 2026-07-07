@@ -22,9 +22,11 @@ import {
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { EdinFormLogo } from "~/components/brand/logo";
+import { useRealtimeAnalytics } from "~/hooks/use-realtime-analytics";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading, logout } = useAuth();
+  useRealtimeAnalytics(Boolean(user));
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
@@ -259,8 +261,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         )}
         <div
           className={cn(
-            "flex-1 w-full",
-            isBuilder ? "overflow-hidden" : "p-4 sm:p-6 lg:p-8 max-w-[1280px] mx-auto",
+            "flex-1 w-full min-w-0",
+            isBuilder ? "overflow-hidden" : "p-4 sm:p-6 lg:p-8",
           )}
         >
           {children}
