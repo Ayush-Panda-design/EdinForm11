@@ -7,12 +7,14 @@ import {
   isInternalInfrastructureError,
   USER_FACING_INTERNAL_ERROR,
 } from "./utils/sanitize-error";
+import { formatClientErrorMessage, formatZodError } from "./utils/format-validation-error";
+import { ZodError } from "zod";
 
 function sanitizeClientMessage(message: string): string {
   if (isInternalInfrastructureError(message)) {
     return USER_FACING_INTERNAL_ERROR;
   }
-  return message;
+  return formatClientErrorMessage(message);
 }
 
 export const tRPCContext = initTRPC
@@ -20,7 +22,12 @@ export const tRPCContext = initTRPC
   .context<Awaited<ReturnType<typeof createContext>>>()
   .create({
     errorFormatter({ shape, error }) {
-      const message = sanitizeClientMessage(shape.message);
+      let message = shape.message;
+      if (error.cause instanceof ZodError) {
+        message = formatZodError(error.cause);
+      } else {
+        message = sanitizeClientMessage(shape.message);
+      }
       return {
         ...shape,
         message,

@@ -52,10 +52,10 @@ export const conditionalLogicSchema = z
       })
       // Refinement: value is required for operators that need a comparison value
       .superRefine((val, ctx) => {
-        if (["equals", "not_equals", "contains"].includes(val.operator) && !val.value) {
+        if (["equals", "not_equals", "contains"].includes(val.operator) && !val.value?.trim()) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: `value is required for operator "${val.operator}"`,
+            message: `Enter a comparison value when using "${val.operator}"`,
             path: ["value"],
           });
         }
