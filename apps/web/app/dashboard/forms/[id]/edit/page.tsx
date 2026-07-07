@@ -35,7 +35,8 @@ import { DndFieldList } from "~/components/forms/dnd-field-list";
 import { ValidationRulesEditor } from "~/components/forms/validation-rules-editor";
 import { FormField as PreviewField, type FieldOption } from "~/components/forms/field-renderer";
 import type { ValidationRules } from "@repo/types/forms";
-import { Lock as LockIcon } from "lucide-react";
+import { Lock as LockIcon, Unlock } from "lucide-react";
+import { formatApiError } from "~/lib/format-api-error";
 
 type EditorFormField = {
   id: string;
@@ -93,6 +94,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
 
   const [tab, setTab] = useState<ActiveTab>("fields");
   const [expandedField, setExpandedField] = useState<string | null>(null);
+  const [unlockFlashFieldId, setUnlockFlashFieldId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [previewMultiStep, setPreviewMultiStep] = useState(true);
   const [showQR, setShowQR] = useState(false);
@@ -143,19 +145,23 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
     }
   }, [form, settingsLoaded]);
 
+  const showError = (message: string, description?: string) => {
+    toast.error(formatApiError(message), description ? { description } : undefined);
+  };
+
   const publishMutation = trpc.forms.publish.useMutation({
     onSuccess: () => {
       toast.success("Form published!");
       utils.forms.getById.invalidate({ id });
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => showError(e.message),
   });
   const unpublishMutation = trpc.forms.unpublish.useMutation({
     onSuccess: () => {
       toast.success("Unpublished");
       utils.forms.getById.invalidate({ id });
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => showError(e.message),
   });
   const updateMutation = trpc.forms.update.useMutation({
     onSuccess: () => {
@@ -164,7 +170,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
       setSettingsSaving(false);
     },
     onError: (e) => {
-      toast.error(e.message);
+      showError(e.message);
       setSettingsSaving(false);
     },
   });
@@ -174,38 +180,46 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
       utils.forms.getById.invalidate({ id });
       if (data?.id) setExpandedField(data.id);
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => showError(e.message),
   });
   const updateFieldMutation = trpc.forms.updateField.useMutation({
     onSuccess: () => {
       toast.success("Field updated!");
       utils.forms.getById.invalidate({ id });
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => showError(e.message),
   });
   const deleteFieldMutation = trpc.forms.deleteField.useMutation({
     onSuccess: () => {
       toast.success("Field removed");
       utils.forms.getById.invalidate({ id });
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => showError(e.message),
   });
   const reorderFieldsMutation = trpc.forms.reorderFields.useMutation({
-    onError: (e) => toast.error("Reorder failed: " + e.message),
+    onError: (e) =>
+      toast.error("Couldn't reorder questions", { description: formatApiError(e.message) }),
   });
   const lockFieldMutation = trpc.forms.lockField.useMutation({
     onSuccess: () => {
-      toast.success("Field locked");
+      toast.success("Question locked", {
+        description: "This field is protected from edits while locked.",
+      });
       utils.forms.getById.invalidate({ id });
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => showError(e.message),
   });
   const unlockFieldMutation = trpc.forms.unlockField.useMutation({
-    onSuccess: () => {
-      toast.success("Field unlocked");
+    onSuccess: (_, vars) => {
+      setUnlockFlashFieldId(vars.fieldId);
+      setExpandedField(vars.fieldId);
+      window.setTimeout(() => setUnlockFlashFieldId(null), 2800);
+      toast.success("Question unlocked", {
+        description: "You can edit this field now — look for the green highlight on the canvas.",
+      });
       utils.forms.getById.invalidate({ id });
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => showError(e.message),
   });
 
   const setPasswordMutation = trpc.forms.setPassword.useMutation({
@@ -217,7 +231,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
       setPasswordSaving(false);
     },
     onError: (e) => {
-      toast.error(e.message);
+      showError(e.message);
       setPasswordSaving(false);
     },
   });
@@ -229,7 +243,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
       refetchPages();
       setNewPageTitle("");
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => showError(e.message),
   });
   const updatePageMutation = trpc.forms.updatePage.useMutation({
     onSuccess: () => {
@@ -237,7 +251,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
       refetchPages();
       setEditingPageId(null);
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => showError(e.message),
   });
   const deletePageMutation = trpc.forms.deletePage.useMutation({
     onSuccess: () => {
@@ -245,14 +259,18 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
       refetchPages();
       utils.forms.getById.invalidate({ id });
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => showError(e.message),
   });
   const assignFieldToPageMutation = trpc.forms.assignFieldToPage.useMutation({
     onSuccess: () => {
       utils.forms.getById.invalidate({ id });
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => showError(e.message),
   });
+
+  const handleUnlockField = (fieldId: string) => {
+    unlockFieldMutation.mutate({ formId: id, fieldId });
+  };
 
   const handleReorder = useCallback(
     (newOrder: Array<{ fieldId: string; order: number }>) => {
@@ -578,6 +596,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                     const isOpen = expandedField === field.id;
                     const hasLogic = !!field.conditionalLogic?.showIf?.fieldId;
                     const isFieldLocked = !!field.isLocked;
+                    const isUnlockFlash = unlockFlashFieldId === field.id;
                     return (
                       <div
                         key={field.id}
@@ -590,10 +609,20 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                             setExpandedField(field.id);
                           }
                         }}
-                        className="w-full text-left rounded-xl border p-4 mb-2 transition-colors cursor-pointer"
+                        className={`w-full text-left rounded-xl border p-4 mb-2 transition-all duration-500 cursor-pointer ${
+                          isUnlockFlash
+                            ? "ring-2 ring-emerald-400 ring-offset-2 ring-offset-[var(--dash-bg)] scale-[1.01] animate-pulse"
+                            : ""
+                        } ${isFieldLocked ? "border-amber-500/40 bg-amber-500/[0.04]" : ""}`}
                         style={{
-                          background: "var(--dash-card)",
-                          borderColor: isOpen ? "var(--dash-accent)" : "var(--dash-border)",
+                          background: isFieldLocked ? undefined : "var(--dash-card)",
+                          borderColor: isUnlockFlash
+                            ? "rgb(52 211 153 / 0.6)"
+                            : isOpen
+                              ? "var(--dash-accent)"
+                              : isFieldLocked
+                                ? "rgb(245 158 11 / 0.4)"
+                                : "var(--dash-border)",
                           boxShadow: isOpen ? "0 0 0 1px var(--dash-accent)" : "var(--dash-shadow)",
                         }}
                       >
@@ -608,12 +637,27 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                             {FIELD_TYPES.find((t) => t.value === field.type)?.icon || "?"}
                           </span>
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium dash-text truncate">{field.label}</p>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="text-sm font-medium dash-text truncate">
+                                {field.label}
+                              </p>
+                              {isFieldLocked && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25 shrink-0">
+                                  <LockIcon className="w-3 h-3" />
+                                  Locked
+                                </span>
+                              )}
+                              {isUnlockFlash && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 shrink-0 animate-in fade-in duration-300">
+                                  <Unlock className="w-3 h-3" />
+                                  Unlocked
+                                </span>
+                              )}
+                            </div>
                             <p className="text-xs dash-faint mt-0.5">
                               {FIELD_TYPES.find((t) => t.value === field.type)?.label}
                               {field.required ? " · Required" : ""}
                               {hasLogic ? " · Logic" : ""}
-                              {isFieldLocked ? " · Locked" : ""}
                             </p>
                           </div>
                           <div
@@ -623,15 +667,23 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                           >
                             <button
                               type="button"
-                              className="p-1.5 rounded-md dash-faint hover:dash-text"
-                              title={isFieldLocked ? "Unlock" : "Lock"}
+                              className={`p-1.5 rounded-md transition-colors ${
+                                isFieldLocked
+                                  ? "text-amber-500 hover:bg-amber-500/10"
+                                  : "dash-faint hover:dash-text"
+                              } ${isUnlockFlash ? "text-emerald-500" : ""}`}
+                              title={isFieldLocked ? "Unlock this question" : "Lock this question"}
                               onClick={() =>
                                 isFieldLocked
-                                  ? unlockFieldMutation.mutate({ formId: id, fieldId: field.id })
+                                  ? handleUnlockField(field.id)
                                   : lockFieldMutation.mutate({ formId: id, fieldId: field.id })
                               }
                             >
-                              <LockIcon className="w-3.5 h-3.5" />
+                              {isFieldLocked ? (
+                                <Unlock className="w-3.5 h-3.5" />
+                              ) : (
+                                <LockIcon className="w-3.5 h-3.5" />
+                              )}
                             </button>
                             <button
                               type="button"
@@ -668,6 +720,9 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
                 <FieldExpander
                   field={selectedField}
                   allFields={sortedFields}
+                  isLocked={!!selectedField.isLocked}
+                  justUnlocked={unlockFlashFieldId === selectedField.id}
+                  onUnlock={() => handleUnlockField(selectedField.id)}
                   onSave={(updates) => {
                     updateFieldMutation.mutate({
                       formId: id,
@@ -1394,11 +1449,17 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
 function FieldExpander({
   field,
   allFields,
+  isLocked,
+  justUnlocked,
+  onUnlock,
   onSave,
   isSaving,
 }: {
   field: EditorFormField;
   allFields: EditorFormField[];
+  isLocked: boolean;
+  justUnlocked: boolean;
+  onUnlock: () => void;
   onSave: (updates: FieldSaveUpdates) => void;
   isSaving: boolean;
 }) {
@@ -1415,100 +1476,156 @@ function FieldExpander({
   );
 
   const fieldsBeforeThis = allFields.filter((f) => f.order < field.order);
+  const inputDisabled = isLocked;
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-2">
-          <label
-            className="block text-xs font-medium mb-1"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            Label
-          </label>
-          <input
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            className="ef-input w-full px-3 py-2 rounded-lg text-sm"
-          />
-        </div>
-        <div>
-          <label
-            className="block text-xs font-medium mb-1"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            Placeholder
-          </label>
-          <input
-            value={placeholder}
-            onChange={(e) => setPlaceholder(e.target.value)}
-            className="ef-input w-full px-3 py-2 rounded-lg text-sm"
-          />
-        </div>
-        <div>
-          <label
-            className="block text-xs font-medium mb-1"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            Help text
-          </label>
-          <input
-            value={helpText}
-            onChange={(e) => setHelpText(e.target.value)}
-            className="ef-input w-full px-3 py-2 rounded-lg text-sm"
-          />
-        </div>
-      </div>
-      {["single_select", "multi_select"].includes(field.type) && (
-        <div>
-          <label
-            className="block text-xs font-medium mb-1"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            Options (one per line)
-          </label>
-          <textarea
-            value={options}
-            onChange={(e) => setOptions(e.target.value)}
-            rows={3}
-            className="ef-input w-full px-3 py-2 rounded-lg text-sm resize-none"
-          />
+      {isLocked && (
+        <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
+          <LockIcon className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              This question is locked
+            </p>
+            <p className="text-xs text-amber-700/80 dark:text-amber-300/80 mt-0.5">
+              Responses already exist for this form. Unlock it to edit the label, options, and
+              conditional logic.
+            </p>
+            <button
+              type="button"
+              onClick={onUnlock}
+              className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-amber-800 dark:text-amber-200 hover:underline"
+            >
+              <Unlock className="w-3.5 h-3.5" />
+              Unlock question
+            </button>
+          </div>
         </div>
       )}
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={required}
-          onChange={(e) => setRequired(e.target.checked)}
-          className="w-4 h-4 rounded"
-          style={{ accentColor: "var(--accent-amber)" }}
+
+      {justUnlocked && (
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+          <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+          <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+            Unlocked — you can edit and save your changes now.
+          </p>
+        </div>
+      )}
+
+      <div className={`space-y-4 ${isLocked ? "opacity-60 pointer-events-none" : ""}`}>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="col-span-2">
+            <label
+              className="block text-xs font-medium mb-1"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              Label
+            </label>
+            <input
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              disabled={inputDisabled}
+              className="ef-input w-full px-3 py-2 rounded-lg text-sm"
+            />
+          </div>
+          <div>
+            <label
+              className="block text-xs font-medium mb-1"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              Placeholder
+            </label>
+            <input
+              value={placeholder}
+              onChange={(e) => setPlaceholder(e.target.value)}
+              className="ef-input w-full px-3 py-2 rounded-lg text-sm"
+            />
+          </div>
+          <div>
+            <label
+              className="block text-xs font-medium mb-1"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              Help text
+            </label>
+            <input
+              value={helpText}
+              onChange={(e) => setHelpText(e.target.value)}
+              className="ef-input w-full px-3 py-2 rounded-lg text-sm"
+            />
+          </div>
+        </div>
+        {["single_select", "multi_select"].includes(field.type) && (
+          <div>
+            <label
+              className="block text-xs font-medium mb-1"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              Options (one per line)
+            </label>
+            <textarea
+              value={options}
+              onChange={(e) => setOptions(e.target.value)}
+              rows={3}
+              className="ef-input w-full px-3 py-2 rounded-lg text-sm resize-none"
+            />
+          </div>
+        )}
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={required}
+            onChange={(e) => setRequired(e.target.checked)}
+            className="w-4 h-4 rounded"
+            style={{ accentColor: "var(--accent-amber)" }}
+          />
+          <span className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+            Required
+          </span>
+        </label>
+
+        <ConditionalLogicEditor
+          fieldId={field.id}
+          currentLogic={logic}
+          availableFields={fieldsBeforeThis.map((f) => ({
+            id: f.id,
+            label: f.label,
+            type: f.type,
+            order: f.order,
+            options: f.options as FieldOption[] | null,
+          }))}
+          onChange={setLogic}
         />
-        <span className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
-          Required
-        </span>
-      </label>
 
-      <ConditionalLogicEditor
-        fieldId={field.id}
-        currentLogic={logic}
-        availableFields={fieldsBeforeThis.map((f) => ({
-          id: f.id,
-          label: f.label,
-          type: f.type,
-          order: f.order,
-          options: f.options as FieldOption[] | null,
-        }))}
-        onChange={setLogic}
-      />
-
-      <ValidationRulesEditor
-        fieldType={field.type as FieldType}
-        rules={validationRules}
-        onChange={setValidationRules}
-      />
+        <ValidationRulesEditor
+          fieldType={field.type as FieldType}
+          rules={validationRules}
+          onChange={setValidationRules}
+        />
+      </div>
 
       <button
         onClick={() => {
+          if (isLocked) {
+            toast.error("Unlock this question first", {
+              description: "Click the lock icon on the canvas or use Unlock question above.",
+            });
+            return;
+          }
+
+          const showIf = logic?.showIf;
+          if (
+            showIf &&
+            ["equals", "not_equals", "contains"].includes(showIf.operator) &&
+            !showIf.value?.trim()
+          ) {
+            toast.error("Enter a comparison value for conditional logic", {
+              description:
+                "For equals, does not equal, or contains, specify what the previous answer should match.",
+            });
+            return;
+          }
+
           const hasOptions = ["single_select", "multi_select"].includes(field.type);
           const parsedOptions =
             hasOptions && options
@@ -1530,11 +1647,11 @@ function FieldExpander({
             validationRules: validationRules ?? undefined,
           });
         }}
-        disabled={isSaving}
+        disabled={isSaving || isLocked}
         className="ef-btn-primary w-full py-2.5 rounded-xl font-medium text-sm disabled:opacity-50 flex items-center justify-center gap-2"
       >
         {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-        Save changes
+        {isLocked ? "Unlock to save" : "Save changes"}
       </button>
     </div>
   );

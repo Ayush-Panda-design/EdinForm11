@@ -65,7 +65,7 @@ export function ConditionalLogicEditor({
   const handleUpdate = (
     newSourceFieldId = sourceFieldId,
     newOperator = operator,
-    newValue = value
+    newValue = value,
   ) => {
     if (!newSourceFieldId) return;
     const needsValue = VALUE_OPERATORS.includes(newOperator);
@@ -84,7 +84,9 @@ export function ConditionalLogicEditor({
     return (
       <div className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-dashed border-gray-200 dark:border-gray-700">
         <GitBranch className="w-4 h-4 text-gray-400" />
-        <p className="text-xs text-gray-400">Add more fields above this one to use conditional logic</p>
+        <p className="text-xs text-gray-400">
+          Add more fields above this one to use conditional logic
+        </p>
       </div>
     );
   }
@@ -113,7 +115,9 @@ export function ConditionalLogicEditor({
 
       {enabled && (
         <div className="pl-4 border-l-2 border-stone-200 dark:border-stone-900 space-y-3">
-          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Show this field only if:</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+            Show this field only if:
+          </p>
 
           <select
             value={sourceFieldId}
@@ -141,7 +145,9 @@ export function ConditionalLogicEditor({
               className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-500"
             >
               {OPERATORS.map((op) => (
-                <option key={op.value} value={op.value}>{op.label}</option>
+                <option key={op.value} value={op.value}>
+                  {op.label}
+                </option>
               ))}
             </select>
           )}
@@ -157,9 +163,11 @@ export function ConditionalLogicEditor({
                   }}
                   className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-500"
                 >
-                  <option value="">Any value</option>
+                  <option value="">Select a value…</option>
                   {sourceField.options.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
                   ))}
                 </select>
               ) : (
@@ -170,9 +178,15 @@ export function ConditionalLogicEditor({
                     setValue(e.target.value);
                     handleUpdate(sourceFieldId, operator, e.target.value);
                   }}
-                  placeholder="Value to compare..."
+                  placeholder="Enter value to compare…"
+                  required
                   className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-stone-500"
                 />
+              )}
+              {!value.trim() && (
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  Required — enter what the previous answer should match.
+                </p>
               )}
             </>
           )}
@@ -184,8 +198,13 @@ export function ConditionalLogicEditor({
                 Show if <strong>{eligibleFields.find((f) => f.id === sourceFieldId)?.label}</strong>{" "}
                 <em>{OPERATORS.find((o) => o.value === operator)?.label}</em>
                 {VALUE_OPERATORS.includes(operator) && value ? (
-                  <> <strong>&ldquo;{value}&rdquo;</strong></>
-                ) : ""}
+                  <>
+                    {" "}
+                    <strong>&ldquo;{value}&rdquo;</strong>
+                  </>
+                ) : (
+                  ""
+                )}
               </p>
             </div>
           )}

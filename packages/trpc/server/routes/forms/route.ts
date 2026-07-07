@@ -180,7 +180,11 @@ export const formsRouter = router({
         return await formsService.updateField(fieldId, formId, ctx.user.id, data);
       } catch (err) {
         if ((err as Error).message === "FIELD_LOCKED") {
-          throw new TRPCError({ code: "FORBIDDEN", message: "This field is locked because responses exist. Unlock it first to edit." });
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "This question is locked because responses already exist. Click the lock icon on the question to unlock it, then save again.",
+          });
         }
         throw err;
       }
