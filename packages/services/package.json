@@ -12,6 +12,7 @@
     "./templates": "./templates/index.ts",
     "./themes": "./themes/index.ts",
     "./user": "./user/index.ts",
+    "./realtime": "./realtime/index.ts",
     "./user/model": "./user/model.ts"
   },
   "devDependencies": {

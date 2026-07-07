@@ -5,6 +5,7 @@ import { generatePath } from "../../utils/path-generator";
 import { formsService } from "@repo/services/forms";
 import { analyticsService } from "@repo/services/analytics";
 import { themesService } from "@repo/services/themes";
+import { emitAnalyticsUpdate } from "@repo/services/realtime";
 
 const TAGS = ["Public"];
 const getPath = generatePath("/public");
@@ -101,7 +102,15 @@ export const publicRouter = router({
       Promise.all([
         formsService.recordView(form.id, { ipAddress, userAgent, referrer }),
         analyticsService.upsertDailyAnalytics(form.id),
-      ]).catch(() => {});
+      ])
+        .then(() => {
+          emitAnalyticsUpdate({
+            creatorId: form.creatorId,
+            formId: form.id,
+            reason: "form.viewed",
+          });
+        })
+        .catch(() => {});
 
       const theme = form.themeId ? await themesService.getThemeById(form.themeId) : null;
 

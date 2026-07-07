@@ -83,15 +83,21 @@ export default function FormAnalyticsPage({ params }: { params: Promise<{ id: st
 
   const { data: form } = trpc.forms.getById.useQuery({ id });
 
-  const { data: analytics, isLoading } = trpc.analytics.getFormAnalytics.useQuery({
-    formId: id,
-    groupBy: "day",
-  });
+  const { data: analytics, isLoading } = trpc.analytics.getFormAnalytics.useQuery(
+    {
+      formId: id,
+      groupBy: "day",
+    },
+    { refetchInterval: 15000, refetchOnWindowFocus: true },
+  );
 
-  const { data: fieldAnalytics } = trpc.analytics.getFieldAnalytics.useQuery({
-    formId: id,
-    groupBy: "day",
-  });
+  const { data: fieldAnalytics } = trpc.analytics.getFieldAnalytics.useQuery(
+    {
+      formId: id,
+      groupBy: "day",
+    },
+    { refetchInterval: 15000, refetchOnWindowFocus: true },
+  );
 
   const stats = [
     {
@@ -124,7 +130,7 @@ export default function FormAnalyticsPage({ params }: { params: Promise<{ id: st
   ];
 
   return (
-    <div className="max-w-6xl mx-auto ef-fade-up">
+    <div className="w-full ef-fade-up">
       {/* Header */}
       <div className="flex items-center gap-4 mb-10">
         <Link

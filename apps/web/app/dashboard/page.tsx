@@ -43,8 +43,14 @@ export default function DashboardPage() {
   );
   const [qrForm, setQrForm] = useState<{ title: string; slug: string } | null>(null);
 
-  const { data: forms, isLoading } = trpc.forms.list.useQuery({ includeArchived: false });
-  const { data: dashboard } = trpc.analytics.dashboard.useQuery(undefined);
+  const { data: forms, isLoading } = trpc.forms.list.useQuery(
+    { includeArchived: false },
+    { refetchInterval: 15000, refetchOnWindowFocus: true },
+  );
+  const { data: dashboard } = trpc.analytics.dashboard.useQuery(undefined, {
+    refetchInterval: 15000,
+    refetchOnWindowFocus: true,
+  });
 
   const closeMenu = () => {
     setOpenMenu(null);

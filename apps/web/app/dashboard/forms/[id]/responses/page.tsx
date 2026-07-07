@@ -13,11 +13,14 @@ export default function ResponsesPage({ params }: { params: Promise<{ id: string
 
   const { data: form } = trpc.forms.getById.useQuery({ id });
 
-  const { data: responsesData, isLoading } = trpc.responses.list.useQuery({
-    formId: id,
-    page,
-    limit: 20,
-  });
+  const { data: responsesData, isLoading } = trpc.responses.list.useQuery(
+    {
+      formId: id,
+      page,
+      limit: 20,
+    },
+    { refetchInterval: 15000, refetchOnWindowFocus: true },
+  );
 
   const exportCsv = () => {
     if (!responsesData?.data || !form?.fields) return;
@@ -52,7 +55,7 @@ export default function ResponsesPage({ params }: { params: Promise<{ id: string
   };
 
   return (
-    <div className="relative max-w-5xl mx-auto">
+    <div className="relative w-full">
       {/* Ambient cinematic glow */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />

@@ -33,7 +33,7 @@ export default function TemplatesPage() {
   const categories = data?.categories ?? ["All"];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       <div className="flex items-start gap-3">
         <Link
           href="/dashboard/forms/new"
@@ -93,7 +93,7 @@ export default function TemplatesPage() {
         </div>
       ) : (
         <div className="grid lg:grid-cols-[1fr_340px] gap-5 items-start">
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {data?.data.map((t) => (
               <button
                 key={t.id}

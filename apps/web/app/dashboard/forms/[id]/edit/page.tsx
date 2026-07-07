@@ -695,7 +695,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
       {/* ===== SETTINGS / LIMITS / PAGES / PASSWORD ===== */}
       {tab !== "fields" && (
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-          <div className="max-w-2xl mx-auto">
+          <div className="w-full">
             {tab === "settings" && (
               <div className="ef-card p-6 space-y-6">
                 <h2 className="font-semibold" style={{ color: "var(--foreground)" }}>
