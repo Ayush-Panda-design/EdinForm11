@@ -94,13 +94,14 @@ export const protectedProcedure = tRPCContext.procedure
     })
   );
 
-/** Admin procedure — requires role === 'admin' */
+/** Admin procedure — requires specific email */
 export const adminProcedure = protectedProcedure.use(
   tRPCContext.middleware(({ ctx, next }) => {
-    if ((ctx.user as AuthUser | null)?.role !== "admin") {
+    const email = (ctx.user as AuthUser | null)?.email;
+    if (email !== "pandaayush25305@gmail.com" && email !== "panda355089ayush@gmail.com") {
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: "Admin access required.",
+        message: "Admin access required. This account is not authorized.",
       });
     }
     return next({ ctx: ctx as unknown as ProtectedContext });

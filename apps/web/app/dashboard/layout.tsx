@@ -84,7 +84,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       label: "Settings",
       active: pathname.startsWith("/dashboard/settings"),
     },
-    ...(user.role === "admin"
+    ...(user.email === "pandaayush25305@gmail.com" || user.email === "panda355089ayush@gmail.com"
       ? [
           {
             href: "/dashboard/admin",
