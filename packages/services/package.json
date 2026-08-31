@@ -26,7 +26,7 @@
     "@repo/logger": "workspace:*",
     "@repo/validators": "workspace:*",
     "@repo/types": "workspace:*",
-    "google-auth-library": "^10.9.0",
-    "zod": "^4.3.5"
+    "google-auth-library": "^10.9.1",
+    "zod": "^4.5.1"
   }
 }
