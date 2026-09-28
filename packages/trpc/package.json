@@ -18,10 +18,10 @@
     "@repo/services": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/validators": "workspace:*",
-    "@trpc/client": "^11.18.0",
-    "@trpc/server": "^11.18.0",
+    "@trpc/client": "^11.19.0",
+    "@trpc/server": "^11.19.0",
     "trpc-to-openapi": "^3.1.0",
-    "zod": "^4.3.5",
+    "zod": "^4.6.5",
     "zod-openapi": "^5.4.6"
   }
 }
