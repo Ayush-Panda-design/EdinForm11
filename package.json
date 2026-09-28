@@ -18,7 +18,7 @@
     "test:ci": "turbo run test -- --reporter=verbose"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.31.1",
+    "drizzle-kit": "^0.31.11",
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0",
     "prettier": "^3.9.4",
